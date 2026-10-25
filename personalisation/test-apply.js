@@ -178,6 +178,11 @@ try {
       fs.appendFileSync(preserved, '\n// An unrelated future upstream fix remains intact.\n');
       result(f, 'applied');
       assert.ok(/unrelated future upstream fix/.test(read(preserved)));
+      manifest.patches.forEach(function (spec) {
+        var installed = read(path.join(target, spec.file));
+        if (spec.file === 'lib/home.js') installed = installed.replace(/\n\/\/ An unrelated future upstream fix remains intact\.\n$/, '');
+        assert.strictEqual(hash(installed), spec.customSha256, 'applied patch must reconstruct the exact public source: ' + spec.file);
+      });
       result(f, 'current');
       manifest.patches.forEach(function (spec) {
         write(path.join(target, spec.file), fs.readFileSync(path.join(__dirname, '../glasshouse/server', spec.file)));

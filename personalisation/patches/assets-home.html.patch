@@ -81,6 +81,17 @@
 -.app img,.app .mono{display:block;width:112px;height:112px;margin:0 auto;border-radius:14px}
 -.app .mono{background:#2a2825;color:#ece7df;font-family:'Outfit',sans-serif;font-size:44px;font-weight:300;line-height:112px}
 -.app .nm{font-size:21px;font-weight:600;margin-top:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+-
+-.dev{width:380px;height:124px;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;
+-  -webkit-justify-content:space-between;justify-content:space-between}
+-.dev .nm{font-family:'Outfit',sans-serif;font-size:32px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+-.dev .path{font-size:20px;color:#a39d93;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+-.dev .st{font-size:19px;color:#6b665e;display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between}
+-.dev .st em{font-style:normal}
+-.dev.last .st em{color:#e9ad55}
+-.row .dev.unused{opacity:.3}
+-.row .dev.unused.focus{opacity:.6}
+-.dev.last .st em:before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:#e9ad55;margin-right:10px;vertical-align:2px}
 +/* Wide faces lift independently so remote navigation and arranging keep their native geometry. */
 +#rows .wrap{position:relative;padding-top:22px;padding-bottom:22px}
 +#rows .wrap:before{content:"";position:absolute;left:0;right:0;top:8px;height:186px;border-radius:33px;
@@ -137,17 +148,7 @@
 +.arranging #rows .tile.held{-webkit-transform:none;transform:none}
 +.arranging #rows .tile.held .face{outline:3px dashed #e9ad55;outline-offset:5px}
 +.recents #rows .tile.focus .face{-webkit-transform:none;transform:none;box-shadow:none}
- 
--.dev{width:380px;height:124px;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;
--  -webkit-justify-content:space-between;justify-content:space-between}
--.dev .nm{font-family:'Outfit',sans-serif;font-size:32px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
--.dev .path{font-size:20px;color:#a39d93;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
--.dev .st{font-size:19px;color:#6b665e;display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between}
--.dev .st em{font-style:normal}
--.dev.last .st em{color:#e9ad55}
--.row .dev.unused{opacity:.3}
--.row .dev.unused.focus{opacity:.6}
--.dev.last .st em:before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:#e9ad55;margin-right:10px;vertical-align:2px}
++
 +.night #rows .wrap:before{background:rgba(13,22,37,.5);border-color:rgba(190,210,240,.12)}
 +.night .face{-webkit-filter:brightness(.76);filter:brightness(.76)}
 +.night #rows .tile.focus .face{-webkit-filter:brightness(.94);filter:brightness(.94)}
@@ -502,11 +503,11 @@
 +    if (preview.hour !== undefined) return slot;
 +    var day = Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
 +    return { key: ['morning', 'afternoon', 'evening', 'night'][day % 4], from: slot.from, strength: slot.strength };
-   }
++  }
 +  function nightTime() {
 +    var h = preview.hour !== undefined ? +preview.hour % 24 : new Date().getHours();
 +    return h >= 17 || h < 6;
-+  }
+   }
    function updateWall() {
 +    nightMode = nightTime();
 +    stageClass();

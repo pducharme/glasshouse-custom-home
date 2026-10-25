@@ -26,6 +26,18 @@ var manifest = {
   assets: []
 };
 var outputs = {};
+// Python's stdlib gives macOS and Linux the same hunk selection. Native BSD and
+// GNU diff can encode identical changes differently, breaking byte-for-byte checks.
+var unifiedDiff = [
+  'import difflib, pathlib, sys',
+  'before = pathlib.Path(sys.argv[1]).read_bytes().decode("utf-8")',
+  'after = pathlib.Path(sys.argv[2]).read_bytes().decode("utf-8")',
+  'if not before.endswith("\\n") or not after.endswith("\\n"):',
+  '    raise ValueError("Patch sources must end with a newline")',
+  'patch = difflib.unified_diff(before.splitlines(keepends=True), after.splitlines(keepends=True),',
+  '    fromfile="a/" + sys.argv[3], tofile="b/" + sys.argv[3], n=3)',
+  'sys.stdout.buffer.write("".join(patch).encode("utf-8"))'
+].join('\n');
 function hash(data) { return crypto.createHash('sha256').update(data).digest('hex'); }
 function read(file) {
   if (!fs.lstatSync(file).isFile()) throw new Error('Expected a regular source file: ' + file);
@@ -36,10 +48,12 @@ Object.keys(files).forEach(function (relative) {
   var before = path.join(root, 'base', relative);
   var after = path.join(server, relative);
   if (hash(read(before)) !== files[relative]) throw new Error('Pinned base changed: ' + relative);
-  var result = spawnSync('diff', ['-u', '-L', 'a/' + relative, '-L', 'b/' + relative, before, after], {
-    encoding: 'utf8', maxBuffer: 2 * 1024 * 1024
+  var result = spawnSync('python3', ['-c', unifiedDiff, before, after, relative], {
+    encoding: 'utf8', maxBuffer: 2 * 1024 * 1024, timeout: 15000
   });
-  if (result.error || result.status !== 1) throw new Error('Expected a readable, changed source: ' + relative);
+  if (result.error || result.status !== 0 || !result.stdout) {
+    throw new Error('Could not generate patch for ' + relative + '; Python 3 and newline-terminated, changed UTF-8 sources are required.');
+  }
   var patch = 'patches/' + relative.replace(/\//g, '-') + '.patch';
   outputs[patch] = Buffer.from(result.stdout);
   manifest.patches.push({ file: relative, patch: patch, baseSha256: files[relative], customSha256: hash(read(after)) });

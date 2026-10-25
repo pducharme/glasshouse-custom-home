@@ -52,7 +52,9 @@ ssh -N -L 8767:127.0.0.1:8080 "root@$TV_HOST"
 Ouvrir `http://127.0.0.1:8767/` et saisir le token depuis le fichier privé dans le
 champ d'authentification; ne pas mettre de token dans une URL publique ou un rapport.
 Activer explicitement `allowControl` dans la configuration privée quand les commandes
-sont souhaitées. `allowPower` reste facultatif.
+sont souhaitées. `allowPower` reste facultatif. Sur une installation existante,
+modifier le `/var/lib/tvweb/config.json` de la télévision via les réglages ou SSH :
+la copie locale d’amorçage ne remplace jamais ce fichier.
 
 L'accueil sur une version webOS au-delà de celles reconnues par upstream exige
 `allowExperimentalHome: true` (notamment webOS 11). Cette option est désactivée dans

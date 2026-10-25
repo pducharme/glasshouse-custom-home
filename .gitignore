@@ -18,6 +18,10 @@ __pycache__/
 *.zip
 *.tar
 *.tar.gz
+*.tgz
+*.bak
+*.backup
+.ssh/
 *.ipk
 private/
 backups/
@@ -28,7 +32,7 @@ site/
 coverage/
 playwright-report/
 test-results/
-glasshouse/server/config*.json
+glasshouse/server/*.json
 glasshouse/server/home.json
 glasshouse/server/build.json
 glasshouse/server/home-wallpaper-uploads/

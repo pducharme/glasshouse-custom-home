@@ -13,7 +13,7 @@ vous avez les droits reste séparé de ce bundle.
 
 ## Génération et tests sur ordinateur
 
-Depuis la racine du dépôt, avec Node.js 22 et les commandes `diff` et `patch` :
+Depuis la racine du dépôt, avec Node.js 22, Python 3 et la commande `patch` :
 
 ```sh
 node personalisation/generate.js
@@ -23,7 +23,8 @@ node personalisation/test-guard.js
 ```
 
 `generate.js` vérifie les empreintes des trois sources MIT conservées dans
-`base/`, calcule des patches sans horodatage, copie uniquement les deux ressources
+`base/`, calcule des patches sans horodatage avec `difflib` de Python (même
+algorithme sur macOS et Linux), copie uniquement les deux ressources
 autorisées et écrit leurs SHA-256 dans `manifest.json`. Il n'accède à aucun
 appareil et ne lit aucune configuration personnelle. Relancez-le après une
 modification des sources publiques; `--check` échoue si le bundle est périmé.
