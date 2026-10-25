@@ -8,11 +8,14 @@ personnalisations lors d'une mise à jour. Base : **Glasshouse 0.118.0**, commit
 L'interface conserve le carrousel horizontal, les rangées Applications et Consoles,
 l'appui long sur OK pour réorganiser, les fonds quotidiens et le mode sombre de
 17 h à 6 h. Une petite section Photos se trouve à droite des consoles; le bouton
-Immich reste non configuré par défaut. La sélection utilise un effet de verre et
+Immich affiche le logo officiel et reste non configuré par défaut. La sélection
+utilise un effet de verre et
 le chevron du bas ouvre « Toutes les apps », y compris les apps masquées du carrousel.
 Les logos propriétaires ne sont pas redistribués : des noms
 typographiques les remplacent et les icônes natives sont utilisées sur une télé
-lorsqu'elles existent. La météo et tous les états de la démo sont synthétiques.
+lorsqu'elles existent. Le logo Immich est un asset distinct sous AGPL-3.0,
+fourni avec sa source, sa licence et sa notice; les marques restent celles de
+leurs propriétaires. La météo et tous les états de la démo sont synthétiques.
 La variante Lightkeeper d'une autre télévision n'est pas incluse.
 
 ## Démo locale sans télévision

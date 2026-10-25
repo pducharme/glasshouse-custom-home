@@ -6,8 +6,10 @@ personnalisations hors du répertoire remplacé par les mises à jour. La varian
 Lightkeeper utilise un mécanisme distinct et n'est pas couverte ici.
 
 Les trois patches portent sur `assets/home.html`, `lib/home.js` et
-`lib/routes.js`. Deux ressources sont ajoutées : `lib/home-weather.js` et le
-fond nocturne. Les logos propriétaires ne sont pas redistribués. Le rendu public
+`lib/routes.js`. Cinq ressources sont ajoutées : `lib/home-weather.js`, le
+fond nocturne et les trois fichiers du logo officiel Immich (SVG intact, licence
+AGPL-3.0 complète et notice). Les logos propriétaires personnalisés ne sont pas
+redistribués. Le rendu public
 utilise les alternatives prévues dans l'interface; l'ajout privé de logos dont
 vous avez les droits reste séparé de ce bundle.
 
@@ -24,7 +26,7 @@ node personalisation/test-guard.js
 
 `generate.js` vérifie les empreintes des trois sources MIT conservées dans
 `base/`, calcule des patches sans horodatage avec `difflib` de Python (même
-algorithme sur macOS et Linux), copie uniquement les deux ressources
+algorithme sur macOS et Linux), copie uniquement les cinq ressources
 autorisées et écrit leurs SHA-256 dans `manifest.json`. Il n'accède à aucun
 appareil et ne lit aucune configuration personnelle. Relancez-le après une
 modification des sources publiques; `--check` échoue si le bundle est périmé.
@@ -128,3 +130,6 @@ exécutable puis lancez-le. Pour réessayer après une adaptation compatible :
 ```
 
 La notice MIT des sources upstream est conservée dans [base/LICENSE](base/LICENSE).
+Le logo Immich conserve sa licence AGPL-3.0 séparée sous
+`files/assets/third-party/immich/`; conserver ensemble le SVG, la licence et la
+notice. Aucun logo n'est présenté comme une affiliation avec Immich ou FUTO.

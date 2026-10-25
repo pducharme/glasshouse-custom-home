@@ -279,6 +279,7 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
   border:1px solid rgba(255,255,255,.27);box-shadow:inset 0 1px 1px rgba(255,255,255,.2),0 6px 16px rgba(0,0,0,.24);
   -webkit-transition:-webkit-transform .22s,box-shadow .22s;transition:transform .22s,box-shadow .22s}
 .photos-face svg,.photos-face img{display:block;width:76px;height:76px;object-fit:contain}
+.photos-face img.immich-logo{width:112px;height:112px}
 #photosTile .nm{display:block;margin-top:14px;font-size:21px;font-weight:600;line-height:28px}
 #photosStatus{display:block;margin-top:2px;font-size:18px;line-height:26px;color:#c3ccda}
 .arranging #photos,.arranging #allAppsTrigger{display:none}
@@ -847,7 +848,7 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
     var photos = data && data.photos;
     var icon = photos && photos.installed && photos.icon
       ? '<img src="' + esc(photos.icon) + '" alt="">'
-      : '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M10 19h11l5-7h12l5 7h11v32H10Z" stroke-linejoin="round"/><circle cx="32" cy="34" r="11"/><path d="M46 25h3" stroke-linecap="round"/></svg>';
+      : '<img class="immich-logo" src="/assets/third-party/immich/immich-logo.svg" alt="">';
     return '<aside id="photos" aria-labelledby="photosTitle"><h2 id="photosTitle">' + esc(t('home.photos.title', 'Photos')) + '</h2>' +
       '<button type="button" id="photosTile" tabindex="-1" aria-describedby="photosStatus"><span class="photos-face">' + icon + '</span>' +
       '<span class="nm">Immich</span><span id="photosStatus">' + esc(photosStatus()) + '</span></button></aside>';

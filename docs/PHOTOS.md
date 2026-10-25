@@ -25,9 +25,12 @@ applicables. Les consoles et l'accès de secours à l'accueil LG restent disponi
 - Le bouton Photos explique son état lorsqu'il n'est pas configuré ou lorsque
   l'application choisie n'est pas disponible; aucun accès Immich n'est tenté.
 
-Ces parcours sont testés avec la vraie page et des données synthétiques. La
-télécommande physique et le moteur de la télévision nécessitent encore une
-validation séparée. La préparation et la démo n'allument pas la télévision.
+Ces parcours sont testés avec la vraie page et des données synthétiques. Le
+25 octobre 2026, les commandes existantes de télécommande sur une C6 ont aussi
+permis de vérifier le focus Photos, son état non configuré, l'ouverture du tiroir,
+le déplacement dans la grille, Retour/Haut et le retour au carrousel, puis le
+lancement de YouTube et le retour à l'accueil. L'appui sur une télécommande
+physique et le pointeur restent des essais distincts. La démo n'allume pas la télévision.
 
 ## Lanceur sans accès à la photothèque
 
@@ -45,8 +48,10 @@ Deux identifiants vérifiés sont acceptés :
 Le serveur vérifie que l'application configurée figure dans ses points de
 lancement avant de l'ouvrir. Le client ne peut pas substituer une autre cible ou
 des paramètres de lancement. L'icône est fournie localement par l'application
-installée; sinon, un pictogramme photo original accompagne le nom Immich.
-Aucun logo Immich, code client tiers ou bibliothèque supplémentaire n'est embarqué.
+installée; sinon, le **logo officiel Immich**, conservé sans modification, accompagne
+son nom. Le SVG est servi depuis ce dépôt, y compris dans la démo hors ligne :
+son affichage ne contacte aucun serveur Immich. Aucun code client tiers ni
+bibliothèque supplémentaire n'est embarqué.
 
 Un choix ultérieur du client se fait dans le `home.json` privé existant, en
 modifiant uniquement `photosAppId`, jamais en remplaçant tous les réglages par
@@ -90,7 +95,17 @@ hors Git. Voir le [partage officiel Immich](https://docs.immich.app/features/sha
 
 Les deux clients ont une licence MIT ([Aneesh](https://github.com/aneeshtigga/immich-webos/blob/e43ac58e9b6af6cffa6236c65cb77698bf9b2b42/LICENSE),
 [Seeky](https://github.com/Seeky91/immich-tv-webos/blob/8187a502d35ef8efa5cdaf0abc60d81b3b88004a/LICENSE)).
-Cela n'établit pas une autorisation distincte de redistribuer le logo Immich.
-Le projet principal est AGPLv3 et la marque est traitée séparément dans sa
-[FAQ](https://docs.immich.app/FAQ/#what-are-your-guidelines-for-resellers-and-trademark-usage).
-Le lanceur ne réutilise pas leur code et ne modifie aucune licence existante.
+Le logo provient séparément du [dépôt officiel Immich](https://github.com/immich-app/immich/blob/256eb55dbe92ac77e02794442f9487e88ffed2b1/design/immich-logo.svg),
+commit `256eb55dbe92ac77e02794442f9487e88ffed2b1`. Le SVG original, sa
+[licence AGPL-3.0](../glasshouse/server/assets/third-party/immich/LICENSE-AGPL-3.0.txt)
+et sa [notice de provenance](../glasshouse/server/assets/third-party/immich/NOTICE.txt)
+sont conservés ensemble sous `glasshouse/server/assets/third-party/immich/` et
+dans le bundle de persistance. Cette illustration n'est pas relicenciée sous MIT;
+la licence du code Glasshouse reste inchangée. Sa source modifiable est le SVG
+lui-même, copié à l'identique; conserver ces trois fichiers lors d'une redistribution.
+
+Immich et son logo sont des marques de FUTO. Leur emploi identifie l'application
+photo facultative, sans suggérer d'affiliation, d'approbation ou de service officiel.
+La marque est traitée séparément dans la
+[FAQ Immich](https://docs.immich.app/FAQ/#what-are-your-guidelines-for-resellers-and-trademark-usage).
+Le lanceur ne réutilise pas le code des clients.

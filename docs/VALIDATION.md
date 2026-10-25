@@ -26,8 +26,11 @@ l'historique candidat. Gitleaks 8.30.1 est utilisé avec masquage intégral des 
 et sans tolérer les commentaires d'exclusion. La CI épingle son archive par SHA-256.
 Les recherches complémentaires vérifient les chemins privés, configurations,
 identifiants d'appareils, emplacements, clés, archives, sauvegardes et journaux.
-Les notices MIT et OFL restent présentes; aucun logo personnalisé des marques
-n'est redistribué. Les sept fixtures réseau upstream utilisent « Demo Wi-Fi ».
+Les notices MIT et OFL restent présentes; les neuf logos personnalisés privés
+ne sont pas redistribués. Le logo officiel Immich conserve séparément son SVG
+source intact, sa licence AGPL-3.0 et sa notice; la démo, le paquet et la
+persistance vérifient que ces trois fichiers sont présents. Les sept fixtures
+réseau upstream utilisent « Demo Wi-Fi ».
 
 Ces contrôles ne garantissent pas l'absence absolue de secret ou de vulnérabilité.
 Tout secret confirmé dans l'historique public impose l'arrêt de la publication
@@ -42,12 +45,24 @@ le déplacement et la conservation de l'ordre après rechargement sont vérifiab
 sans accès à une télévision. Les tuiles gardent le format C6 (applications
 280 × 157,5; consoles 224 × 126) dans le canevas 1920 × 1080.
 
-Les différences assumées sont les logos remplacés, la ville et la météo de démo,
+Les différences assumées sont les neuf logos privés remplacés, la ville et la météo de démo,
 les lancements simulés et l'absence de données personnelles. La page dépend de la
 résolution et du moteur webOS de l'appareil. La version publique assainie n'a pas
-été déployée sur la télévision personnelle; la lecture vidéo, la télécommande
-physique, le redémarrage et les futures mises à jour ne sont donc pas certifiés
-par les essais locaux. La PR reste brouillon jusqu'à revue et validation matérielle.
+été substituée aux réglages de la télévision personnelle. Le 25 octobre 2026,
+le delta d'interface a été appliqué séparément à une C6 avec sauvegarde vérifiée,
+conservation des réglages et fonds, et contrôle des empreintes. Les captures de
+l'écran réel ont confirmé Photos, la sélection verre et le tiroir Toutes les apps.
+Les commandes de télécommande existantes ont validé les flèches, OK, Retour/Haut,
+le retour du focus au carrousel, le lancement de YouTube et le retour à l'accueil.
+Le guard est resté `current`. Ces preuves privées ne sont pas incluses dans ce dépôt.
+La correction du logo officiel a ses tests locaux de source, de démo hors ligne
+et de paquet. Son rendu à 112 × 112 pixels et son focus verre ont également été
+observés sur la C6, avec contrôle de l'identité du SVG et des empreintes déployées.
+Le lanceur Photos est resté non configuré; aucun client ni photothèque n'a été ouvert.
+
+La lecture vidéo, les gestes sur une télécommande physique, son pointeur, un
+redémarrage complet de la télévision et les futures mises à jour restent à
+vérifier. La PR reste brouillon pour revue; aucune fusion automatique n'est prévue.
 
 L'extension Photos et Toutes les apps ajoute des tests de navigation aux quatre
 flèches, activation, fermeture et restauration du focus, ainsi que des tests du

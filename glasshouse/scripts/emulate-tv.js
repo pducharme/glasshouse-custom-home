@@ -26,7 +26,7 @@ const DEVICES = [
 const IDS = { app: APPS.map(app => app.id).concat('lg-home'), dev: DEVICES.map(device => device.id), ch: [] };
 const WALL_STATE = { available: true, revision: 'synthetic-demo-1', slots: { morning: true, afternoon: true, evening: true, night: true } };
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript; charset=utf-8',
-  '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8',
+  '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.txt': 'text/plain; charset=utf-8',
   '.jpg': 'image/jpeg', '.png': 'image/png', '.svg': 'image/svg+xml', '.ttf': 'font/ttf', '.woff2': 'font/woff2' };
 function initialLayout() {
   return { enabled: true, rows: ['app', 'dev'], order: JSON.parse(JSON.stringify(IDS)),

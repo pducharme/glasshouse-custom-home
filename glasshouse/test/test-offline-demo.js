@@ -59,6 +59,17 @@ function call(route, body, headers) {
     for (const slot of ['morning', 'afternoon', 'evening', 'night']) assert.strictEqual((await call('/api/home/wallpaper?slot=' + slot)).status, 200);
     for (const slot of ['__proto__', 'constructor', 'toString']) assert.strictEqual((await call('/api/home/wallpaper?slot=' + slot)).status, 404);
     assert.strictEqual((await call('/assets/home-wallpaper-dark.jpg')).status, 200);
+    const immichAsset = '/assets/third-party/immich/immich-logo.svg';
+    const immichLogo = await call(immichAsset);
+    assert.strictEqual(immichLogo.status, 200);
+    assert.strictEqual(immichLogo.headers['content-type'], 'image/svg+xml');
+    assert.strictEqual(immichLogo.text, fs.readFileSync(path.join(__dirname, '../server', immichAsset), 'utf8'),
+      'offline preview serves the unchanged logo locally');
+    for (const notice of ['LICENSE-AGPL-3.0.txt', 'NOTICE.txt']) {
+      const served = await call('/assets/third-party/immich/' + notice);
+      assert.strictEqual(served.status, 200, 'logo license and provenance accompany the preview');
+      assert.strictEqual(served.text, fs.readFileSync(path.join(__dirname, '../server/assets/third-party/immich', notice), 'utf8'));
+    }
     const reversed = catalogue.order.app.slice().reverse();
     assert.strictEqual((await call('/api/home/layout', { order: { app: reversed } })).status, 200);
     assert.deepStrictEqual((await call('/api/home/catalogue')).body.order.app, reversed);

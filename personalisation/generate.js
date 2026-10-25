@@ -59,7 +59,9 @@ Object.keys(files).forEach(function (relative) {
   manifest.patches.push({ file: relative, patch: patch, baseSha256: files[relative], customSha256: hash(read(after)) });
 });
 
-['lib/home-weather.js', 'assets/home-wallpaper-dark.jpg'].forEach(function (relative) {
+['lib/home-weather.js', 'assets/home-wallpaper-dark.jpg',
+  'assets/third-party/immich/immich-logo.svg', 'assets/third-party/immich/LICENSE-AGPL-3.0.txt',
+  'assets/third-party/immich/NOTICE.txt'].forEach(function (relative) {
   var data = read(path.join(server, relative));
   var source = 'files/' + relative;
   outputs[source] = data;
@@ -82,5 +84,5 @@ if (stale.length) {
   console.error('Regenerate the bundle: ' + stale.join(', '));
   process.exitCode = 1;
 } else {
-  console.log(check ? 'Bundle matches public sources and pinned base.' : 'Generated 3 patches and 2 public assets.');
+  console.log(check ? 'Bundle matches public sources and pinned base.' : 'Generated 3 patches and ' + manifest.assets.length + ' public assets.');
 }

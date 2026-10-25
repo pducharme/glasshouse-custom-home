@@ -7,7 +7,7 @@
       "file": "assets/home.html",
       "patch": "patches/assets-home.html.patch",
       "baseSha256": "292735c255dc1f296713b5c5bff95c3edafa69df56dd93b73de72145a644045f",
-      "customSha256": "e13020504e632e91c71628f17c6450e8ae81a1f8c6ab5a6a80db20040d07829f"
+      "customSha256": "75ff28e65f302c5d6a117634aa0bd02a4a7eb646a475f7eb86e618d748435107"
     },
     {
       "file": "lib/home.js",
@@ -32,6 +32,21 @@
       "file": "assets/home-wallpaper-dark.jpg",
       "source": "files/assets/home-wallpaper-dark.jpg",
       "sha256": "4652dfebf1ca05c576cffcd7eabb9f53104a62cda716cf84b0218fb5f76fe7d3"
+    },
+    {
+      "file": "assets/third-party/immich/immich-logo.svg",
+      "source": "files/assets/third-party/immich/immich-logo.svg",
+      "sha256": "dfa5ef704d07854914306c0c224173bda2710f8fc0dffeb7d78690f58f9811a6"
+    },
+    {
+      "file": "assets/third-party/immich/LICENSE-AGPL-3.0.txt",
+      "source": "files/assets/third-party/immich/LICENSE-AGPL-3.0.txt",
+      "sha256": "a3bad629f67f442b23b5224419e49edafc32e6b9c876b89464f7aafe6091ccde"
+    },
+    {
+      "file": "assets/third-party/immich/NOTICE.txt",
+      "source": "files/assets/third-party/immich/NOTICE.txt",
+      "sha256": "18fb9ded86f5ae87b0c3a2191258b254127e611a85b7c1c9c8f38a72d05e5cca"
     }
   ]
 }

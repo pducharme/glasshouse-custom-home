@@ -24,5 +24,8 @@ with tempfile.TemporaryDirectory(prefix='glasshouse-package-') as tmp:
     assert (pathlib.Path(tmp) / 'payload' / 'server' / 'assets' / 'home.html').exists()
     assert not list(pathlib.Path(tmp).rglob('config.json'))
     assert (pathlib.Path(tmp) / 'payload' / 'server' / 'LICENSE').read_bytes() == pathlib.Path('LICENSE').read_bytes()
+    for name in ('immich-logo.svg', 'LICENSE-AGPL-3.0.txt', 'NOTICE.txt'):
+        relative = pathlib.Path('assets/third-party/immich') / name
+        assert (pathlib.Path(tmp) / 'payload' / 'server' / relative).read_bytes() == (pathlib.Path('server') / relative).read_bytes()
 print('Package staging passed (no TV access, no IPK signing).')
 PY

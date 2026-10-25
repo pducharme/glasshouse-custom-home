@@ -1,0 +1,18 @@
+Official Immich logo — unchanged artwork
+
+Source project: Immich (https://github.com/immich-app/immich)
+Source file: design/immich-logo.svg
+Pinned commit: 256eb55dbe92ac77e02794442f9487e88ffed2b1
+Source URL: https://github.com/immich-app/immich/blob/256eb55dbe92ac77e02794442f9487e88ffed2b1/design/immich-logo.svg
+SHA-256: dfa5ef704d07854914306c0c224173bda2710f8fc0dffeb7d78690f58f9811a6
+
+This separate artwork is distributed under the GNU Affero General Public
+License, version 3 (AGPL-3.0), as provided by the upstream project. The full
+license is included in LICENSE-AGPL-3.0.txt. The SVG is the corresponding
+editable source, reproduced byte for byte; no logo geometry or colour is changed.
+The MIT license for Glasshouse code does not relicense this artwork.
+
+Immich and its logo are trademarks of FUTO. They identify the optional photo
+application; this independent Glasshouse launcher is not affiliated with,
+endorsed by, or approved by Immich or FUTO. No Immich client is included.
+Trademark guidance: https://docs.immich.app/FAQ/#what-are-your-guidelines-for-resellers-and-trademark-usage

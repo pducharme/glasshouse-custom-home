@@ -68,6 +68,7 @@ assets/dashboard-app/appinfo.json assets/dashboard-app/index.html \
 assets/dashboard-app/packageinfo.json assets/dashboard-app/install-app.sh \
 assets/dashboard-app/assets/icon80.png assets/dashboard-app/assets/icon130.png \
 assets/home-wallpaper-dark.jpg \
+assets/third-party/immich/immich-logo.svg assets/third-party/immich/LICENSE-AGPL-3.0.txt assets/third-party/immich/NOTICE.txt \
 assets/home.html assets/home-app/appinfo.json assets/home-app/index.html assets/home-app/packageinfo.json \
 assets/home-app/assets/icon80.png assets/home-app/assets/icon130.png \
 assets/fonts/Outfit.ttf assets/fonts/Manrope.ttf \

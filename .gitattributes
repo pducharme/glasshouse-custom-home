@@ -2,3 +2,9 @@
 glasshouse/test/fixtures/** -whitespace
 glasshouse/server/assets/fonts/OFL-*.txt -whitespace
 personalisation/patches/*.patch -whitespace
+
+# Preserve the byte-identical upstream artwork and licence, including CRLF/EOF.
+glasshouse/server/assets/third-party/immich/immich-logo.svg -text whitespace=cr-at-eol
+personalisation/files/assets/third-party/immich/immich-logo.svg -text whitespace=cr-at-eol
+glasshouse/server/assets/third-party/immich/LICENSE-AGPL-3.0.txt -text whitespace=-blank-at-eof
+personalisation/files/assets/third-party/immich/LICENSE-AGPL-3.0.txt -text whitespace=-blank-at-eof

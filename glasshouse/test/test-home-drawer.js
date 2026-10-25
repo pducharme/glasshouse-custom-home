@@ -80,6 +80,8 @@ function harness(options) {
 }
 
 var h = harness();
+assert.ok(/class="immich-logo" src="\/assets\/third-party\/immich\/immich-logo\.svg"/.test(h.view.photosMarkup()),
+  'unconfigured Photos displays the bundled official logo without an external request');
 h.tap('right');
 h.tap('down');
 assert.strictEqual(h.view.state.row, 1, 'Down enters consoles');
