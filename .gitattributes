@@ -1,0 +1,4 @@
+# Keep upstream diagnostic fixtures, license text, and unified patch context byte-for-byte.
+glasshouse/test/fixtures/** -whitespace
+glasshouse/server/assets/fonts/OFL-*.txt -whitespace
+personalisation/patches/*.patch -whitespace

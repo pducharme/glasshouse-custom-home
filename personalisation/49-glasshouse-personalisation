@@ -1,0 +1,22 @@
+#!/bin/sh
+# Independent of Glasshouse's installer-owned 50-tvweb hook.
+ROOT=/var/lib/glasshouse-personalisation
+PID=/var/run/glasshouse-personalisation.pid
+[ -x /usr/bin/node ] || exit 0
+[ -f "$ROOT/guard.js" ] && [ -f "$ROOT/apply.js" ] &&
+  [ -f "$ROOT/manifest.json" ] && [ -f /var/lib/tvweb/tvweb.js ] || exit 0
+
+pid=$(cat "$PID" 2>/dev/null)
+case "$pid" in
+  ''|*[!0-9]*) ;;
+  *) if kill -0 "$pid" 2>/dev/null &&
+       tr '\000' '\n' < "/proc/$pid/cmdline" 2>/dev/null | grep -Fxq "$ROOT/guard.js"; then
+       exit 0
+     fi ;;
+esac
+
+# Apply before 50-tvweb starts the server; blocked updates leave the stock files.
+/usr/bin/node "$ROOT/guard.js" --once >/dev/null 2>&1 || true
+rm -f "$PID"
+start-stop-daemon -S -b -m -p "$PID" -x /usr/bin/node -- "$ROOT/guard.js" --watch
+exit 0

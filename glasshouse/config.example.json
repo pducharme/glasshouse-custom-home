@@ -1,0 +1,70 @@
+{
+  "web": {
+    "enabled": true
+  },
+  "port": 8080,
+  "host": "127.0.0.1",
+  "allowControl": false,
+  "allowPower": false,
+  "token": "REPLACE_WITH_RANDOM_TOKEN",
+  "allowTileHiding": false,
+  "iconServer": false,
+  "piccap": {
+    "pollIntervalMs": 30000
+  },
+  "mqtt": {
+    "enabled": false,
+    "host": "",
+    "port": 1883,
+    "tls": false,
+    "tlsRejectUnauthorized": true,
+    "username": "",
+    "password": "",
+    "topicPrefix": "lgtv",
+    "discoveryPrefix": "homeassistant",
+    "telemetryIntervalMs": 10000,
+    "entities": {
+      "controls": true,
+      "oled": true,
+      "video": true,
+      "system": true,
+      "diagnostics": true,
+      "disabled": []
+    }
+  },
+  "logging": {
+    "level": "info"
+  },
+  "prometheus": {
+    "enabled": false
+  },
+  "syslog": {
+    "server": "",
+    "port": 514,
+    "hostname": "",
+    "sources": [
+      "system",
+      "glasshouse"
+    ],
+    "redact": true
+  },
+  "device": {
+    "id": "lg_tv",
+    "name": "LG webOS TV",
+    "model": "",
+    "manufacturer": "LG"
+  },
+  "update": {
+    "check": false,
+    "intervalHours": 24,
+    "client": ""
+  },
+  "homeWeather": {
+    "enabled": false,
+    "latitude": null,
+    "longitude": null,
+    "timezone": "Etc/UTC",
+    "label": "YOUR_CITY"
+  },
+  "allowExperimentalHome": false
+}

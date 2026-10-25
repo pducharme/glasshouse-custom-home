@@ -1,0 +1,417 @@
+{
+  "ok": true,
+  "time": 1791251769941,
+  "tvwebVersion": "0.80.4",
+  "device": {
+    "id": "lg_tv",
+    "name": "LG OLED77CX",
+    "model": "OLED77CXAUA"
+  },
+  "system": {
+    "webos": "5.6.0",
+    "firmware": "04.60.65"
+  },
+  "hardware": {
+    "webos": "5.6.0",
+    "soc_arch": "Alpha 9 Gen 3 (O20)",
+    "ram": null,
+    "refresh_rate": null,
+    "eye_sensor": "20yOTP_eyeSensor"
+  },
+  "panel_silicon": {
+    "cell": "WBE/MMG/GZ",
+    "tcon_firmware": "3.4.00.000.0",
+    "tcon_module": "00000000000000"
+  },
+  "remote": null,
+  "temp": 55,
+  "tempMillidegrees": 56000,
+  "temps": [
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    55,
+    55,
+    56,
+    55,
+    55,
+    56,
+    55,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    55,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    55,
+    55,
+    56,
+    55,
+    56,
+    56,
+    55,
+    56,
+    56,
+    56,
+    55
+  ],
+  "load": 6,
+  "loadPeak": 8,
+  "mhz": 1008,
+  "cpuHz": 1008000000,
+  "cpuTimes": {
+    "0": {
+      "user": 135909,
+      "nice": 328,
+      "system": 54312,
+      "idle": 2293316,
+      "iowait": 139,
+      "irq": 0,
+      "softirq": 1411,
+      "steal": 0
+    },
+    "1": {
+      "user": 99969,
+      "nice": 382,
+      "system": 51475,
+      "idle": 2333268,
+      "iowait": 205,
+      "irq": 0,
+      "softirq": 77,
+      "steal": 0
+    },
+    "2": {
+      "user": 85377,
+      "nice": 204,
+      "system": 39445,
+      "idle": 2180232,
+      "iowait": 194,
+      "irq": 0,
+      "softirq": 45,
+      "steal": 0
+    },
+    "3": {
+      "user": 9476,
+      "nice": 14,
+      "system": 5611,
+      "idle": 219637,
+      "iowait": 133,
+      "irq": 0,
+      "softirq": 8,
+      "steal": 0
+    }
+  },
+  "cores": [
+    8,
+    8,
+    8,
+    8
+  ],
+  "coresTotal": 4,
+  "mem": {
+    "total": 2680920,
+    "avail": 932772
+  },
+  "swap": {
+    "total": 614396,
+    "free": 535508,
+    "backing": "zram"
+  },
+  "uptime": 24854,
+  "bootTime": "2026-10-05T19:01:55.938Z",
+  "btime": 1791226915,
+  "loadavg": [
+    "13.69",
+    "13.48",
+    "13.35"
+  ],
+  "wifi": {
+    "link": 0,
+    "level": -64
+  },
+  "net": {
+    "rx": 291,
+    "tx": 765
+  },
+  "netTotal": {
+    "rx": 11687565,
+    "tx": 19701679,
+    "iface": "wlan0"
+  },
+  "mac": "00:00:5e:00:53:01",
+  "emmc": {
+    "life": "0-10%",
+    "wear": "0-10%",
+    "health": ">90% (Healthy)",
+    "eol": "Normal",
+    "life_est_a": 1,
+    "life_est_b": 1
+  },
+  "signal": "3840x2160 @ 60Hz",
+  "signal_timing": {
+    "width": 3840,
+    "height": 2160,
+    "refresh_hz": 60
+  },
+  "hdmi_diag": {
+    "port": 0,
+    "phy_mode": "TMDS (6G)",
+    "chroma": "YCbCr 4:2:2",
+    "hdcp": "HDCP 2.3",
+    "allm": false,
+    "vrr": false,
+    "qms": false
+  },
+  "picture_engine": null,
+  "colorimetry": null,
+  "inputs": {
+    "externalinput.av1": "AV",
+    "hdmi1": "HDMI 1",
+    "hdmi2": "HDMI 2",
+    "hdmi3": "HDMI 3",
+    "hdmi4": "HDMI 4"
+  },
+  "powerState": {
+    "raw": "Active",
+    "label": "On",
+    "systemOn": true,
+    "screenOn": true
+  },
+  "screenSaver": false,
+  "screensaverMode": "starfield",
+  "screensaverLevel": "dim",
+  "sleepTimer": "off",
+  "powerTimers": {
+    "on": {
+      "enabled": false,
+      "time": "00:00",
+      "days": [],
+      "autoOff": true
+    },
+    "off": {
+      "enabled": false,
+      "time": "00:00",
+      "days": []
+    }
+  },
+  "lights": {
+    "standby": true,
+    "logo": false,
+    "powerOn": false,
+    "hasLogo": false
+  },
+  "quickBoot": true,
+  "gpuMhz": null,
+  "gpuHz": null,
+  "wakeOnLan": true,
+  "deviceDetection": false,
+  "alwaysReady": true,
+  "alwaysReadyOff": {
+    "start": "02:00",
+    "end": "07:00"
+  },
+  "ssid": "Demo Wi-Fi",
+  "dimming": null,
+  "lightSensor": null,
+  "backlight": null,
+  "appStorage": {
+    "totalMb": 2799,
+    "usedMb": 2050,
+    "freeMb": 733,
+    "pct": 73,
+    "totalKb": 2866224,
+    "availKb": 750484
+  },
+  "volume": 0,
+  "muted": false,
+  "audio_output": "TV Speaker",
+  "volume_control": "level",
+  "sound": {
+    "output": "TV Speaker",
+    "output_raw": "tv_speaker",
+    "bt_audio": false,
+    "mode": "standard"
+  },
+  "app": "hdmi4",
+  "app_id": "com.webos.app.hdmi4",
+  "app_name": "HDMI 4",
+  "display_title": "HDMI 4 (HDMI4)",
+  "picture": {
+    "dynamicRange": "HDR",
+    "dynamicRange_raw": "hdr",
+    "mode": "HDR Standard",
+    "mode_raw": "hdrStandard",
+    "backlight": 100,
+    "energySaving": "auto",
+    "screenShift": "on",
+    "logoLuminanceAdjust": "light",
+    "modes": [
+      {
+        "value": "hdrVivid",
+        "label": "HDR Vivid"
+      },
+      {
+        "value": "hdrStandard",
+        "label": "HDR Standard"
+      },
+      {
+        "value": "hdrCinemaBright",
+        "label": "HDR Cinema Bright"
+      },
+      {
+        "value": "hdrCinema",
+        "label": "HDR Cinema"
+      },
+      {
+        "value": "hdrGame",
+        "label": "HDR Game"
+      },
+      {
+        "value": "hdrFilmMaker",
+        "label": "HDR Filmmaker"
+      }
+    ]
+  },
+  "apps": [
+    {
+      "id": "amazon.alexa.view",
+      "title": "Amazon Alexa"
+    },
+    {
+      "id": "com.webos.app.igallery",
+      "title": "Art Gallery"
+    },
+    {
+      "id": "com.tvweb.dashboard",
+      "title": "Glasshouse"
+    },
+    {
+      "id": "com.webos.app.homeconnect",
+      "title": "Home Dashboard"
+    },
+    {
+      "id": "org.webosbrew.hbchannel",
+      "title": "Homebrew Channel"
+    },
+    {
+      "id": "org.webosbrew.safeupdate",
+      "title": "Homebrew Channel Updater"
+    },
+    {
+      "id": "com.webos.app.discovery",
+      "title": "LG Content Store"
+    },
+    {
+      "id": "com.webos.app.music",
+      "title": "Music"
+    },
+    {
+      "id": "com.webos.app.photovideo",
+      "title": "Photo & Video"
+    },
+    {
+      "id": "com.webos.app.roomconnect",
+      "title": "Room to Room Share"
+    },
+    {
+      "id": "com.webos.app.sportsteamsettings",
+      "title": "Sports Alert"
+    },
+    {
+      "id": "com.webos.app.browser",
+      "title": "Web Browser"
+    },
+    {
+      "id": "com.github.gprot42.webosterminal",
+      "title": "webOS Terminal"
+    }
+  ],
+  "privacy": {
+    "adblock": {
+      "enabled": true,
+      "count": 75
+    }
+  },
+  "capabilities": {
+    "oled": true,
+    "thermal": true,
+    "emmcWear": true
+  },
+  "oled": {
+    "panel_usage_units": 69808,
+    "last_compensation_units": 69780,
+    "panel_hours": 11634,
+    "panel_hours_exact": 11634.7,
+    "last_compensation_hours": 11630,
+    "hours_since_comp": 4.7,
+    "hours_until_comp": 0,
+    "comp_interval_hours": 4,
+    "comp_interval_units": 24,
+    "comp_cycles": 1822,
+    "comp_status": "Idle",
+    "comp_status_label": "Idle",
+    "refresher_interval_hours": 2000,
+    "last_refresher_hours": 10009,
+    "hours_since_refresher": 1625,
+    "hours_until_refresher": 375,
+    "refresher_cycles": 5,
+    "refresher_status": "Idle",
+    "refresher_status_raw": "schedule",
+    "failure_alerts": null,
+    "asbl_protection": "Active",
+    "gsr_protection": "Active",
+    "gsr_enabled": true,
+    "tpc_enabled": true,
+    "gsr_stress_count": null,
+    "screen_shift": "on",
+    "logo_dimming": "light"
+  }
+}

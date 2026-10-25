@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=com.webos.service.admanager
+Exec=/usr/sbin/admanager
+Type=dynamic

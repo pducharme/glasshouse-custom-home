@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "target": "ES2020",
+    "module": "node16",
+    "moduleResolution": "node16",
+    "strict": false,
+    "noImplicitAny": false
+  },
+  "include": [
+    "server/**/*.js"
+  ],
+  // The dashboard's scripts, which the server joins into one before serving,
+  // so no one of them stands alone.
+  "exclude": [
+    "server/assets/ui"
+  ]
+}
