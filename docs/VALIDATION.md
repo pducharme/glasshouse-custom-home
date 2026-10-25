@@ -48,3 +48,11 @@ résolution et du moteur webOS de l'appareil. La version publique assainie n'a p
 été déployée sur la télévision personnelle; la lecture vidéo, la télécommande
 physique, le redémarrage et les futures mises à jour ne sont donc pas certifiés
 par les essais locaux. La PR reste brouillon jusqu'à revue et validation matérielle.
+
+L'extension Photos et Toutes les apps ajoute des tests de navigation aux quatre
+flèches, activation, fermeture et restauration du focus, ainsi que des tests du
+lanceur : identifiant vide/invalide, application absente, refus de lancement et
+conservation du réglage. Les cibles et paramètres envoyés par le navigateur ne
+peuvent pas remplacer le client photo configuré. La démo vérifie l'accès aux apps
+fictives masquées du carrousel, sans connexion à une photothèque. Aucun test local
+ne prouve la compatibilité du client Immich ni le rendu exact sur la télévision.

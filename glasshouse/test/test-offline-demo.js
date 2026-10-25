@@ -47,7 +47,14 @@ function call(route, body, headers) {
     assert.strictEqual(weather.demo, true);
     assert.strictEqual(weather.label, 'Ville de démonstration');
     const catalogue = (await call('/api/home/catalogue')).body;
-    assert.deepStrictEqual(catalogue.order.app, ['youtube.leanback.v4', 'netflix', 'cdp-30', 'ca.bellmedia.crave', 'amazon', 'tv.tou.ici.webos', 'com.webos.app.hdmi4', 'lg-home']);
+    assert.deepStrictEqual(catalogue.order.app.filter(id => !catalogue.layout.hidden.app.includes(id)),
+      ['youtube.leanback.v4', 'netflix', 'cdp-30', 'ca.bellmedia.crave', 'amazon', 'tv.tou.ici.webos', 'com.webos.app.hdmi4', 'lg-home']);
+    assert.deepStrictEqual(catalogue.layout.hidden.app, ['org.example.demo.music', 'org.example.demo.browser', 'org.example.demo.games']);
+    assert.ok(catalogue.layout.hidden.app.every(id => catalogue.apps.some(app => app.id === id)), 'drawer apps exist in the synthetic catalogue');
+    assert.deepStrictEqual(catalogue.photos, { appId: '', installed: false, icon: null });
+    assert.strictEqual(catalogue.layout.photosAppId, '');
+    assert.strictEqual((await call('/api/home/open', { kind: 'photos', id: 'netflix' })).body.ok, false);
+    assert.deepStrictEqual((await call('/api/home/now')).body, { kind: null }, 'unconfigured Photos never launches another tile');
     assert.deepStrictEqual(catalogue.devices.map(device => device.port), [1, 3]);
     for (const slot of ['morning', 'afternoon', 'evening', 'night']) assert.strictEqual((await call('/api/home/wallpaper?slot=' + slot)).status, 200);
     for (const slot of ['__proto__', 'constructor', 'toString']) assert.strictEqual((await call('/api/home/wallpaper?slot=' + slot)).status, 404);
@@ -62,6 +69,8 @@ function call(route, body, headers) {
     assert.strictEqual((await call('/api/home/recents')).body.apps.length, 1);
     assert.strictEqual((await call('/api/home/layout', { reset: true })).status, 200);
     assert.deepStrictEqual((await call('/api/home/catalogue')).body.order.app, catalogue.order.app);
+    assert.deepStrictEqual((await call('/api/home/catalogue')).body.layout.hidden.app, catalogue.layout.hidden.app);
+    assert.strictEqual((await call('/api/home/open', { kind: 'app', id: 'org.example.demo.music' })).body.demo, true, 'drawer launches are simulated');
     assert.strictEqual((await call('/api/home/layout', {}, { Origin: 'https://example.invalid' })).status, 403);
     assert.strictEqual((await call('/', undefined, { Host: 'example.invalid' })).status, 403);
     assert.strictEqual((await call('/', undefined, { 'Sec-Fetch-Site': 'cross-site' })).status, 403);

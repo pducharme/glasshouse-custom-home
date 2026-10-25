@@ -14,8 +14,11 @@ const WALLPAPERS = {
 const APPS = [
   ['youtube.leanback.v4', 'YouTube'], ['netflix', 'Netflix'], ['cdp-30', 'Plex'],
   ['ca.bellmedia.crave', 'Crave'], ['amazon', 'Prime Video'],
-  ['tv.tou.ici.webos', 'ICI TOU.TV'], ['com.webos.app.hdmi4', 'Bell Fibe']
+  ['tv.tou.ici.webos', 'ICI TOU.TV'], ['com.webos.app.hdmi4', 'Bell Fibe'],
+  ['org.example.demo.music', 'Musique démo'], ['org.example.demo.browser', 'Navigateur démo'],
+  ['org.example.demo.games', 'Jeux démo']
 ].map(([id, title]) => ({ id, title }));
+const DRAWER_APPS = APPS.slice(7).map(app => app.id);
 const DEVICES = [
   { id: 'hdmi1', port: 1, name: 'Nintendo Switch 2' },
   { id: 'hdmi3', port: 3, name: 'Xbox Series X' }
@@ -27,8 +30,8 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascr
   '.jpg': 'image/jpeg', '.png': 'image/png', '.svg': 'image/svg+xml', '.ttf': 'font/ttf', '.woff2': 'font/woff2' };
 function initialLayout() {
   return { enabled: true, rows: ['app', 'dev'], order: JSON.parse(JSON.stringify(IDS)),
-    sort: { app: 'custom', dev: 'custom', ch: 'custom' }, hidden: { app: [], dev: [], ch: [] },
-    channels: [], hintSeen: true, picture: false, colours: null };
+    sort: { app: 'custom', dev: 'custom', ch: 'custom' }, hidden: { app: DRAWER_APPS.slice(), dev: [], ch: [] },
+    channels: [], hintSeen: true, picture: false, colours: null, photosAppId: '' };
 }
 function uniqueKnown(value, known) {
   return Array.isArray(value) && value.length <= known.length &&
@@ -95,7 +98,8 @@ function createDemoServer() {
         return image ? file(path.join(ROOT, '..', image), TYPES['.jpg']) : json(404, { ok: false });
       }
       if (route === '/api/home/catalogue') return json(200, { ok: true, apps: APPS, devices: DEVICES,
-        channels: [], order: layout.order, layout, layoutVersion: String(revision), sources: { channels: 0 }, wallpapers: WALL_STATE });
+        channels: [], order: layout.order, layout, layoutVersion: String(revision), sources: { channels: 0 }, wallpapers: WALL_STATE,
+        photos: { appId: '', installed: false, icon: null } });
       if (route === '/api/home/weather') return json(200, { ok: true, temperature: 18, code: 2, isDay: true,
         observedAt: Date.now(), stale: false, label: 'Ville de démonstration', demo: true });
       if (route === '/api/home/now') return json(200, last);
@@ -119,6 +123,7 @@ function createDemoServer() {
       }
       if (route === '/api/home/beat') return json(200, { ok: true, build: 'offline-demo', layoutVersion: String(revision), wallpapers: WALL_STATE });
       if (route === '/api/home/open') {
+        if (input.kind === 'photos') return json(200, { ok: false, demo: true, error: 'Photos non configuré dans la démo hors ligne' });
         const item = input.kind === 'app' ? APPS.find(app => app.id === input.id) : input.kind === 'dev' ? DEVICES.find(device => device.id === input.id) : null;
         if (item) {
           last = input.kind === 'app' ? { kind: 'app', appId: item.id, title: item.title } : { kind: 'input', port: item.port, name: item.name };

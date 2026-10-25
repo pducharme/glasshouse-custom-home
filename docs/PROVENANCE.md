@@ -28,6 +28,12 @@ Sur une télévision, les icônes natives des applications installées sont util
 quand elles sont disponibles. Les marques restent celles de leurs propriétaires.
 Il ne s'agit donc pas d'une reproduction pixel pour pixel des logos privés.
 
+Le lanceur Photos ne redistribue pas le logo ni le code d'un client Immich.
+Il emploie un pictogramme photo original et, sur l'appareil uniquement, l'icône
+native de l'application configurée. Les identifiants vérifiés et les sources
+de licence sont documentés dans [Photos](PHOTOS.md). La référence visuelle de
+l'effet de verre est consultée localement et n'est pas incluse dans le dépôt.
+
 La météo réelle optionnelle utilise [Open-Meteo](https://open-meteo.com/en/licence),
 données sous CC BY 4.0 et conditions du service applicables; le widget fournit le crédit.
 La démo utilise exclusivement des données synthétiques.

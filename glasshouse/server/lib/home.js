@@ -54,6 +54,8 @@ var PROMO_APPS = ['com.webos.app.lgchannels', 'com.webos.app.sportsteamsettings'
   'com.webos.app.lifeonscreen', 'amazon.alexa.view', 'com.webos.app.camera'];
 // The view's own way back to LG's Home: last in the Apps row, and never hidden.
 var LG_HOME_TILE = 'lg-home';
+// Optional third-party photo clients. No server address or credentials belong here.
+var PHOTOS_APPS = ['com.immich.webos', 'com.seeky91.immichtv'];
 /*
  * LG's notifications and search, reached from its Home's sidebar and from no
  * other screen. Neither has a launch point, so the Apps row lists them from
@@ -207,6 +209,7 @@ function defaults() {
     picture: false,
     // { text, accent } as #rrggbb, or null for the view's own colours.
     colours: null,
+    photosAppId: '',
     // null until chosen: the first start keeps an empty layout an earlier build left.
     hideLgHomeAtStart: null,
     // LG's Home auto launch as it was before Glasshouse Home switched it off,
@@ -250,6 +253,7 @@ function normalise(raw) {
   d.hintSeen = raw.hintSeen === true;
   d.picture = raw.picture === true;
   d.colours = validColours(raw.colours);
+  d.photosAppId = PHOTOS_APPS.indexOf(raw.photosAppId) !== -1 ? raw.photosAppId : '';
   if (typeof raw.hideLgHomeAtStart === 'boolean') d.hideLgHomeAtStart = raw.hideLgHomeAtStart;
   if (typeof raw.lgAutoLaunch === 'string' && raw.lgAutoLaunch) d.lgAutoLaunch = raw.lgAutoLaunch;
   if (typeof raw.lgAutoLaunchCheck === 'string' && raw.lgAutoLaunchCheck) d.lgAutoLaunchCheck = raw.lgAutoLaunchCheck;
@@ -337,6 +341,9 @@ function perRow(sent, kept) {
 function setLayout(body, cb) {
   var c = readConfig();
   if (!body || typeof body !== 'object') return cb({ ok: false, error: 'layout expected' });
+  if (body.photosAppId !== undefined && body.photosAppId !== '' && PHOTOS_APPS.indexOf(body.photosAppId) === -1) {
+    return cb({ ok: false, error: 'unsupported photos app' });
+  }
   var next = normalise({
     enabled: c.enabled,
     restorePending: c.restorePending,
@@ -354,7 +361,8 @@ function setLayout(body, cb) {
     hintSeen: body.hintSeen !== undefined ? body.hintSeen : c.hintSeen,
     picture: typeof body.picture === 'boolean' ? body.picture : c.picture,
     // null puts the view's own colours back.
-    colours: body.colours !== undefined ? body.colours : c.colours
+    colours: body.colours !== undefined ? body.colours : c.colours,
+    photosAppId: body.photosAppId !== undefined ? body.photosAppId : c.photosAppId
   });
   if (body.reset === true) {
     var d = defaults();
@@ -376,7 +384,7 @@ function setLayout(body, cb) {
 
 function layoutOf(c) {
   return { rows: c.rows, order: c.order, sort: c.sort, hidden: c.hidden, channels: c.channels, hintSeen: c.hintSeen, picture: c.picture,
-    colours: c.colours };
+    colours: c.colours, photosAppId: c.photosAppId };
 }
 
 // ---------------------------------------------------------------- what it shows
@@ -545,7 +553,14 @@ function rows(cb) {
           ch: picked.map(function (p) { return p.id; })
         };
         ROWS.forEach(function (r) { if (c.sort[r] === 'recent') order[r] = lastOpenedFirst(r, order[r]); });
+        var photos = { appId: c.photosAppId, installed: false, icon: null };
+        appList.forEach(function (a) {
+          if (a.id !== c.photosAppId) return;
+          photos.installed = true;
+          photos.icon = a.icon ? '/api/home/icon?id=' + encodeURIComponent(a.id) : null;
+        });
         cb({
+          photos: photos,
           apps: appList.map(function (a) {
             return { id: a.id, title: a.title, icon: a.icon ? '/api/home/icon?id=' + encodeURIComponent(a.id) : null };
           }),
@@ -726,13 +741,24 @@ function launch(id, params, cb) {
 }
 
 /*
- * Opens a tile: { kind: 'app'|'dev'|'ch'|'lg', id }. Only what the catalogue
+ * Opens a tile: { kind: 'app'|'dev'|'ch'|'lg'|'photos', id }. Only what the catalogue
  * lists can be opened, so this is not a way to launch anything at all. A
  * device opens its HDMI input; nothing is sent to the device or a receiver.
  */
 function open(body, cb) {
   var kind = body && body.kind;
   var id = body && typeof body.id === 'string' ? body.id : '';
+  if (kind === 'photos') {
+    // Ignore request-supplied ids, URLs and params: only the saved, known app can launch.
+    var photosAppId = readConfig().photosAppId;
+    if (!photosAppId) return cb({ ok: false, error: msg('srv.home.photosUnconfigured', 'Photos is not configured') });
+    return launchPoints(function (apps) {
+      if (!(apps || []).some(function (a) { return a.id === photosAppId; })) {
+        return cb({ ok: false, error: msg('srv.home.photosMissing', 'The configured photo app is not installed') });
+      }
+      launch(photosAppId, null, opened('app', photosAppId, cb));
+    });
+  }
   console.log('home: open ' + kind + ' ' + id);
   if (kind === 'lg' || (kind === 'app' && id === LG_HOME_TILE)) {
     if (body.recovery && !viewInFront()) return cb({ ok: true, done: false });
@@ -773,7 +799,7 @@ function open(body, cb) {
       });
     });
   }
-  cb({ ok: false, error: 'kind must be app, dev, ch or lg' });
+  cb({ ok: false, error: 'kind must be app, dev, ch, lg or photos' });
 }
 
 // A tile's callback that first records it as opened, if it opened.

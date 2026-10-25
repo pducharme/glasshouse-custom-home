@@ -7,7 +7,10 @@ personnalisations lors d'une mise à jour. Base : **Glasshouse 0.118.0**, commit
 
 L'interface conserve le carrousel horizontal, les rangées Applications et Consoles,
 l'appui long sur OK pour réorganiser, les fonds quotidiens et le mode sombre de
-17 h à 6 h. Les logos propriétaires ne sont pas redistribués : des noms
+17 h à 6 h. Une petite section Photos se trouve à droite des consoles; le bouton
+Immich reste non configuré par défaut. La sélection utilise un effet de verre et
+le chevron du bas ouvre « Toutes les apps », y compris les apps masquées du carrousel.
+Les logos propriétaires ne sont pas redistribués : des noms
 typographiques les remplacent et les icônes natives sont utilisées sur une télé
 lorsqu'elles existent. La météo et tous les états de la démo sont synthétiques.
 La variante Lightkeeper d'une autre télévision n'est pas incluse.
@@ -31,6 +34,9 @@ clone avant d'exécuter ces commandes.
 Navigation : flèches, Entrée pour OK, appui long sur Entrée pour déplacer une tuile,
 Retour/Echap pour annuler. `?hour=12` montre le jour et `?hour=19` le mode sombre.
 Le rendu cible est 1920 × 1080 et se redimensionne à la fenêtre.
+Le tiroir se parcourt avec les flèches; Retour/Echap revient à l'accueil.
+Les applications supplémentaires et la météo sont fictives. Le bouton Photos
+n'accède à aucune photothèque. Voir [Photos et navigation](docs/PHOTOS.md).
 
 ## Sources et installation
 
@@ -40,6 +46,7 @@ Le rendu cible est 1920 × 1080 et se redimensionne à la fenêtre.
 - `examples/home.example.json` : ordre synthétique des tuiles.
 - `glasshouse/config.example.json` : configuration avec placeholders et météo désactivée.
 - [Provenance et licences](docs/PROVENANCE.md), [validation et limites](docs/VALIDATION.md).
+- [Lanceur Photos, clients Immich et navigation](docs/PHOTOS.md).
 
 L'installation sur une télé est manuelle et distincte de la démo. Elle exige une
 télé déjà rootée et compatible. Aucun script de la démo ne déploie le système.

@@ -91,6 +91,9 @@ historiques. Le cinquième fond, `05-lac-nuit.jpg`, est embarqué comme
 commande cette plage. L'appui long OK réorganise les tuiles sans révéler les apps
 masquées.
 
+Pour le lanceur photo optionnel, lire [Photos](PHOTOS.md). Il est non configuré par
+défaut et n'exige aucun serveur, compte ou jeton pour examiner la démo.
+
 ## Météo privée optionnelle
 
 Le module n'effectue aucune requête quand `homeWeather.enabled` est faux ou lorsque
