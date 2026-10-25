@@ -37,8 +37,9 @@ Ces trois fichiers sont aussi inclus dans la persistance et l'assemblage du paqu
 la licence MIT du code Glasshouse ne s'applique pas à cette illustration.
 Immich et son logo sont des marques de FUTO; leur présence identifie seulement
 le lanceur facultatif et n'implique aucune affiliation ou approbation.
-L'icône native du client configuré reste prioritaire sur l'appareil. Aucun code de
-client Immich n'est redistribué. Les identifiants vérifiés et les conditions de
+Le logo officiel transparent reste prioritaire sur l'icône native du client
+configuré pour conserver la même tuile sur l'appareil. Aucun code de client
+Immich n'est redistribué. Les identifiants vérifiés et les conditions de
 marque sont documentés dans [Photos](PHOTOS.md). La référence visuelle de l'effet
 de verre est consultée localement et n'est pas incluse dans le dépôt.
 

@@ -13,10 +13,13 @@ if (process.argv.length > 2 && !check) {
   console.error('Usage: node personalisation/generate.js [--check]');
   process.exit(2);
 }
+// Public upstream source checksum, not a credential for remote access.
+var remoteSourceSha256 = '68c58dfd63747ff1b4b4b537f70c13d3228f16e019fdf650a4a5a103c9f9c5f1';
 var files = {
   'assets/home.html': '292735c255dc1f296713b5c5bff95c3edafa69df56dd93b73de72145a644045f',
   'lib/home.js': 'a4c2a497044712d9556f4f35b538ea93da071330a741bfba448740b81fa71680',
-  'lib/routes.js': '1590eb5471882b5f73cb8b0576abfd10cb385deba936212304c3254f377efaf6'
+  'lib/routes.js': '1590eb5471882b5f73cb8b0576abfd10cb385deba936212304c3254f377efaf6',
+  'lib/remotekeys.js': remoteSourceSha256
 };
 var manifest = {
   version: 1,
@@ -84,5 +87,5 @@ if (stale.length) {
   console.error('Regenerate the bundle: ' + stale.join(', '));
   process.exitCode = 1;
 } else {
-  console.log(check ? 'Bundle matches public sources and pinned base.' : 'Generated 3 patches and ' + manifest.assets.length + ' public assets.');
+  console.log(check ? 'Bundle matches public sources and pinned base.' : 'Generated ' + manifest.patches.length + ' patches and ' + manifest.assets.length + ' public assets.');
 }

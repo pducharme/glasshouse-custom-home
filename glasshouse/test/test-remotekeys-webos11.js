@@ -46,6 +46,8 @@ var LEGACY_CHAIN = [{ file: '/usr/lib/qt5/qml/KeyFilters/appLaunch.js', handler:
 var APPS = [
   { id: 'youtube.leanback.v4', title: 'YouTube', visible: true },
   { id: 'netflix', title: 'Netflix', visible: true },
+  { id: 'cdp-30', title: 'Plex', visible: true },
+  { id: 'test.hidden', title: 'Hidden test app', visible: false },
   { id: 'com.webos.app.livetv', title: 'Live TV', visible: true }
 ];
 
@@ -503,7 +505,7 @@ step('the AI button is not offered without the voice assistant\'s service', func
 
 step('the JavaScript filter leaves out the keys only webOS 11 offers', function (next) {
   var src = rk.filterSource();
-  ['homehub', 'ai', 'multikey', 'multikeyhold'].forEach(function (k) { assert.strictEqual(src.indexOf('"' + k + '"'), -1); });
+  ['haystack', 'homehub', 'ai', 'multikey', 'multikeyhold'].forEach(function (k) { assert.strictEqual(src.indexOf('"' + k + '"'), -1); });
   next();
 });
 
@@ -549,6 +551,88 @@ step('with no key ever set, the start and the recheck write nothing', function (
       assert.deepEqual(tv.configWrites, []);
       assert.strictEqual(liveSubs().length, 0);
       next();
+    });
+  });
+});
+
+var NEWS = { launch_param: { source: 'remote' }, app_id: 'com.haystacktv.app', isActive: true };
+var beforeNews;
+step('News is absent unless LG has an active haystack entry', function (next) {
+  rk.getRemoteKeys(function (r) {
+    assert.ok(!r.keys.some(function (k) { return k.key === 'haystack'; }));
+    rk.setRemoteKey('haystack', 'open', 'cdp-30', function (missing) {
+      assert.strictEqual(missing.ok, false);
+      var off = copy(NEWS); off.isActive = false;
+      tv.mapping.push({ haystack: off });
+      rk.getRemoteKeys(function (inactive) {
+        assert.ok(!inactive.keys.some(function (k) { return k.key === 'haystack'; }));
+        rk.setRemoteKey('haystack', 'open', 'cdp-30', function (refused) {
+          assert.strictEqual(refused.ok, false);
+          assert.strictEqual(tv.mappingWrites, 0);
+          tv.mapping[tv.mapping.length - 1].haystack = copy(NEWS);
+          next();
+        });
+      });
+    });
+  });
+});
+
+step('News opens installed Plex through its native entry without changing another shortcut', function (next) {
+  set('netflix', 'open', 'youtube.leanback.v4', function () {
+    beforeNews = copy(tv.mapping);
+    set('haystack', 'open', 'cdp-30', function () {
+      var expected = copy(beforeNews);
+      expected[expected.length - 1].haystack = { launch_param: null, app_id: 'cdp-30', isActive: true };
+      assert.deepEqual(tv.mapping, expected);
+      assert.deepEqual(JSON.parse(fs.readFileSync(LG_FILE, 'utf8')).mapping.haystack, NEWS);
+      assert.deepEqual(JSON.parse(fs.readFileSync(MAP, 'utf8')).keys, { netflix: 'youtube.leanback.v4', haystack: 'cdp-30' });
+      assert.deepEqual(tv.configWrites, []);
+      assert.strictEqual(tv.blockCalls, 0);
+      assert.ok(!rk.isFollowingLog());
+      rk.getRemoteKeys(function (r) {
+        var key = r.keys.filter(function (k) { return k.key === 'haystack'; })[0];
+        assert.strictEqual(key.title, 'News');
+        assert.strictEqual(key.action, 'open');
+        assert.strictEqual(key.id, 'cdp-30');
+        assert.strictEqual(key.opens, 'Plex');
+        next();
+      });
+    });
+  });
+});
+
+step('News refuses missing and hidden apps without changing its valid mapping', function (next) {
+  var mapping = copy(tv.mapping), saved = fs.readFileSync(MAP, 'utf8'), writes = tv.mappingWrites;
+  rk.setRemoteKey('haystack', 'open', 'not.installed', function (missing) {
+    assert.strictEqual(missing.ok, false);
+    rk.setRemoteKey('haystack', 'open', 'test.hidden', function (hidden) {
+      assert.strictEqual(hidden.ok, false);
+      assert.deepEqual(tv.mapping, mapping);
+      assert.strictEqual(fs.readFileSync(MAP, 'utf8'), saved);
+      assert.strictEqual(tv.mappingWrites, writes);
+      next();
+    });
+  });
+});
+
+step('News is reapplied after LG resets its entry, and restores its exact original value', function (next) {
+  tv.mapping[tv.mapping.length - 1].haystack = copy(NEWS);
+  rk.recheckNative(function (ok) {
+    assert.ok(ok);
+    assert.deepEqual(entry('haystack'), { launch_param: null, app_id: 'cdp-30', isActive: true });
+    set('haystack', 'nothing', '', function () {
+      var off = copy(NEWS); off.isActive = false;
+      assert.deepEqual(entry('haystack'), off);
+      set('haystack', 'lg', '', function () {
+        assert.deepEqual(tv.mapping, beforeNews);
+        assert.deepEqual(JSON.parse(fs.readFileSync(MAP, 'utf8')).keys, { netflix: 'youtube.leanback.v4' });
+        set('netflix', 'lg', '', function () {
+          assert.deepEqual(tv.mapping, MAPPING.concat([{ haystack: NEWS }]));
+          assert.ok(!exists(LG_FILE));
+          assert.strictEqual(liveSubs().length, 0);
+          next();
+        });
+      });
     });
   });
 });

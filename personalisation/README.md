@@ -5,8 +5,9 @@ Ce bundle reproduit les changements publics de l'accueil C6 sur Glasshouse
 personnalisations hors du répertoire remplacé par les mises à jour. La variante
 Lightkeeper utilise un mécanisme distinct et n'est pas couverte ici.
 
-Les trois patches portent sur `assets/home.html`, `lib/home.js` et
-`lib/routes.js`. Cinq ressources sont ajoutées : `lib/home-weather.js`, le
+Les quatre patches portent sur `assets/home.html`, `lib/home.js`,
+`lib/routes.js` et `lib/remotekeys.js` (touche News sur webOS 11).
+Cinq ressources sont ajoutées : `lib/home-weather.js`, le
 fond nocturne et les trois fichiers du logo officiel Immich (SVG intact, licence
 AGPL-3.0 complète et notice). Les logos propriétaires personnalisés ne sont pas
 redistribués. Le rendu public
@@ -24,7 +25,7 @@ node personalisation/test-apply.js
 node personalisation/test-guard.js
 ```
 
-`generate.js` vérifie les empreintes des trois sources MIT conservées dans
+`generate.js` vérifie les empreintes des quatre sources MIT conservées dans
 `base/`, calcule des patches sans horodatage avec `difflib` de Python (même
 algorithme sur macOS et Linux), copie uniquement les cinq ressources
 autorisées et écrit leurs SHA-256 dans `manifest.json`. Il n'accède à aucun

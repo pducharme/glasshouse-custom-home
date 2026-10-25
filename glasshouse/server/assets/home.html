@@ -109,7 +109,7 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
 #rows .wrap:before{content:"";position:absolute;left:0;right:0;top:8px;height:186px;border-radius:33px;
   background:rgba(215,230,255,.09);border:1px solid rgba(255,255,255,.13);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
-#rows .row[data-key="dev"] .wrap:before{right:auto;width:516px;height:154px;border-radius:28px}
+#rows .row[data-key="dev"] .wrap:before{display:none}
 #rows .row[data-key="ch"] .wrap:before{display:none}
 #rows .app,#rows .dev{width:280px;height:auto;padding:0;margin-right:28px;border-radius:21px;opacity:1;display:block}
 #rows .dev{width:224px;margin-right:24px;border-radius:17px}
@@ -125,7 +125,9 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
 #rows .tile.focus .face{-webkit-transform:translateY(-5px) scale(1.06);transform:translateY(-5px) scale(1.06);
   box-shadow:0 16px 24px rgba(0,0,0,.42),0 0 0 3px rgba(255,255,255,.92),inset 0 1px 0 rgba(255,255,255,.3)}
 #rows .tile.focus .face:after{opacity:1}
-.dev .face{width:224px;height:126px;border-radius:18px}
+.dev .face,.photos-face{width:224px;height:126px;border-radius:18px}
+.face.immich{background:#0b0b0d}
+.glass-glint{position:absolute;left:0;right:0;top:0;bottom:0;border-radius:inherit;pointer-events:none;opacity:0}
 .face img{display:block;width:191px;height:94.5px;object-fit:contain}
 .face .mono{font-family:'Outfit',sans-serif;font-size:42px;font-weight:400}
 .face .native-icon{width:87.5px;height:87.5px;border-radius:17.5px}
@@ -148,11 +150,8 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
 .face.switch img{width:104px;height:92px}
 .face.xbox{background:#107c10}
 .face.xbox img{width:157px;height:67px}
-#rows .app .nm,#rows .dev .nm{font-family:'Manrope',sans-serif;font-size:22px;line-height:30px;font-weight:600;
-  color:#d9dfe8;margin-top:16px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#rows .dev .nm{font-size:21px;line-height:28px;margin-top:14px}
+#rows .app .nm,#rows .dev .nm,#rows .dev .path{display:none}
 #rows .tile.focus .nm{color:#fff}
-.dev .path{font-size:18px;line-height:26px;color:#b6becb;margin-top:2px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dev .st{display:none}
 #rows .row .tile.hidden{opacity:.22}
 #rows .row .tile.hidden.focus{opacity:.65}
@@ -163,7 +162,7 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
 
 .night #rows .wrap:before{background:rgba(13,22,37,.5);border-color:rgba(190,210,240,.12)}
 .night .face{-webkit-filter:brightness(.76);filter:brightness(.76)}
-.night #rows .tile.focus .face{-webkit-filter:brightness(.94);filter:brightness(.94)}
+.night #rows .tile.focus .face,.night #photosTile.focus .face{-webkit-filter:brightness(.94);filter:brightness(.94)}
 .night .brand-name{font-family:Arial,sans-serif;font-size:30px;font-weight:600;padding:18px;text-align:center}
 .face.bell{background:#091726}
 .night .face.bell img{-webkit-filter:brightness(1.65);filter:brightness(1.65)}
@@ -268,20 +267,13 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
   box-shadow:0 18px 30px rgba(0,0,0,.42),0 0 0 3px rgba(255,255,255,.94),0 0 0 8px rgba(218,233,255,.14),
     inset 0 2px 2px rgba(255,255,255,.48),inset 0 -2px 1px rgba(156,188,229,.2)}
 #rows .tile.focus .face:after{background:linear-gradient(135deg,rgba(255,255,255,.28),rgba(255,255,255,0) 42%,rgba(196,220,255,.08));opacity:1}
-#rows .row[data-key="dev"]{position:relative;min-height:270px}
+#rows .row[data-key="dev"]{position:relative;min-height:200px}
 #rows .row[data-key="dev"]>.wrap{margin-right:420px}
 #photos{position:absolute;right:112px;top:0;width:224px;text-align:center}
 #photos h2{padding:0;text-align:left;font-size:23px;line-height:30px}
 #photosTile{display:block;width:224px;padding:22px 0 0;border:0;background:none;color:#ece7df;font:inherit;cursor:pointer;outline:none}
-.photos-face{position:relative;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;
-  -webkit-justify-content:center;justify-content:center;width:224px;height:126px;border-radius:21px;
-  background:linear-gradient(135deg,rgba(216,230,249,.18),rgba(64,84,111,.32));
-  border:1px solid rgba(255,255,255,.27);box-shadow:inset 0 1px 1px rgba(255,255,255,.2),0 6px 16px rgba(0,0,0,.24);
-  -webkit-transition:-webkit-transform .22s,box-shadow .22s;transition:transform .22s,box-shadow .22s}
-.photos-face svg,.photos-face img{display:block;width:76px;height:76px;object-fit:contain}
 .photos-face img.immich-logo{width:112px;height:112px}
-#photosTile .nm{display:block;margin-top:14px;font-size:21px;font-weight:600;line-height:28px}
-#photosStatus{display:block;margin-top:2px;font-size:18px;line-height:26px;color:#c3ccda}
+#photosStatus{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .arranging #photos,.arranging #allAppsTrigger{display:none}
 .arranging #rows .row[data-key="dev"]{min-height:0}
 #allAppsTrigger{position:absolute;left:50%;bottom:14px;-webkit-transform:translateX(-50%);transform:translateX(-50%);
@@ -306,7 +298,7 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
 #allAppsGrid{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap}
 #allApps .tile{width:280px;padding:0;margin:0 44px 30px 0;opacity:1;outline:none;background:none;cursor:pointer}
 #allApps .tile:nth-child(5n){margin-right:0}
-#allApps .nm{font-size:21px;line-height:30px;font-weight:600;color:#e2e8f1;margin-top:14px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#allApps .nm{display:none}
 #allApps .empty{font-size:25px;color:#d0d9e7;padding:30px 0}
 #allApps .tile .hid{display:none}
 
@@ -314,6 +306,7 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
 @media (prefers-reduced-motion:reduce){
   .track,#toast,.tile,.face,.face:after,#allApps,#allAppsTrigger,.photos-face{-webkit-transition:none;transition:none}
   #rows .tile.focus .face,#photosTile.focus .photos-face,#allApps .tile.focus .face{-webkit-transform:none;transform:none}
+  .glass-glint{display:none}
   #wall .layer{-webkit-animation:none;animation:none}
 }
 </style>
@@ -453,6 +446,7 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
   // ---------------------------------------------------------------- stage
 
   function fit() {
+    resetPointerGlass();
     var s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
     var st = $('stage');
     var x = (window.innerWidth - 1920 * s) / 2, y = (window.innerHeight - 1080 * s) / 2;
@@ -521,6 +515,7 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
   }
 
   function render() {
+    resetPointerGlass();
     stageClass();
     var html = '';
     if (!shown(state.row)) state.row = nextShown(0, 1);
@@ -559,7 +554,7 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
       var icon = a.icon ?
         '<img class="native-icon" src="' + esc(a.icon) + '" alt="">' :
         '<span class="brand-name">' + esc(a.lg ? 'LG' : a.title) + '</span>';
-      return '<div class="' + cls + '" data-c="' + i + '"><div class="face ' + (art ? art.brand : a.lg ? 'lg' : '') + '">' +
+      return '<div class="' + cls + '" data-c="' + i + '" role="button" aria-label="' + esc((a.title || a.id) + (hidden('app', a.id) ? ' ' + t('home.hidden', 'Hidden') : '')) + '"><div class="face ' + (art ? art.brand : a.lg ? 'lg' : '') + '">' +
         icon + '</div><div class="nm">' + esc(a.title) + '</div>' + hiddenLabel + '</div>';
     },
     dev: function (d, i) {
@@ -569,7 +564,7 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
                        : t('home.dev.port', 'HDMI {port}', { port: d.port });
       var name = d.port === 1 ? 'Nintendo Switch 2' : d.port === 3 ? 'Xbox Series X' : d.name;
       var brand = d.port === 1 ? 'switch' : 'xbox';
-      return '<div class="' + cls + '" data-c="' + i + '"><div class="face ' + brand + '">' +
+      return '<div class="' + cls + '" data-c="' + i + '" role="button" aria-label="' + esc(name + ', ' + path + (hidden('dev', d.id) ? ' ' + t('home.hidden', 'Hidden') : '')) + '"><div class="face ' + brand + '">' +
         '<span class="brand-name">' + esc(d.port === 1 ? 'Switch 2' : d.port === 3 ? 'Xbox' : d.name) + '</span></div><div class="nm">' + esc(name) + '</div>' +
         '<div class="path">' + esc(path) + '</div>' + hiddenLabel + '</div>';
     },
@@ -617,6 +612,7 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
         : state.held ? t('home.arrange.moving', 'Moving {name}', { name: it.title || it.name })
         : (it.title || it.name) + (hidden(rowKey(), it.id) ? ' ' + t('home.arrange.isHidden', '(hidden)') : '');
     }
+    if (pointerGlass.tile && !/\bfocus\b/.test(pointerGlass.tile.className)) resetPointerGlass();
   }
 
   // Keeps the focused tile in view by moving the track, not the page.
@@ -845,13 +841,11 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
     return photos.installed ? t('home.photos.ready', 'Prêt') : t('home.photos.missing', 'Application absente');
   }
   function photosMarkup() {
-    var photos = data && data.photos;
-    var icon = photos && photos.installed && photos.icon
-      ? '<img src="' + esc(photos.icon) + '" alt="">'
-      : '<img class="immich-logo" src="/assets/third-party/immich/immich-logo.svg" alt="">';
+    // The official transparent flower stays consistent even if a client ships a white app icon.
+    var icon = '<img class="immich-logo" src="/assets/third-party/immich/immich-logo.svg" alt="">';
     return '<aside id="photos" aria-labelledby="photosTitle"><h2 id="photosTitle">' + esc(t('home.photos.title', 'Photos')) + '</h2>' +
-      '<button type="button" id="photosTile" tabindex="-1" aria-describedby="photosStatus"><span class="photos-face">' + icon + '</span>' +
-      '<span class="nm">Immich</span><span id="photosStatus">' + esc(photosStatus()) + '</span></button></aside>';
+      '<button type="button" id="photosTile" tabindex="-1" aria-label="Immich" aria-describedby="photosStatus"><span class="face photos-face immich">' + icon + '</span>' +
+      '<span id="photosStatus">' + esc(photosStatus()) + '</span></button></aside>';
   }
   function activatePhotos() {
     var photos = data && data.photos;
@@ -875,6 +869,7 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
   }
   function openDrawer() {
     if (state.arranging || drawer.open) return;
+    resetPointerGlass();
     closeRecents();
     drawer.returnRow = state.row;
     drawer.returnCol = {};
@@ -886,6 +881,7 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
   }
   function closeDrawer() {
     if (!drawer.open) return;
+    resetPointerGlass();
     drawer.open = false; drawer.revision++;
     state.zone = 'rows'; state.row = drawer.returnRow; state.col = drawer.returnCol;
     if (!shown(state.row)) state.row = nextShown(0, 1);
@@ -895,6 +891,7 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
     stageClass(); applyFocus();
   }
   function renderDrawer() {
+    resetPointerGlass();
     var selected = drawer.apps[drawer.index];
     drawer.apps = installedApps();
     if (selected) {
@@ -919,6 +916,7 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
       if (top < scroll.scrollTop) scroll.scrollTop = top;
       if (top + tile.offsetHeight > scroll.scrollTop + scroll.clientHeight) scroll.scrollTop = top + tile.offsetHeight - scroll.clientHeight;
     }
+    if (pointerGlass.tile && pointerGlass.tile !== tile) resetPointerGlass();
   }
   function activateDrawer() {
     var app = drawer.apps[drawer.index];
@@ -960,6 +958,7 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
   var recents = { open: false, loading: false, revision: 0, apps: [], col: 0, onX: false, onAll: false, busy: false, stamp: 0 };
 
   function openRecents() {
+    resetPointerGlass();
     if (recents.busy) return;
     recents.busy = true;
     recents.loading = true;
@@ -1113,6 +1112,7 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
   }
 
   function setArranging(on, quick) {
+    resetPointerGlass();
     if (layoutBusy) return;
     layoutRevision++;
     // The focus stays on the same item as hidden tiles appear or go.
@@ -1251,6 +1251,7 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
   // ---------------------------------------------------------------- input
 
   function onKeyDown(e) {
+    resetPointerGlass();
     if (!data || !layout) return;
     if (layoutBusy) { e.preventDefault(); return; }
     var k = e.keyCode;
@@ -1313,6 +1314,65 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
     else activate();
   }
 
+  // One local reflection per pointer frame; no idle loop or full-screen blur.
+  // Viewport rectangles already include the TV stage's scale.
+  var motionPreference = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  var pointerGlass = { tile: null, face: null, glint: null, x: 0, y: 0, frame: null };
+  function resetPointerGlass() {
+    if (!pointerGlass) return;
+    if (pointerGlass.frame !== null) {
+      var cancel = window.cancelAnimationFrame || window.webkitCancelAnimationFrame;
+      if (cancel) cancel.call(window, pointerGlass.frame); else clearTimeout(pointerGlass.frame);
+    }
+    if (pointerGlass.face) {
+      pointerGlass.face.style.transform = '';
+      pointerGlass.face.style.webkitTransform = '';
+    }
+    if (pointerGlass.glint) pointerGlass.glint.style.opacity = '0';
+    pointerGlass.tile = pointerGlass.face = pointerGlass.glint = null;
+    pointerGlass.frame = null;
+  }
+  function paintPointerGlass() {
+    pointerGlass.frame = null;
+    var face = pointerGlass.face;
+    if (!face || (motionPreference && motionPreference.matches) || !/\bfocus\b/.test(pointerGlass.tile.className)) return resetPointerGlass();
+    var rect = face.getBoundingClientRect(), width = rect.right - rect.left, height = rect.bottom - rect.top;
+    if (!width || !height) return resetPointerGlass();
+    var x = Math.max(0, Math.min(1, (pointerGlass.x - rect.left) / width));
+    var y = Math.max(0, Math.min(1, (pointerGlass.y - rect.top) / height));
+    var transform = 'perspective(800px) translateY(-5px) scale(1.045) rotateX(' + ((.5 - y) * 7).toFixed(2) + 'deg) rotateY(' + ((x - .5) * 7).toFixed(2) + 'deg)';
+    face.style.transform = face.style.webkitTransform = transform;
+    pointerGlass.glint.style.backgroundImage = 'radial-gradient(ellipse at ' + (x * 100).toFixed(1) + '% ' + (y * 100).toFixed(1) + '%,rgba(255,255,255,.34),rgba(225,238,255,.1) 36%,rgba(255,255,255,0) 72%)';
+    pointerGlass.glint.style.opacity = '1';
+  }
+  function queuePointerGlass(tile, e) {
+    if (!tile || state.arranging || recents.open || (motionPreference && motionPreference.matches) ||
+        typeof e.clientX !== 'number' || typeof e.clientY !== 'number') return resetPointerGlass();
+    var face = tile.querySelector && tile.querySelector('.face');
+    if (!face || !face.getBoundingClientRect) return resetPointerGlass();
+    if (pointerGlass.tile !== tile) {
+      resetPointerGlass();
+      pointerGlass.tile = tile; pointerGlass.face = face;
+      pointerGlass.glint = face.querySelector('.glass-glint');
+      if (!pointerGlass.glint) {
+        pointerGlass.glint = document.createElement('span');
+        pointerGlass.glint.className = 'glass-glint';
+        pointerGlass.glint.setAttribute('aria-hidden', 'true');
+        face.appendChild(pointerGlass.glint);
+      }
+    }
+    pointerGlass.x = e.clientX; pointerGlass.y = e.clientY;
+    if (pointerGlass.frame === null) {
+      var request = window.requestAnimationFrame || window.webkitRequestAnimationFrame;
+      pointerGlass.frame = request ? request.call(window, paintPointerGlass) : setTimeout(paintPointerGlass, 16);
+    }
+  }
+  function onPointerOut(e) {
+    var target = e.relatedTarget;
+    while (target) { if (target === pointerGlass.tile) return; target = target.parentNode; }
+    resetPointerGlass();
+  }
+
   // The Magic Remote's pointer: hovering focuses a tile, clicking opens it.
   function tileAt(target) {
     while (target && target !== document.body) {
@@ -1327,31 +1387,34 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
     if (drawer.open) {
       if (tile && /\bdrawer-app\b/.test(tile.className)) {
         drawer.index = +tile.getAttribute('data-c'); focusDrawer();
-      }
+        queuePointerGlass(tile, e);
+      } else resetPointerGlass();
       return;
     }
     if (!state.arranging && !recents.open && ancestorId(e.target, 'photosTile')) {
-      state.zone = 'photos'; applyFocus(); return;
+      state.zone = 'photos'; applyFocus(); queuePointerGlass($('photosTile'), e); return;
     }
     if (!state.arranging && !recents.open && ancestorId(e.target, 'allAppsTrigger')) {
-      state.zone = 'all'; applyFocus(); return;
+      resetPointerGlass(); state.zone = 'all'; applyFocus(); return;
     }
     if (recents.open) {
+      resetPointerGlass();
       if (tile && /\brc\b/.test(tile.className) && (+tile.getAttribute('data-c') !== recents.col || recents.onAll)) {
         recents.col = +tile.getAttribute('data-c'); recents.onAll = false; recents.onX = false;
         focusRecents();
       }
       return;
     }
-    if (!tile || state.held) return;
+    if (!tile || state.held) return resetPointerGlass();
     var rowEl = tile.parentNode;
     while (rowEl && !/\brow\b/.test(rowEl.className)) rowEl = rowEl.parentNode;
-    if (!rowEl) return;
+    if (!rowEl) return resetPointerGlass();
     var r = +rowEl.getAttribute('data-row'), c = +tile.getAttribute('data-c'), kind = layout.rows[r];
     if (state.row !== r || colOf(kind) !== c || state.bar >= 0 || state.zone !== 'rows') {
       state.zone = 'rows'; state.row = r; state.col[kind] = c; state.bar = -1;
       applyFocus();
     }
+    queuePointerGlass(tile, e);
   }
   function onClick(e) {
     if (!data || !layout || layoutBusy) return;
@@ -1587,6 +1650,7 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
   }
 
   function returned() {
+    resetPointerGlass();
     initialEscape = false;
     clearTimeout(okTimer);
     okDownAt = 0; backDown = false;
@@ -1605,10 +1669,16 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
   document.addEventListener('keydown', onKeyDown, true);
   document.addEventListener('keyup', onKeyUp, true);
   document.addEventListener('mousemove', onPointer);
+  document.addEventListener('mouseout', onPointerOut);
   document.addEventListener('click', onClick);
+  window.addEventListener('blur', resetPointerGlass);
+  if (motionPreference) {
+    if (motionPreference.addEventListener) motionPreference.addEventListener('change', resetPointerGlass);
+    else if (motionPreference.addListener) motionPreference.addListener(resetPointerGlass);
+  }
   // Home pressed with the view already open reaches it as a relaunch.
   document.addEventListener('webOSRelaunch', returned);
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) returned(); });
+  document.addEventListener('visibilitychange', function () { resetPointerGlass(); if (!document.hidden) returned(); });
 
   fit();
   refreshWeather();

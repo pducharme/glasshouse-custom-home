@@ -16,7 +16,7 @@ Le déploiement SSH direct documenté utilise les sources incluses.
 Les vérifications upstream `check-upgrade.js` et `check-entity-stability.py` exigent
 l'historique et les tags du dépôt upstream. Ils sont conservés pour référence mais
 ne s'appliquent pas directement à ce dépôt imbriqué de sources. Les tests de
-persistance utilisent trois bases upstream épinglées et incluses, donc n'exigent
+persistance utilisent quatre bases upstream épinglées et incluses, donc n'exigent
 aucune copie privée ou historique externe.
 
 ## Contrôles de publication
@@ -58,9 +58,24 @@ Le guard est resté `current`. Ces preuves privées ne sont pas incluses dans ce
 La correction du logo officiel a ses tests locaux de source, de démo hors ligne
 et de paquet. Son rendu à 112 × 112 pixels et son focus verre ont également été
 observés sur la C6, avec contrôle de l'identité du SVG et des empreintes déployées.
-Le lanceur Photos est resté non configuré; aucun client ni photothèque n'a été ouvert.
+Le paquet public garde Photos non configuré. Sur la C6, un client installé ensuite
+par son propriétaire a été relié au lanceur et son ouverture vérifiée par
+l'identifiant de l'app au premier plan, sans inspection de contenu ou d'authentification.
 
-La lecture vidéo, les gestes sur une télécommande physique, son pointeur, un
+La passe suivante vérifie le reflet au pointeur, son retour au repos et le mouvement
+réduit dans un navigateur isolé avec données synthétiques, aux formats 1920, 1280
+et 800 pixels. Les consoles et Photos partagent une face 224 × 126; la fleur
+officielle reste prioritaire et les légendes visuelles sont masquées avec des noms
+accessibles conservés. Les captures réelles de la C6 confirment la nouvelle page et
+la disparition des légendes, avec contrôle de son SHA-256 servi.
+
+Un appui physique News a identifié `KEY_HAYSTACK`. Le support natif webOS 11 est
+testé pour sa présence, les applications autorisées, la préservation des autres
+touches et la restauration du réglage LG. Le mapping et un lancement d'application
+ont été vérifiés sur TV, puis le propriétaire a confirmé le fonctionnement du
+bouton physique News et le rendu final.
+
+La lecture vidéo complète, une mesure distincte du pointeur physique sur TV, un
 redémarrage complet de la télévision et les futures mises à jour restent à
 vérifier. La PR reste brouillon pour revue; aucune fusion automatique n'est prévue.
 

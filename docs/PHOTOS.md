@@ -1,10 +1,19 @@
 # Photos, effet de verre et Toutes les apps
 
 L'accueil comporte une petite section **Photos** à droite des consoles, avec un
-bouton **Immich**. Elle ne crée pas de grande tuile dans le carrousel. Le focus
-ajoute un reflet, une bordure lumineuse et un léger soulèvement. Les dégradés et
-contours donnent l'effet de verre sans dépendre du flou d'arrière-plan des moteurs
-récents; les animations respectent la préférence de mouvement réduit.
+bouton **Immich**. Elle ne crée pas de grande tuile dans le carrousel. Les consoles
+et Photos partagent des faces de 224 × 126 et les mêmes arrondis; le fond commun
+derrière les consoles est retiré. Les libellés sous les tuiles du carrousel, des
+consoles et du tiroir sont masqués. Photos conserve son titre de section, sans
+texte « Immich » ou « Prêt » sous la fleur. Les contrôles gardent leurs noms
+accessibles et Photos son état accessible; les chaînes sans logo restent lisibles.
+Le focus ajoute une
+bordure lumineuse et un léger soulèvement. Avec le pointeur Magic Remote, le
+reflet suit sa position dans la tuile et celle-ci s'incline légèrement. Un seul
+rendu est programmé par frame, sans animation continue au repos. Le clavier, la
+sortie de la tuile et l'ouverture d'un autre panneau rétablissent le focus fixe.
+Les dégradés et contours fonctionnent sans flou d'arrière-plan; la préférence de
+mouvement réduit conserve le focus visible et désactive reflet mobile et inclinaison.
 
 Le chevron du bas ouvre **Toutes les apps**. Ce tiroir utilise le catalogue
 d'applications fourni par Glasshouse, y compris celles masquées du carrousel.
@@ -47,9 +56,10 @@ Deux identifiants vérifiés sont acceptés :
 
 Le serveur vérifie que l'application configurée figure dans ses points de
 lancement avant de l'ouvrir. Le client ne peut pas substituer une autre cible ou
-des paramètres de lancement. L'icône est fournie localement par l'application
-installée; sinon, le **logo officiel Immich**, conservé sans modification, accompagne
-son nom. Le SVG est servi depuis ce dépôt, y compris dans la démo hors ligne :
+des paramètres de lancement. Le **logo officiel Immich**, conservé sans
+modification, reste prioritaire même si le client installé fournit une autre
+icône. La fleur transparente apparaît seule dans une tuile sombre, sans carré
+blanc ajouté. Le SVG est servi depuis ce dépôt, y compris dans la démo hors ligne :
 son affichage ne contacte aucun serveur Immich. Aucun code client tiers ni
 bibliothèque supplémentaire n'est embarqué.
 

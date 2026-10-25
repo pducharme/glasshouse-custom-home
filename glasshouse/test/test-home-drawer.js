@@ -11,19 +11,28 @@ source = source.slice(0, source.indexOf("  window.addEventListener('resize'")) +
   'this.view = { down: onKeyDown, up: onKeyUp, click: onClick, pointer: onPointer,' +
   ' state: state, drawer: drawer, recents: recents, open: openDrawer, close: closeDrawer, items: items, photosMarkup: photosMarkup,' +
   ' setup: function (d, l) { data = d; layout = l; }, data: function () { return data; },' +
-  ' render: render, photoStatus: photosStatus }; })();';
+  ' render: render, photoStatus: photosStatus, pointerOut: onPointerOut, resetGlass: resetPointerGlass }; })();';
 var KEYS = { left: 37, up: 38, right: 39, down: 40, ok: 13, back: 461, escape: 27 };
 function copy(value) { return JSON.parse(JSON.stringify(value)); }
 function harness(options) {
   options = options || {};
   var elements = {}, posts = [], messages = [], timers = {}, rows = [], nextTimer = 0, now = 1000, pending;
+  var motion = { matches: !!options.reducedMotion };
+  function face() {
+    return { style: {}, rect: { left: 100, top: 100, right: 212, bottom: 163 },
+      getBoundingClientRect: function () { return this.rect; },
+      querySelector: function () { return this.glint || null; },
+      appendChild: function (child) { this.glint = child; child.parentNode = this; }
+    };
+  }
   function element(id) {
     if (!elements[id]) {
       var el = { id: id, className: '', textContent: '', style: {}, attrs: {}, offsetTop: 0,
         scrollTop: 0, clientHeight: 400, offsetHeight: 215,
         setAttribute: function (key, value) { this.attrs[key] = value; },
         getAttribute: function (key) { return this.attrs[key]; },
-        querySelectorAll: function (selector) { return selector === '.drawer-app' ? this.tiles || [] : []; }
+        querySelectorAll: function (selector) { return selector === '.drawer-app' ? this.tiles || [] : []; },
+        querySelector: function (selector) { if (selector === '.face') return this.face || (this.face = face()); return null; }
       };
       var markup = '';
       Object.defineProperty(el, 'innerHTML', {
@@ -44,8 +53,14 @@ function harness(options) {
   }
   var body = element('body');
   var context = {
-    Date: { now: function () { return now; } }, location: { search: '' }, window: {},
-    document: { body: body, getElementById: element, querySelectorAll: function (selector) { return selector === '.row' ? rows : []; } },
+    Date: { now: function () { return now; } }, location: { search: '' }, window: {
+      matchMedia: function () { return motion; },
+      requestAnimationFrame: function (fn) { var id = ++nextTimer; timers[id] = { fn: fn, due: now + 16 }; return id; },
+      cancelAnimationFrame: function (id) { delete timers[id]; }
+    },
+    document: { body: body, getElementById: element, querySelectorAll: function (selector) { return selector === '.row' ? rows : []; },
+      createElement: function () { return { style: {}, setAttribute: function () {} }; }
+    },
     t: function (key, fallback, vars) { return fallback.replace(/\{(\w+)\}/g, function (all, key) { return vars && vars[key] !== undefined ? vars[key] : all; }); },
     setTimeout: function (fn, delay) { var id = ++nextTimer; timers[id] = { fn: fn, due: now + delay }; return id; },
     clearTimeout: function (id) { delete timers[id]; },
@@ -75,13 +90,22 @@ function harness(options) {
     reply: function (r) { assert.ok(pending); var cb = pending; pending = null; cb(r); },
     callback: function () { return pending; },
     click: function (id) { view.click({ target: element(id) }); },
-    hover: function (id) { view.pointer({ target: element(id) }); }
+    hover: function (id, x, y) { view.pointer({ target: element(id), clientX: x, clientY: y }); },
+    advance: advance, pendingFrames: function () { return Object.keys(timers).length; }, motion: motion
   };
 }
 
 var h = harness();
 assert.ok(/class="immich-logo" src="\/assets\/third-party\/immich\/immich-logo\.svg"/.test(h.view.photosMarkup()),
   'unconfigured Photos displays the bundled official logo without an external request');
+assert.ok(/aria-label="Immich" aria-describedby="photosStatus"/.test(h.view.photosMarkup()), 'Photos keeps an explicit accessible name and state');
+assert.ok(!/class="nm"/.test(h.view.photosMarkup()), 'Photos renders no visible name below the flower');
+h.view.render();
+assert.ok(/role="button" aria-label="App 0"/.test(h.element('rows').innerHTML), 'carousel apps retain accessible names without captions');
+assert.ok(/role="button" aria-label="Nintendo Switch 2, HDMI 1"/.test(h.element('rows').innerHTML), 'consoles retain their accessible name and input');
+h.view.state.arranging = true; h.view.render();
+assert.ok(/aria-label="App 1 Hidden"/.test(h.element('rows').innerHTML), 'arranging preserves the hidden status in the accessible name');
+h.view.state.arranging = false; h.view.render();
 h.tap('right');
 h.tap('down');
 assert.strictEqual(h.view.state.row, 1, 'Down enters consoles');
@@ -165,7 +189,8 @@ h.view.data().photos = { appId: 'com.immich.webos', installed: true, icon: '/api
 h.view.data().apps.push({ id: 'com.immich.webos', title: 'Immich' });
 h.view.data().order.app.push('com.immich.webos');
 assert.strictEqual(h.view.items('app').some(function (a) { return a.id === 'com.immich.webos'; }), false, 'configured Photos app is not duplicated as a large carousel tile');
-assert.ok(/\/api\/home\/icon/.test(h.view.photosMarkup()), 'installed client uses its native local icon');
+assert.ok(/class="immich-logo"/.test(h.view.photosMarkup()), 'installed client keeps the official transparent flower');
+assert.ok(!/\/api\/home\/icon/.test(h.view.photosMarkup()), 'a native white app icon never replaces the official flower');
 assert.strictEqual(h.view.photoStatus(), 'Prêt');
 h.click('photosTile'); h.click('photosTile');
 assert.deepStrictEqual(h.posts, [{ url: '/api/home/open', body: { kind: 'photos' } }], 'Photos sends only the kind, no app override/URL/auth and no duplicate');
@@ -206,4 +231,40 @@ assert.ok(!/\bfocus\b/.test(tile.className), 'refresh removes the background foc
 h.tap('back');
 assert.strictEqual(h.view.recents.open, false);
 assert.ok(/\bfocus\b/.test(tile.className), 'closing Recent apps restores focus after a periodic render');
+
+// The reflection follows viewport coordinates even when the 1920px TV stage
+// is scaled down, with one paint for a burst of pointer events.
+h = harness();
+h.hover('photosTile', 111.2, 106.3);
+h.hover('photosTile', 200.8, 156.7);
+assert.strictEqual(h.pendingFrames(), 1, 'pointer moves coalesce into one animation frame');
+var photoFace = h.element('photosTile').face;
+h.advance(16);
+assert.ok(/90\.0% 90\.0%/.test(photoFace.glint.style.backgroundImage), 'reflection uses the scaled viewport rectangle');
+assert.ok(/rotateX\(-2\.80deg\) rotateY\(2\.80deg\)/.test(photoFace.style.transform), 'tilt follows the last pointer position');
+assert.strictEqual(h.pendingFrames(), 0, 'no animation loop remains while the pointer rests');
+h.hover('photosTile', 111.2, 106.3); h.advance(16);
+assert.ok(/10\.0% 10\.0%/.test(photoFace.glint.style.backgroundImage), 'reflection moves to the opposite corner');
+h.view.pointerOut({ relatedTarget: null });
+assert.strictEqual(photoFace.style.transform, '', 'leaving the page removes pointer tilt');
+assert.strictEqual(photoFace.glint.style.opacity, '0');
+assert.strictEqual(h.element('photosTile').className, 'focus', 'pointer exit preserves the static remote focus');
+h.hover('photosTile', 156, 131.5); h.advance(16); h.tap('left');
+assert.strictEqual(photoFace.style.transform, '', 'remote navigation restores the CSS focus appearance');
+assert.strictEqual(h.view.state.zone, 'rows');
+h.hover('photosTile', 156, 131.5); h.view.render();
+assert.strictEqual(h.pendingFrames(), 0, 'rerender cancels a queued paint on a stale face');
+h.click('allAppsTrigger');
+h.hover('drawer-item-2', 111.2, 106.3); h.advance(16);
+var drawerFace = h.element('drawer-item-2').face;
+assert.strictEqual(drawerFace.glint.style.opacity, '1', 'drawer tiles receive the same local reflection');
+h.hover('drawer-item-3', 200.8, 156.7); h.advance(16);
+assert.strictEqual(drawerFace.glint.style.opacity, '0', 'moving to another tile clears the previous reflection');
+h.tap('back');
+assert.strictEqual(h.element('drawer-item-3').face.style.transform, '', 'closing the drawer clears its pointer transform');
+h = harness({ reducedMotion: true });
+h.hover('photosTile', 111.2, 106.3);
+assert.strictEqual(h.element('photosTile').className, 'focus', 'reduced motion still permits pointer focus');
+assert.strictEqual(h.pendingFrames(), 0, 'reduced motion schedules no moving reflection');
+assert.strictEqual(h.element('photosTile').face, undefined, 'reduced motion does not add a moving overlay');
 console.log('All Photos and installed-app drawer navigation tests passed.');

@@ -7,7 +7,7 @@
       "file": "assets/home.html",
       "patch": "patches/assets-home.html.patch",
       "baseSha256": "292735c255dc1f296713b5c5bff95c3edafa69df56dd93b73de72145a644045f",
-      "customSha256": "75ff28e65f302c5d6a117634aa0bd02a4a7eb646a475f7eb86e618d748435107"
+      "customSha256": "67f4921b3162c933eb49e57ab6ec3f4b938a890f94dafe0389acff674aa27fdb"
     },
     {
       "file": "lib/home.js",
@@ -20,6 +20,12 @@
       "patch": "patches/lib-routes.js.patch",
       "baseSha256": "1590eb5471882b5f73cb8b0576abfd10cb385deba936212304c3254f377efaf6",
       "customSha256": "2bef23e17870d19907e06b3f19a7280b6092ee187141e300fb92e3ef3241dcee"
+    },
+    {
+      "file": "lib/remotekeys.js",
+      "patch": "patches/lib-remotekeys.js.patch",
+      "baseSha256": "68c58dfd63747ff1b4b4b537f70c13d3228f16e019fdf650a4a5a103c9f9c5f1",
+      "customSha256": "7903024964225ee87725e059a008873110ecb1a3b0c0f0a6e9cf47a883a800bd"
     }
   ],
   "assets": [
