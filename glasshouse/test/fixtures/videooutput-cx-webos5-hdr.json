@@ -1,0 +1,114 @@
+{
+    "video": [
+        {
+            "connected": true,
+            "displayOutput": {
+                "width": 3840,
+                "height": 2160,
+                "x": 0,
+                "y": 0
+            },
+            "connectedSource": "HDMI",
+            "fullScreen": false,
+            "frameRate": 60,
+            "muted": false,
+            "connectedSourcePort": 0,
+            "zOrder": 0,
+            "width": 3840,
+            "contentType": "hdmi4",
+            "opacity": 0,
+            "appId": "com.webos.app.hdmi4",
+            "height": 2160,
+            "sourceInput": {
+                "width": 3840,
+                "height": 2160,
+                "x": 0,
+                "y": 0
+            },
+            "videoInfo": {
+                "additionalColormetry": "DCIP3D65",
+                "HDMIMode": "HDMI",
+                "hdrType": "HDR10",
+                "extendedColormetry": "BT2020_RGBORYCbCr",
+                "aviContentType": "NODATA",
+                "enableJustScan": false,
+                "pixelEncoding": "YCbCr422",
+                "rgbRange": "DEFAULT",
+                "isGameMode": 0,
+                "dscEnabled": false,
+                "colormetry": "FUTURE",
+                "freesyncEnabled": 0,
+                "subScalerOccupied": false,
+                "HDMIHDRInfo": {
+                    "maxDisplayMasteringLuminance": 400,
+                    "displayPrimariesX0": 35400,
+                    "displayPrimariesX1": 8500,
+                    "displayPrimariesX2": 6549,
+                    "displayPrimariesY1": 39850,
+                    "displayPrimariesY2": 2300,
+                    "displayPrimariesY0": 14599,
+                    "metaDesc": 0,
+                    "maximumFrameAverageLightLevel": 0,
+                    "minDisplayMasteringLuminance": 49,
+                    "length": 26,
+                    "version": 1,
+                    "EOTFtype": 2,
+                    "whitePointX": 15635,
+                    "whitePointY": 16449,
+                    "maximumContentLightLevel": 0
+                },
+                "timingMode": "DTV",
+                "ycbcrRange": "LIMITED",
+                "allmEnabled": 0,
+                "hfrEnabled": 0,
+                "afd": 2
+            },
+            "extraInfo": null,
+            "sink": "MAIN",
+            "context": "n474duce2jr99h8z",
+            "scanType": "progressive"
+        },
+        {
+            "connected": false,
+            "displayOutput": {
+                "width": 0,
+                "height": 0,
+                "x": 0,
+                "y": 0
+            },
+            "connectedSource": "unknown",
+            "fullScreen": false,
+            "frameRate": 0,
+            "muted": true,
+            "connectedSourcePort": 0,
+            "zOrder": 1,
+            "width": 0,
+            "contentType": "unknown",
+            "opacity": 255,
+            "appId": "unknown",
+            "height": 0,
+            "sourceInput": {
+                "width": 0,
+                "height": 0,
+                "x": 0,
+                "y": 0
+            },
+            "videoInfo": null,
+            "extraInfo": null,
+            "sink": "SUB0",
+            "context": "",
+            "scanType": "unknown"
+        }
+    ],
+    "clients": [
+        {
+            "clientId": "n474duce2jr99h8z",
+            "appId": "com.webos.app.hdmi4",
+            "sinkName": "MAIN",
+            "sourceName": "HDMI",
+            "activation": true
+        }
+    ],
+    "subscribed": false,
+    "returnValue": true
+}

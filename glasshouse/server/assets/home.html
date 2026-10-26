@@ -1,0 +1,1696 @@
+<!doctype html>
+<html lang="fr-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Glasshouse Home</title>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<style id="look">
+/* Glasshouse Home: the TV's home screen, driven by the remote. A 1920x1080
+   stage scaled to the window. Warm white on true black, never full white on
+   the panel; amber only for what was last on and for arranging. The rows sit
+   low over black, or over a darkened uploaded wallpaper for the time of day. */
+@font-face{font-family:'Outfit';src:url('/assets/fonts/Outfit-Light.ttf') format('truetype');font-weight:300;font-display:swap}
+@font-face{font-family:'Outfit';src:url('/assets/fonts/Outfit-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:'Manrope';src:url('/assets/fonts/Manrope-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:'Manrope';src:url('/assets/fonts/Manrope-SemiBold.ttf') format('truetype');font-weight:600;font-display:swap}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:#000;overflow:hidden}
+body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antialiased;cursor:default}
+
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;background:#000;overflow:hidden;
+  -webkit-transform-origin:0 0;transform-origin:0 0}
+
+/* Two layers cross-fade when the slot changes. The drift keeps the picture
+   from sitting still on the panel; the scrim keeps the text side and the rows
+   dark. */
+#wall{position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden}
+#wall .layer{position:absolute;left:-3%;top:-3%;right:-3%;bottom:-3%;background-position:center;background-size:cover;
+  background-repeat:no-repeat;opacity:0;-webkit-transition:opacity 2.4s ease;transition:opacity 2.4s ease;
+  -webkit-animation:drift 180s ease-in-out infinite alternate;animation:drift 180s ease-in-out infinite alternate}
+@-webkit-keyframes drift{from{-webkit-transform:scale(1) translate(0,0)}to{-webkit-transform:scale(1.04) translate(-1.2%,-.8%)}}
+@keyframes drift{from{transform:scale(1) translate(0,0)}to{transform:scale(1.04) translate(-1.2%,-.8%)}}
+#scrim{position:absolute;left:0;top:0;right:0;bottom:0;
+  background:radial-gradient(ellipse 34% 30% at 92% 14%,rgba(0,0,0,.55),rgba(0,0,0,0)),
+    linear-gradient(90deg,rgba(0,0,0,.72) 0%,rgba(0,0,0,.35) 38%,rgba(0,0,0,0) 70%),
+    linear-gradient(180deg,rgba(0,0,0,.5) 0%,rgba(0,0,0,0) 18%,rgba(0,0,0,.45) 36%,rgba(0,0,0,.56) 62%,rgba(0,0,0,.78) 100%)}
+
+#now,#rows{position:relative}
+#now,.row h2,.tile{text-shadow:0 1px 12px rgba(0,0,0,.55)}
+
+#now{display:-webkit-flex;display:flex;-webkit-align-items:flex-end;align-items:flex-end;padding:0 112px;height:270px}
+#when{width:520px;-webkit-flex:0 0 auto;flex:0 0 auto}
+#greeting{font-size:23px;letter-spacing:4px;margin-bottom:18px;color:#d0d5dd}
+#clock{font-family:'Outfit',sans-serif;font-size:144px;line-height:.8;font-weight:300;letter-spacing:-4px}
+#date{margin-top:18px;font-size:26px;color:#d0d5dd}
+#weather{position:absolute;right:112px;top:66px;text-align:right;color:#f4f6fb;text-shadow:0 2px 14px rgba(0,0,0,.5)}
+#weatherMain{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:flex-end;justify-content:flex-end}
+#weatherIcon{width:76px;height:76px;margin-right:18px;color:#e1eaff}
+#weatherIcon svg{display:block;width:100%;height:100%}
+#weatherTemp{font-family:'Outfit',sans-serif;font-weight:300;font-size:76px;line-height:1}
+#weatherCity{font-size:25px;font-weight:600;margin-top:12px}
+#weatherDetail{font-size:21px;color:#d0d8e4;margin-top:5px}
+#weatherCredit a{color:inherit}
+#weatherCredit{font-size:15px;color:#abb7c8;margin-top:8px}
+#weather.unavailable #weatherMain{display:none}
+.arranging #weather,.recents #weather{opacity:.25}
+#source{-webkit-flex:1 1 auto;flex:1 1 auto;min-width:0;padding-left:24px;border-left:1px solid #2a2825;padding-bottom:2px}
+#source.none{visibility:hidden}
+#srcKind{font-size:23px;color:#e9ad55}
+#srcTitle{font-family:'Outfit',sans-serif;font-size:70px;line-height:1;font-weight:400;letter-spacing:-1px;margin:8px 0 12px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#srcVia{font-size:26px;color:#a39d93}
+
+/* The plate: the picture of what was last on, right-aligned in three rows
+   that mirror the source's: the signal level with its kind, the mode, read
+   from the sofa, on its title's line, and the OLED light level with its input.
+   The rows keep their height when empty, so a plate with only one of them
+   still lines up with the source beside it. The mode's margins put its
+   smaller type on the title's baseline. */
+#plate{-webkit-flex:0 0 auto;flex:0 0 auto;max-width:640px;margin-left:56px;text-align:right;padding-bottom:2px;white-space:nowrap}
+#plate.none{display:none}
+#plSig{font-size:23px;height:32px;line-height:32px;color:#a39d93}
+#plSig span+span{margin-left:22px}
+#plMode{font-family:'Outfit',sans-serif;font-size:52px;height:70px;line-height:70px;font-weight:400;letter-spacing:-.5px;margin:15px 0 5px;
+  overflow:hidden;text-overflow:ellipsis}
+#plStrip{font-size:23px;height:36px;line-height:38px;color:#a39d93}
+#plStrip b{font-weight:400;color:#6b665e;margin-right:12px}
+
+/* Bottom alignment leaves the landscape open and keeps HDMI labels above the move hint. */
+#rows{position:absolute;left:0;right:0;top:316px;bottom:68px;
+  display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;
+  -webkit-justify-content:flex-end;justify-content:flex-end}
+.row{-webkit-flex:0 0 auto;flex:0 0 auto}
+.row.empty{display:none}
+.arranging .row.empty{display:block}
+.slot{margin:0 112px;height:64px;line-height:60px;padding:0 22px;font-size:21px;color:#6b665e;
+  border:2px dashed #2a2825;border-radius:6px}
+.arranging .row.active .slot{color:#ece7df;border-color:#e9ad55;border-style:solid}
+.arranging .row.held-row .slot{border-style:dashed;background:#231d12}
+.row{margin-bottom:0}
+.row+.row{margin-top:18px}
+.row h2{padding:0 112px;font-size:25px;line-height:34px;font-weight:600;color:#e5eaf1;margin-bottom:0}
+.row[data-key="dev"] h2{font-size:23px;line-height:30px}
+.row h2 span{color:#6b665e;margin-left:14px}
+.row h2 span,#rows .dev .st,#source{display:none}
+.arranging .row h2 span{display:inline}
+.wrap{overflow:hidden;margin:0 90px;padding:6px 22px}
+.track{display:-webkit-flex;display:flex;white-space:nowrap;
+  -webkit-transition:-webkit-transform .28s cubic-bezier(.2,.7,.2,1);transition:transform .28s cubic-bezier(.2,.7,.2,1)}
+
+.tile{position:relative;-webkit-flex:0 0 auto;flex:0 0 auto;margin-right:8px;padding:16px 20px 18px;border-radius:6px;
+  outline:2px solid transparent;opacity:.8;
+  -webkit-transition:background-color .12s,outline-color .12s,-webkit-transform .12s;transition:background-color .12s,outline-color .12s,transform .12s}
+.row:not(.active) .tile{opacity:.58}
+.tile.focus{background:rgba(20,19,16,.86);outline-color:#ece7df;opacity:1}
+
+/* Wide faces lift independently so remote navigation and arranging keep their native geometry. */
+#rows .wrap{position:relative;padding-top:22px;padding-bottom:22px}
+#rows .wrap:before{content:"";position:absolute;left:0;right:0;top:8px;height:186px;border-radius:33px;
+  background:rgba(215,230,255,.09);border:1px solid rgba(255,255,255,.13);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+#rows .row[data-key="dev"] .wrap:before{display:none}
+#rows .row[data-key="ch"] .wrap:before{display:none}
+#rows .app,#rows .dev{width:280px;height:auto;padding:0;margin-right:28px;border-radius:21px;opacity:1;display:block}
+#rows .dev{width:224px;margin-right:24px;border-radius:17px}
+#rows .app:last-child,#rows .dev:last-child{margin-right:0}
+#rows .app.focus,#rows .dev.focus{background:none;outline-color:transparent;z-index:1}
+.face{position:relative;width:280px;height:157.5px;display:-webkit-flex;display:flex;
+  -webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
+  border-radius:23px;background:#23272f;overflow:hidden;box-shadow:0 6px 16px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.14);
+  -webkit-transition:-webkit-transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s;
+  transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s}
+.face:after{content:"";position:absolute;left:0;right:0;top:0;bottom:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(135deg,rgba(255,255,255,.17),rgba(255,255,255,0) 52%);opacity:.35;transition:opacity .22s}
+#rows .tile.focus .face{-webkit-transform:translateY(-5px) scale(1.06);transform:translateY(-5px) scale(1.06);
+  box-shadow:0 16px 24px rgba(0,0,0,.42),0 0 0 3px rgba(255,255,255,.92),inset 0 1px 0 rgba(255,255,255,.3)}
+#rows .tile.focus .face:after{opacity:1}
+.dev .face,.photos-face{width:224px;height:126px;border-radius:18px}
+.face.immich{background:#0b0b0d}
+.glass-glint{position:absolute;left:0;right:0;top:0;bottom:0;border-radius:inherit;pointer-events:none;opacity:0}
+.face img{display:block;width:191px;height:94.5px;object-fit:contain}
+.face .mono{font-family:'Outfit',sans-serif;font-size:42px;font-weight:400}
+.face .native-icon{width:87.5px;height:87.5px;border-radius:17.5px}
+.face.youtube{background:#202124}
+.face.youtube img{width:245px;height:110px}
+.face.plex{background:#17191d}
+.face.crave{background:#101020}
+.face.netflix{background:#0b0b0d}
+.face.prime{background:#10283f}
+.face.prime img{width:191px;height:87.5px}
+.brand-name{font-family:Arial,sans-serif;font-size:30px;font-weight:600;padding:18px;text-align:center}
+.face.bell{background:linear-gradient(145deg,#14273b,#0b1523)}
+.face.bell img{width:121px;height:87.5px;-webkit-filter:brightness(1.9);filter:brightness(1.9)}
+.face.crave img{width:180px;height:63px}
+.face.plex img{width:164.5px;height:84px}
+.face.toutv{background:linear-gradient(145deg,#087f8b,#075964)}
+.face.toutv img{width:212px;height:55px}
+.face.lg{background:linear-gradient(145deg,#454e5c,#262c36)}
+.face.switch{background:#e60012}
+.face.switch img{width:104px;height:92px}
+.face.xbox{background:#107c10}
+.face.xbox img{width:157px;height:67px}
+#rows .app .nm,#rows .dev .nm,#rows .dev .path{display:none}
+#rows .tile.focus .nm{color:#fff}
+.dev .st{display:none}
+#rows .row .tile.hidden{opacity:.22}
+#rows .row .tile.hidden.focus{opacity:.65}
+.arranging #rows .tile.focus .face{box-shadow:0 0 0 3px #e9ad55}
+.arranging #rows .tile.held{-webkit-transform:none;transform:none}
+.arranging #rows .tile.held .face{outline:3px dashed #e9ad55;outline-offset:5px}
+.recents #rows .tile.focus .face{-webkit-transform:none;transform:none;box-shadow:none}
+
+.night #rows .wrap:before{background:rgba(13,22,37,.5);border-color:rgba(190,210,240,.12)}
+.night .face{-webkit-filter:brightness(.76);filter:brightness(.76)}
+.night #rows .tile.focus .face,.night #photosTile.focus .face{-webkit-filter:brightness(.94);filter:brightness(.94)}
+.night .brand-name{font-family:Arial,sans-serif;font-size:30px;font-weight:600;padding:18px;text-align:center}
+.face.bell{background:#091726}
+.night .face.bell img{-webkit-filter:brightness(1.65);filter:brightness(1.65)}
+.night .face.toutv{background:linear-gradient(145deg,#073c45,#082b34)}
+.night #greeting,.night #date,.night #weatherDetail{color:#c2cbd9}
+
+.ch{width:224px;height:176px}
+.ch .num{font-family:'Outfit',sans-serif;font-size:48px;line-height:.9;font-weight:300}
+.ch .nm{font-size:21px;color:#a39d93;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch .prog{font-size:21px;font-weight:600;margin-top:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch .bar{height:2px;background:#2a2825;margin-top:10px}
+.ch .bar i{display:block;height:100%;background:#a39d93}
+.ch.focus .bar i{background:#ece7df}
+.ch .next{font-size:17px;color:#6b665e;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Arranging */
+.arranging #now{visibility:hidden}
+.arranging #rows{top:110px;bottom:112px}
+.arranging .row h2{color:#ece7df}
+.row h2 .sort{display:none;margin-left:22px;font-style:normal;font-size:20px;color:#a39d93;padding:4px 14px;border-radius:5px;background:#141310;
+  outline:2px solid transparent;vertical-align:2px}
+.arranging .row h2 .sort{display:inline-block}
+.arranging .row .sort.focus{color:#ece7df;outline-color:#e9ad55}
+.arranging .tile.focus{outline-color:#e9ad55}
+.arranging .tile.held{-webkit-transform:translateY(-8px);transform:translateY(-8px);background:#231d12;outline:2px dashed #e9ad55}
+.row .tile.hidden{opacity:.22}
+.row .tile.hidden.focus{opacity:.5}
+.tile .hid{display:none;position:absolute;left:50%;top:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);
+  font-size:18px;color:#ece7df;background:#000;padding:3px 10px;border-radius:4px}
+.tile.hidden .hid{display:block}
+.arranging .row.held-row h2{color:#e9ad55}
+#banner{position:absolute;left:112px;right:112px;bottom:26px;display:none;-webkit-align-items:center;align-items:center;
+  font-size:20px;color:#a39d93;padding:14px 22px;border-radius:6px;background:#141310;border-left:3px solid #e9ad55}
+.arranging #banner{display:-webkit-flex;display:flex}
+#banner b{color:#ece7df;font-weight:600;margin-right:8px}
+#banner .keys{-webkit-flex:1 1 auto;flex:1 1 auto;margin-left:34px}
+#banner .btn{margin-left:12px;padding:8px 18px;border-radius:5px;color:#ece7df;background:#231d12;outline:2px solid transparent}
+#banner .btn.focus{outline-color:#e9ad55}
+
+#toast{position:absolute;z-index:5;left:112px;bottom:26px;font-size:23px;color:#ece7df;padding:14px 22px;border-radius:6px;
+  background:#141310;border-left:3px solid #e9ad55;opacity:0;-webkit-transform:translateY(8px);transform:translateY(8px);
+  -webkit-transition:opacity .2s,-webkit-transform .2s;transition:opacity .2s,transform .2s;max-width:1100px}
+#toast.show{opacity:1;-webkit-transform:none;transform:none}
+#toast small{display:block;font-size:18px;color:#a39d93;margin-top:4px}
+.arranging #toast{bottom:96px}
+
+#moveHint{display:none;position:absolute;left:112px;right:112px;bottom:22px;text-align:center;font-size:22px;
+  color:#e7edf7;padding:13px 20px;border-radius:16px;background:rgba(18,25,36,.92);border:1px solid rgba(255,255,255,.15)}
+#moveHint span{margin-left:48px}
+.quick-arranging #moveHint{display:block}
+.quick-arranging #now{visibility:visible;opacity:.35}
+.quick-arranging #rows{top:316px;bottom:68px}
+.quick-arranging .row.empty,.quick-arranging #banner,.quick-arranging .row h2 span,.quick-arranging .row h2 .sort{display:none}
+.quick-arranging .tile.held{outline:none;background:none}
+.quick-arranging .tile.held .face{outline:3px dashed #e9ad55;outline-offset:5px}
+
+/* Recent apps: Back's panel, in place of the one in LG's Home. The
+   snapshots are the panel: each a small copy of the screen as it was left,
+   the focused one at full strength in a warm white frame, the rest dimmed.
+   Close shows only under the focused card; down reaches it. */
+#recents{position:absolute;left:0;right:0;bottom:0;height:560px;padding-top:92px;
+  background:linear-gradient(180deg,rgba(0,0,0,0) 0,rgba(0,0,0,.94) 64px,#000 120px);
+  -webkit-transform:translateY(100%);transform:translateY(100%);visibility:hidden;
+  -webkit-transition:-webkit-transform .32s cubic-bezier(.2,.7,.2,1),visibility 0s .32s;transition:transform .32s cubic-bezier(.2,.7,.2,1),visibility 0s .32s}
+.recents #recents{-webkit-transform:none;transform:none;visibility:visible;-webkit-transition-delay:0s;transition-delay:0s}
+#rows,#now{-webkit-transition:opacity .32s;transition:opacity .32s}
+.recents #rows,.recents #now{opacity:.25}
+.recents #rows .tile.focus{outline-color:transparent;background:none}
+#recents .head{display:-webkit-flex;display:flex;-webkit-align-items:baseline;align-items:baseline;padding:0 112px;margin-bottom:18px}
+#recents h2{-webkit-flex:1 1 auto;flex:1 1 auto;font-family:'Outfit',sans-serif;font-size:40px;font-weight:300;letter-spacing:-.3px;color:#ece7df}
+#btnCloseAll{font-size:21px;color:#a39d93;padding:8px 18px;margin-right:-18px;border-radius:5px;outline:2px solid transparent}
+#btnCloseAll.focus{color:#ece7df;background:rgba(20,19,16,.86);outline-color:#ece7df}
+#btnCloseAll.none{display:none}
+#recents .tile.rc{width:372px;margin-right:32px;padding:0;background:none;outline:0;opacity:.5}
+#recents .tile.rc.focus{opacity:1}
+.rc .shot{position:relative;width:372px;height:209px;border-radius:6px;overflow:hidden;background:#141310;
+  outline:2px solid transparent;outline-offset:4px;-webkit-transition:outline-color .12s;transition:outline-color .12s}
+.rc.focus .shot{outline-color:#ece7df}
+.rc.on-x .shot{outline-color:#3a3732}
+.rc .shot img{display:block;width:100%;height:100%;object-fit:cover}
+.rc .shot .mono{position:absolute;left:0;top:0;right:0;bottom:0;text-align:center;line-height:209px;
+  font-family:'Outfit',sans-serif;font-size:72px;font-weight:300;color:#6b665e}
+.rc .nm{font-size:22px;font-weight:600;margin-top:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc .x{display:inline-block;visibility:hidden;font-size:19px;color:#a39d93;margin:10px 0 0 -12px;padding:5px 12px;border-radius:4px;outline:2px solid transparent}
+.rc.focus .x{visibility:visible}
+.rc.on-x .x{color:#ece7df;background:rgba(20,19,16,.86);outline-color:#ece7df}
+#recents .empty{padding:8px 0 0;font-size:26px;color:#a39d93}
+#recents .empty b{display:block;font-family:'Outfit',sans-serif;font-size:32px;font-weight:300;color:#ece7df;margin-bottom:8px}
+
+#fault{position:absolute;left:112px;top:420px;width:1200px;display:none}
+#fault.show{display:block}
+#fault h1{font-family:'Outfit',sans-serif;font-weight:300;font-size:56px;margin-bottom:18px}
+#fault p{font-size:26px;color:#a39d93}
+
+
+/* Glass edges use gradients and highlights supported by older webOS engines.
+   Only the selected face lifts; no animated blur or full-screen filter. */
+#rows .wrap:before{background:linear-gradient(135deg,rgba(226,237,255,.17),rgba(135,156,184,.07));
+  border-color:rgba(255,255,255,.22);box-shadow:inset 0 1px 1px rgba(255,255,255,.28),0 8px 24px rgba(0,0,0,.12)}
+#rows .tile.focus .face,#photosTile.focus .photos-face,#allApps .tile.focus .face{
+  -webkit-transform:translateY(-5px) scale(1.045);transform:translateY(-5px) scale(1.045);
+  box-shadow:0 18px 30px rgba(0,0,0,.42),0 0 0 3px rgba(255,255,255,.94),0 0 0 8px rgba(218,233,255,.14),
+    inset 0 2px 2px rgba(255,255,255,.48),inset 0 -2px 1px rgba(156,188,229,.2)}
+#rows .tile.focus .face:after{background:linear-gradient(135deg,rgba(255,255,255,.28),rgba(255,255,255,0) 42%,rgba(196,220,255,.08));opacity:1}
+#rows .row[data-key="dev"]{position:relative;min-height:200px}
+#rows .row[data-key="dev"]>.wrap{margin-right:420px}
+#photos{position:absolute;right:112px;top:0;width:224px;text-align:center}
+#photos h2{padding:0;text-align:left;font-size:23px;line-height:30px}
+#photosTile{display:block;width:224px;padding:22px 0 0;border:0;background:none;color:#ece7df;font:inherit;cursor:pointer;outline:none}
+.photos-face img.immich-logo{width:112px;height:112px}
+#photosStatus{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.arranging #photos,.arranging #allAppsTrigger{display:none}
+.arranging #rows .row[data-key="dev"]{min-height:0}
+#allAppsTrigger{position:absolute;left:50%;bottom:14px;-webkit-transform:translateX(-50%);transform:translateX(-50%);
+  min-width:260px;min-height:48px;padding:8px 24px;border:1px solid transparent;border-radius:26px;background:rgba(15,24,37,.3);
+  color:#dce3ef;font:inherit;font-size:21px;cursor:pointer;outline:none;transition:background-color .2s,border-color .2s}
+.down-chevron{display:inline-block;width:10px;height:10px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;
+  -webkit-transform:rotate(45deg);transform:rotate(45deg);vertical-align:5px;margin-right:16px}
+#allAppsTrigger.focus,#allAppsClose:focus{color:#fff;background:rgba(140,166,200,.2);border-color:rgba(255,255,255,.9);box-shadow:0 0 0 3px rgba(222,237,255,.15)}
+#allApps{position:absolute;z-index:3;left:64px;right:64px;bottom:28px;height:730px;padding:40px 48px 24px;border-radius:34px;
+  border:1px solid rgba(239,245,255,.25);background:rgba(16,23,34,.97);box-shadow:0 -20px 90px rgba(0,0,0,.5),inset 0 1px 1px rgba(255,255,255,.2);
+  -webkit-transform:translateY(110%);transform:translateY(110%);visibility:hidden;
+  -webkit-transition:-webkit-transform .25s ease,visibility 0s .25s;transition:transform .25s ease,visibility 0s .25s}
+.all-apps #allApps{-webkit-transform:none;transform:none;visibility:visible;-webkit-transition-delay:0s;transition-delay:0s}
+.all-apps #rows,.all-apps #now,.all-apps #weather{opacity:.2}
+.all-apps #allAppsTrigger,.recents #allAppsTrigger{visibility:hidden}
+.recents #photos{opacity:.25}
+.drawer-head{display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between;-webkit-align-items:center;align-items:center;margin-bottom:26px}
+.drawer-head h2{font-family:'Outfit',sans-serif;font-size:42px;font-weight:300;line-height:1.2}
+.drawer-head p{font-size:20px;color:#c3ccda;margin-top:10px}
+#allAppsClose{font:inherit;font-size:20px;color:#ece7df;border:1px solid rgba(255,255,255,.3);border-radius:25px;background:rgba(255,255,255,.06);padding:12px 20px;cursor:pointer}
+#allAppsScroll{height:540px;overflow-y:auto;overflow-x:hidden;padding:12px 12px 24px;margin:0 -12px}
+#allAppsGrid{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap}
+#allApps .tile{width:280px;padding:0;margin:0 44px 30px 0;opacity:1;outline:none;background:none;cursor:pointer}
+#allApps .tile:nth-child(5n){margin-right:0}
+#allApps .nm{display:none}
+#allApps .empty{font-size:25px;color:#d0d9e7;padding:30px 0}
+#allApps .tile .hid{display:none}
+
+
+@media (prefers-reduced-motion:reduce){
+  .track,#toast,.tile,.face,.face:after,#allApps,#allAppsTrigger,.photos-face{-webkit-transition:none;transition:none}
+  #rows .tile.focus .face,#photosTile.focus .photos-face,#allApps .tile.focus .face{-webkit-transform:none;transform:none}
+  .glass-glint{display:none}
+  #wall .layer{-webkit-animation:none;animation:none}
+}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="wall"><div class="layer"></div><div class="layer"></div></div>
+  <div id="scrim"></div>
+
+  <section id="now">
+    <div id="when">
+      <div id="greeting"></div>
+      <div id="clock">&mdash;</div>
+      <div id="date">&mdash;</div>
+    </div>
+    <div id="source" class="none">
+      <div id="srcKind">&mdash;</div>
+      <div id="srcTitle">&mdash;</div>
+      <div id="srcVia">&mdash;</div>
+    </div>
+    <div id="plate" class="none">
+      <div id="plSig"></div>
+      <div id="plMode"></div>
+      <div id="plStrip"></div>
+    </div>
+  </section>
+
+  <aside id="weather" class="unavailable" aria-label="Météo" aria-live="polite">
+    <div id="weatherMain"><span id="weatherIcon" aria-hidden="true"></span><span id="weatherTemp"></span></div>
+    <div id="weatherCity">Météo</div>
+    <div id="weatherDetail" data-t="home.weather.loading">Météo en cours de chargement</div>
+    <div id="weatherCredit"><a href="https://open-meteo.com/" rel="noreferrer" data-t="home.weather.provider">Open-Meteo</a> · <a href="https://creativecommons.org/licenses/by/4.0/" rel="noreferrer" data-t="home.weather.license">CC BY 4.0</a></div>
+  </aside>
+  <main id="rows"></main>
+  <button type="button" id="allAppsTrigger" tabindex="-1" aria-controls="allApps" aria-expanded="false">
+    <span class="down-chevron" aria-hidden="true"></span><span data-t="home.allApps.title">Toutes les apps</span>
+  </button>
+  <section id="allApps" role="dialog" aria-modal="true" aria-labelledby="allAppsTitle" aria-hidden="true">
+    <div class="drawer-head"><div><h2 id="allAppsTitle" data-t="home.allApps.title">Toutes les apps</h2>
+      <p data-t="home.allApps.description">Les applications installées, y compris celles hors du carrousel.</p></div>
+      <button type="button" id="allAppsClose" tabindex="-1" data-t="home.allApps.close">Retour au carrousel ↑</button></div>
+    <div id="allAppsScroll"><div id="allAppsGrid"></div></div>
+  </section>
+
+  <div id="banner">
+    <span><b data-t="home.arrange.title">Arranging</b><span id="bannerState">&mdash;</span></span>
+    <span class="keys" data-t="home.arrange.keys">OK picks a tile up or puts it down. Held, the arrows move it or its row, and Back hides or shows it, or removes a channel. Left of a row, OK sets its order.</span>
+    <span class="btn" id="btnHide" data-t="home.arrange.hide">Hide or show</span>
+    <span class="btn" id="btnReset" data-t="home.arrange.reset">Reset</span>
+    <span class="btn" id="btnDone" data-t="home.arrange.done">Done</span>
+  </div>
+  <div id="moveHint"><span data-t="home.quickArrange.move">← → Déplacer la tuile</span> <span data-t="home.quickArrange.save">OK Enregistrer</span><span data-t="home.quickArrange.finish">Retour Terminer</span></div>
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <section id="recents">
+    <div class="head">
+      <h2 data-t="home.recents.title">Recent apps</h2>
+      <span class="btn" id="btnCloseAll" data-t="home.recents.closeAll">Close all</span>
+    </div>
+    <div class="wrap"><div class="track" id="recentsTrack"></div></div>
+  </section>
+
+  <div id="fault">
+    <h1 data-t="home.fault.title">Glasshouse is not answering</h1>
+    <p data-t="home.fault.desc">Glasshouse Home comes back when it answers. Should it stay silent, LG's Home comes back in a few minutes.</p>
+  </div>
+</div>
+
+<script src="/assets/i18n.js"></script>
+<script>
+/*
+ * Glasshouse Home's view. Everything comes from /api/home/*: the layout shared
+ * with the dashboard's Home tab, the TV's apps, CEC devices and picked
+ * channels, and what was last on. Opening a tile goes back to the server,
+ * which opens only what it listed. Strict ES5, as every page the TV's own
+ * browser shows.
+ */
+(function () {
+  // shortcut: local French console layout and daily wallpapers; reapply this fork after a Glasshouse upgrade.
+  var ROW_TITLES = {
+    app: 'Applications',
+    dev: 'Consoles',
+    ch: 'Chaînes'
+  };
+  var LG_HOME_TILE = 'lg-home';
+  // The remote's keys as webOS reports them to a page.
+  var KEY = { left: 37, up: 38, right: 39, down: 40, ok: 13, back: 461, red: 403, yellow: 405 };
+  // Held this long, OK arranges the tiles rather than opening one.
+  var LONG_PRESS_MS = 800;
+  var BEAT_MS = 5000;
+
+  var data = null;       // the catalogue: apps, devices, channels, order
+  var layout = null;     // rows, order, sort, hidden, channels, hintSeen, picture
+  var guideData = {};
+  var lastOn = { kind: null };
+  // last: the tile focused last, which the bar's Hide or show acts on.
+  var state = { row: 0, col: {}, zone: 'rows', arranging: false, quickArrange: false, held: false, bar: -1, last: null };
+  var BAR = ['btnHide', 'btnReset', 'btnDone'];
+  var build = null;
+  var okDownAt = 0, okTimer = null, okLong = false, okInRecents = false, okSurface = 'rows', backDown = false;
+  var beatFails = 0;
+  var layoutRevision = 0, layoutBusy = false;
+  // home.json's version as last loaded: a heartbeat bringing another means it
+  // was changed elsewhere, such as from a dashboard, and the layout is reloaded.
+  var layoutVersion = null;
+  var loadRetry = null, wallAvailable = false, initialEscape = false;
+  var wallSlots = null, wallRevision = '', nightMode = false;
+
+  function $(id) { return document.getElementById(id); }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function hm(d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+  function esc(s) {
+    return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function dateText(d) {
+    try { return d.toLocaleDateString('fr-CA', { weekday: 'long', day: 'numeric', month: 'long' }); } catch (e) { return ''; }
+  }
+
+  function request(method, url, body, cb) {
+    var x = new XMLHttpRequest();
+    x.open(method, url, true);
+    x.timeout = 8000;
+    if (body !== null) x.setRequestHeader('Content-Type', 'application/json');
+    x.onload = function () {
+      var j = null;
+      try { j = JSON.parse(x.responseText); } catch (e) {}
+      cb(x.status >= 200 && x.status < 300 ? j : null, x.status);
+    };
+    x.onerror = x.ontimeout = function () { cb(null, 0); };
+    x.send(body === null ? null : JSON.stringify(body));
+  }
+  function getJson(url, cb) { request('GET', url + (url.indexOf('?') === -1 ? '?' : '&') + 't=' + Date.now(), null, cb); }
+  function postJson(url, body, cb) { request('POST', url, body || {}, cb || function () {}); }
+
+  // ---------------------------------------------------------------- stage
+
+  function fit() {
+    resetPointerGlass();
+    var s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    var st = $('stage');
+    var x = (window.innerWidth - 1920 * s) / 2, y = (window.innerHeight - 1080 * s) / 2;
+    st.style.webkitTransform = st.style.transform = 'translate(' + x + 'px,' + y + 'px) scale(' + s + ')';
+  }
+
+  // ---------------------------------------------------------------- items
+
+  function byId(kind, id) {
+    if (kind === 'app') {
+      if (id === LG_HOME_TILE) return { id: LG_HOME_TILE, title: 'Accueil LG', lg: true };
+      return find(data.apps, id);
+    }
+    return find(kind === 'dev' ? data.devices : data.channels, id);
+  }
+  function find(list, id) {
+    for (var i = 0; i < (list || []).length; i++) if (list[i].id === id) return list[i];
+    return null;
+  }
+  function hidden(kind, id) { return layout.hidden[kind].indexOf(id) !== -1; }
+  // The server puts a Last opened row in that order; the view shows it as sent.
+  function byRecent(kind) { return !!(layout.sort && layout.sort[kind] === 'recent'); }
+
+  // A row's items in its saved order; arranging shows the hidden ones too.
+  function items(kind) {
+    var out = [];
+    (data.order[kind] || []).forEach(function (id) {
+      var it = byId(kind, id);
+      if (kind === 'dev' && it && it.port !== 1 && it.port !== 3) return;
+      if (kind === 'app' && data.photos && data.photos.appId === id && !(state.arranging && !state.quickArrange)) return;
+      if (it && ((state.arranging && !state.quickArrange) || !hidden(kind, id))) out.push(it);
+    });
+    return out;
+  }
+  function rowKey() { return layout.rows[state.row]; }
+  // A row with nothing to show is left out of the view, but not while arranging.
+  function shown(ri) { return (state.arranging && !state.quickArrange) || (!state.arranging && layout.rows[ri] === 'dev') || items(layout.rows[ri]).length > 0; }
+  // The first shown row from ri on in direction dir, or ri when there is none.
+  function nextShown(ri, dir) {
+    for (var i = ri; i >= 0 && i < layout.rows.length; i += dir) if (shown(i)) return i;
+    return ri;
+  }
+  // -1, only while arranging, is the row's Order, left of its first tile.
+  function colOf(kind) {
+    if (state.arranging && state.col[kind] === -1) return -1;
+    return Math.max(0, Math.min(state.col[kind] || 0, items(kind).length - 1));
+  }
+
+  // ---------------------------------------------------------------- rows
+
+  function sortLabel(kind) {
+    return byRecent(kind) ? t('home.arrange.orderRecent', 'Order: last opened') : t('home.arrange.orderCustom', 'Order: yours');
+  }
+
+  function rowNote(kind, list) {
+    if (kind === 'app') return t('home.row.appsNote', '{n} of {total} shown', { n: items('app').length, total: data.order.app.length });
+    if (kind === 'dev') {
+      var ports = [];
+      items('dev').forEach(function (d) { if (!d.unused && ports.indexOf(d.port) === -1) ports.push(d.port); });
+      return ports.length === 1 ? t('home.row.inputsNoteOne', 'Devices on HDMI {port}', { port: ports[0] })
+        : t('home.row.inputsNote', 'Devices on {n} HDMI inputs', { n: ports.length });
+    }
+    if (data.sources.channels === 0) return t('home.row.noTuner', 'This TV has no channels tuned');
+    if (!list.length) return t('home.row.addChannels', 'Add channels in Glasshouse\u2019s Home settings');
+    return t('home.row.channelsNote', '{n} added', { n: list.length });
+  }
+
+  function render() {
+    resetPointerGlass();
+    stageClass();
+    var html = '';
+    if (!shown(state.row)) state.row = nextShown(0, 1);
+    layout.rows.forEach(function (kind, ri) {
+      var list = items(kind);
+      var tiles = '';
+      list.forEach(function (it, i) { tiles += TILE[kind](it, i); });
+      var note = esc(rowNote(kind, list));
+      html += '<section class="row"' + (list.length || (!state.arranging && kind === 'dev') ? '' : ' data-empty="1"') + ' data-row="' + ri + '" data-key="' + kind + '">' +
+        '<h2>' + esc(ROW_TITLES[kind]) + (list.length ? '<span>' + note + '</span>' : '') +
+        '<em class="sort">' + esc(sortLabel(kind)) + '</em></h2>' +
+        (list.length ? '<div class="wrap"><div class="track">' + tiles + '</div></div>' : kind === 'dev' && !state.arranging ? '' : '<div class="slot">' + note + '</div>') +
+        (kind === 'dev' ? photosMarkup() : '') + '</section>';
+    });
+    $('rows').innerHTML = html;
+    if (drawer.open) renderDrawer();
+    applyFocus(true);
+  }
+
+  var hiddenLabel = '<span class="hid">' + esc(t('home.hidden', 'Hidden')) + '</span>';
+
+  var APP_ART = {
+    'youtube.leanback.v4': { brand: 'youtube' },
+    'cdp-30': { brand: 'plex' },
+    'ca.bellmedia.crave': { brand: 'crave' },
+    netflix: { brand: 'netflix' },
+    amazon: { brand: 'prime' },
+    'tv.tou.ici.webos': { brand: 'toutv' },
+    'com.webos.app.hdmi4': { brand: 'bell' }
+  };
+
+  var TILE = {
+    app: function (a, i) {
+      var cls = 'tile app' + (hidden('app', a.id) ? ' hidden' : '');
+      var art = APP_ART[a.id];
+      var icon = a.icon ?
+        '<img class="native-icon" src="' + esc(a.icon) + '" alt="">' :
+        '<span class="brand-name">' + esc(a.lg ? 'LG' : a.title) + '</span>';
+      return '<div class="' + cls + '" data-c="' + i + '" role="button" aria-label="' + esc((a.title || a.id) + (hidden('app', a.id) ? ' ' + t('home.hidden', 'Hidden') : '')) + '"><div class="face ' + (art ? art.brand : a.lg ? 'lg' : '') + '">' +
+        icon + '</div><div class="nm">' + esc(a.title) + '</div>' + hiddenLabel + '</div>';
+    },
+    dev: function (d, i) {
+      var last = lastOn.kind === 'input' && lastOn.port === d.port;
+      var cls = 'tile dev' + (last ? ' last' : '') + (d.unused ? ' unused' : '') + (hidden('dev', d.id) ? ' hidden' : '');
+      var path = d.via ? t('home.dev.through', 'HDMI {port}, through {via}', { port: d.port, via: d.via })
+                       : t('home.dev.port', 'HDMI {port}', { port: d.port });
+      var name = d.port === 1 ? 'Nintendo Switch 2' : d.port === 3 ? 'Xbox Series X' : d.name;
+      var brand = d.port === 1 ? 'switch' : 'xbox';
+      return '<div class="' + cls + '" data-c="' + i + '" role="button" aria-label="' + esc(name + ', ' + path + (hidden('dev', d.id) ? ' ' + t('home.hidden', 'Hidden') : '')) + '"><div class="face ' + brand + '">' +
+        '<span class="brand-name">' + esc(d.port === 1 ? 'Switch 2' : d.port === 3 ? 'Xbox' : d.name) + '</span></div><div class="nm">' + esc(name) + '</div>' +
+        '<div class="path">' + esc(path) + '</div>' + hiddenLabel + '</div>';
+    },
+    ch: function (c, i) {
+      var cls = 'tile ch' + (hidden('ch', c.id) ? ' hidden' : '');
+      var shows = guideData[c.id] || [];
+      var body = '<div class="num">' + esc(c.number) + '</div><div class="nm">' + esc(c.name) + '</div>';
+      if (shows.length) {
+        var on = shows[0], pct = Math.max(0, Math.min(100, (Date.now() - on.start) / (on.end - on.start) * 100));
+        body += '<div class="prog">' + esc(on.title) + '</div><div class="bar"><i style="width:' + pct.toFixed(1) + '%"></i></div>';
+        if (shows[1]) body += '<div class="next">' + esc(hm(new Date(shows[1].start)) + ' ' + shows[1].title) + '</div>';
+      }
+      return '<div class="' + cls + '" data-c="' + i + '">' + body + hiddenLabel + '</div>';
+    }
+  };
+
+  function applyFocus(instant) {
+    var rows = document.querySelectorAll('.row');
+    for (var ri = 0; ri < rows.length; ri++) {
+      var rowEl = rows[ri], kind = rowEl.getAttribute('data-key'), active = ri === state.row && state.bar < 0 && state.zone === 'rows' && !drawer.open && !recents.open;
+      rowEl.className = 'row' + (rowEl.getAttribute('data-empty') ? ' empty' : '') + (active ? ' active' : '') + (active && state.held ? ' held-row' : '');
+      var tiles = rowEl.querySelectorAll('.tile'), c = colOf(kind);
+      for (var ci = 0; ci < tiles.length; ci++) {
+        var on = active && ci === c;
+        tiles[ci].className = tiles[ci].className.replace(/ (focus|held)\b/g, '') + (on ? ' focus' : '') + (on && state.held ? ' held' : '');
+      }
+      rowEl.querySelector('.sort').className = 'sort' + (active && c === -1 ? ' focus' : '');
+      scrollTrack(rowEl, tiles[c], instant);
+    }
+    if ($('photosTile')) $('photosTile').className = state.zone === 'photos' && !drawer.open && !recents.open ? 'focus' : '';
+    $('allAppsTrigger').className = state.zone === 'all' && !drawer.open && !recents.open ? 'focus' : '';
+    for (var b = 0; b < BAR.length; b++) $(BAR[b]).className = 'btn' + (state.bar === b ? ' focus' : '');
+    if (state.bar < 0) {
+      var focused = items(rowKey())[colOf(rowKey())];
+      state.last = focused ? { kind: rowKey(), id: focused.id } : null;
+    }
+    // Apps and inputs come from the TV and can only be hidden; channels were added, so they are removed.
+    $('btnHide').textContent = state.last && state.last.kind === 'ch'
+      ? t('home.arrange.removeChannel', 'Remove channel') : t('home.arrange.hide', 'Hide or show');
+    if (state.arranging) {
+      var it = items(rowKey())[colOf(rowKey())];
+      $('bannerState').textContent = colOf(rowKey()) === -1
+          ? t('home.arrange.sortFocus', '{row}: OK changes the order', { row: ROW_TITLES[rowKey()] })
+        : !it ? t('home.arrange.emptyRow', 'This row is empty')
+        : state.held ? t('home.arrange.moving', 'Moving {name}', { name: it.title || it.name })
+        : (it.title || it.name) + (hidden(rowKey(), it.id) ? ' ' + t('home.arrange.isHidden', '(hidden)') : '');
+    }
+    if (pointerGlass.tile && !/\bfocus\b/.test(pointerGlass.tile.className)) resetPointerGlass();
+  }
+
+  // Keeps the focused tile in view by moving the track, not the page.
+  function scrollTrack(rowEl, tile, instant) {
+    var track = rowEl.querySelector('.track'), wrap = rowEl.querySelector('.wrap');
+    if (!track) return;
+    if (!tile) tile = track.querySelector('.tile');
+    if (!tile) return;
+    var viewW = wrap.clientWidth - 44;
+    var cur = -(parseFloat(track.getAttribute('data-x')) || 0), x = cur;
+    if (tile.offsetLeft + tile.offsetWidth > cur + viewW) x = tile.offsetLeft + tile.offsetWidth - viewW;
+    if (tile.offsetLeft < cur) x = tile.offsetLeft;
+    x = Math.max(0, Math.min(x, track.scrollWidth - viewW));
+    if (instant) track.style.webkitTransition = track.style.transition = 'none';
+    track.setAttribute('data-x', -x);
+    track.style.webkitTransform = track.style.transform = 'translateX(' + (-x) + 'px)';
+    if (instant) { void track.offsetWidth; track.style.webkitTransition = track.style.transition = ''; }
+  }
+
+  function weatherSymbol(code, isDay) {
+    var sun = '<circle cx="24" cy="24" r="9"/><path d="M24 3v6m0 30v6M3 24h6m30 0h6M9 9l4 4m22 22 4 4M9 39l4-4m22-22 4-4"/>';
+    var moon = '<path d="M35 34A17 17 0 0 1 16 8a17 17 0 1 0 19 26Z"/>';
+    var cloud = '<path d="M13 33h22a8 8 0 0 0 0-16h-2A12 12 0 0 0 10 20a7 7 0 0 0 3 13Z"/>';
+    var body = cloud, name = 'Conditions indisponibles';
+    if (code === 0 || code === 1) { body = isDay ? sun : moon; name = code === 0 ? 'Ciel dégagé' : 'Généralement dégagé'; }
+    else if (code === 2) {
+      body = '<g transform="translate(0 -5) scale(.7)">' + (isDay ? sun : moon) + '</g>' + cloud;
+      name = 'Partiellement nuageux';
+    } else if (code === 3) { name = 'Couvert'; }
+    else if (code === 45 || code === 48) { body = cloud + '<path d="M7 39h34M12 44h24"/>'; name = 'Brouillard'; }
+    else if ([51,53,55,56,57,61,63,65,66,67,80,81,82].indexOf(code) !== -1) {
+      body = cloud + '<path d="m15 38-2 6m12-6-2 6m12-6-2 6"/>';
+      name = code < 60 ? 'Bruine' : 'Pluie';
+      if ([56,57,66,67].indexOf(code) !== -1) name += ' verglaçante';
+      else if (code >= 80) name = 'Averses';
+    } else if ([71,73,75,77,85,86].indexOf(code) !== -1) {
+      body = cloud + '<path d="M15 38v7m-3-5 6 3m0-3-6 3m21-5v7m-3-5 6 3m0-3-6 3"/>'; name = 'Neige';
+    } else if ([95,96,99].indexOf(code) !== -1) {
+      body = cloud + '<path d="m25 33-6 8h7l-5 7"/>'; name = code === 95 ? 'Orage' : 'Orage et grêle';
+    }
+    return { name: name, svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' + body + '</svg>' };
+  }
+
+  function refreshWeather() {
+    if (document.hidden) return;
+    getJson('/api/home/weather', function (r) {
+      if (!r || !r.ok || typeof r.temperature !== 'number' || !isFinite(r.temperature) ||
+          typeof r.observedAt !== 'number' || Date.now() - r.observedAt > 60 * 60000) {
+        $('weather').className = 'unavailable';
+        $('weatherDetail').textContent = 'Météo indisponible';
+        return;
+      }
+      var icon = weatherSymbol(r.code, r.isDay);
+      $('weather').className = '';
+      $('weatherCity').textContent = r.label || 'Météo';
+      $('weatherCredit').style.display = r.demo ? 'none' : '';
+      $('weatherIcon').innerHTML = icon.svg;
+      $('weatherTemp').textContent = Math.round(r.temperature) + '°C';
+      $('weatherDetail').textContent = (r.demo ? 'Démo · ' : '') + icon.name + (r.stale ? ' · à ' + hm(new Date(r.observedAt)) : '');
+    });
+  }
+
+  // ---------------------------------------------------------------- top strip
+
+  function renderNow() {
+    var d = new Date();
+    $('greeting').textContent = d.getHours() >= 18 || d.getHours() < 6 ? 'Bonsoir' : 'Bonjour';
+    $('clock').textContent = hm(d);
+    $('date').textContent = dateText(d);
+    var kind = '', title = '', via = '';
+    if (lastOn.kind === 'input') {
+      kind = t('home.now.lastWatched', 'Last watched');
+      title = lastOn.title || t('home.dev.port', 'HDMI {port}', { port: lastOn.port });
+      via = t('home.dev.port', 'HDMI {port}', { port: lastOn.port });
+    } else if (lastOn.kind === 'channel' && lastOn.channel) {
+      kind = t('home.now.lastWatched', 'Last watched');
+      title = lastOn.channel.name;
+      via = lastOn.programme ? t('home.now.channelShow', 'Channel {number}: {title}', { number: lastOn.channel.number, title: lastOn.programme.title })
+        : t('home.now.channel', 'Channel {number}', { number: lastOn.channel.number });
+    } else if (lastOn.kind === 'app' && lastOn.title) {
+      kind = t('home.now.lastOpened', 'Last opened');
+      title = lastOn.title;
+      via = t('home.now.app', 'App on this TV');
+    }
+    $('source').className = title ? '' : 'none';
+    $('srcKind').textContent = kind || ' ';
+    $('srcTitle').textContent = title || ' ';
+    $('srcVia').textContent = via || ' ';
+  }
+
+  /*
+   * The plate. An input's signal is read off its receiver, so it is there
+   * while Home is; an app's is the last video it played, noted by the server
+   * while it played. A channel has none, and shows the mode it gets in SDR;
+   * an app that has played nothing shows no plate.
+   */
+  var picture = null;
+  var pictureRevision = 0;
+  var pictureSource = null;
+  var HDR_NAMES = { hdr10: 'HDR10', hlg: 'HLG', dolby_vision: t('home.plate.dolby', 'Dolby Vision') };
+
+  function refreshPicture() {
+    var revision = ++pictureRevision;
+    var kind = lastOn.kind;
+    if (!layout || layout.picture !== true) kind = null;
+    if (kind !== 'input' && kind !== 'channel' && kind !== 'app') {
+      pictureSource = null;
+      picture = null;
+      return renderPicture();
+    }
+    var which = kind === 'input' ? '&port=' + lastOn.port : kind === 'app' ? '&app=' + encodeURIComponent(lastOn.appId || '') : '';
+    var source = kind + which;
+    if (source !== pictureSource) {
+      pictureSource = source;
+      picture = null;
+      renderPicture();
+    }
+    getJson('/api/home/picture?kind=' + kind + which, function (r) {
+      if (revision !== pictureRevision) return;
+      picture = r && r.ok ? r : null;
+      renderPicture();
+    });
+  }
+
+  function hz(v) { return String(Math.round(v * 100) / 100); }
+
+  function renderPicture() {
+    var p = picture;
+    var s = p && p.signal;
+    if (!p || !(s || p.mode || lastOn.kind === 'input')) { $('plate').className = 'none'; return; }
+    var sig = [];
+    if (s) {
+      // An app's video, noted while it played: it has stopped since.
+      if (s.played) sig.push(t('home.plate.played', 'Last video'));
+      sig.push(s.hz ? t('home.plate.size', '{width} \u00d7 {height} at {hz} Hz', { width: s.width, height: s.height, hz: hz(s.hz) })
+        : t('home.plate.sizeOnly', '{width} \u00d7 {height}', { width: s.width, height: s.height }));
+      if (s.chroma) sig.push(s.bits ? t('home.plate.depth', '{chroma}, {bits}-bit', { chroma: s.chroma.replace(/^YCbCr /, ''), bits: s.bits }) : s.chroma);
+      if (HDR_NAMES[s.hdr]) sig.push(HDR_NAMES[s.hdr]);
+      if (s.vrr) sig.push(t('home.plate.vrr', 'VRR'));
+      if (s.allm) sig.push(t('home.plate.allm', 'Low latency'));
+    } else if (lastOn.kind === 'input') {
+      sig.push(t('home.plate.noSignal', 'No picture coming in'));
+    }
+    $('plSig').innerHTML = sig.map(function (x) { return '<span>' + esc(x) + '</span>'; }).join('');
+    $('plMode').textContent = p.mode ? p.mode.display : '';
+    $('plStrip').innerHTML = p.mode && typeof p.light === 'number'
+      ? '<div><b>' + esc(p.oled ? t('home.plate.oledLight', 'OLED light') : t('home.plate.backlight', 'Backlight')) +
+        '</b>' + esc(p.light) + '</div>'
+      : '';
+    $('plate').className = '';
+  }
+
+  // ---------------------------------------------------------------- actions
+
+  var toastTimer = null;
+  function toast(main, detail) {
+    var el = $('toast');
+    el.innerHTML = esc(main) + (detail ? '<small>' + esc(detail) + '</small>' : '');
+    el.className = 'show';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.className = ''; }, 3600);
+  }
+
+  function activate() {
+    var kind = rowKey(), it = items(kind)[colOf(kind)];
+    if (!it) return;
+    postJson('/api/home/open', { kind: kind, id: it.id }, function (r) {
+      if (!r || !r.ok) toast(t('home.openFailed', 'That did not open'), r && r.error);
+    });
+  }
+
+  function move(dr, dc) {
+    if (!state.arranging) {
+      if (state.zone === 'all') {
+        if (dr > 0) return openDrawer();
+        if (dr < 0) { state.zone = 'rows'; applyFocus(); }
+        return;
+      }
+      if (state.zone === 'photos') {
+        if (dc < 0) {
+          state.zone = 'rows'; state.row = layout.rows.indexOf('dev');
+          if (!items('dev').length) state.row = nextShown(0, 1);
+          state.col[rowKey()] = Math.max(0, items(rowKey()).length - 1);
+        } else if (dr < 0) { state.zone = 'rows'; state.row = layout.rows.indexOf('app'); }
+        else if (dr > 0) state.zone = 'all';
+        return applyFocus();
+      }
+      if (dc > 0 && rowKey() === 'dev' && colOf('dev') >= items('dev').length - 1) {
+        state.zone = 'photos'; return applyFocus();
+      }
+      var next = nextShown(state.row + 1, 1);
+      if (dr > 0 && (next >= layout.rows.length || !shown(next))) {
+        state.zone = 'all'; return applyFocus();
+      }
+    }
+    var onSort = colOf(rowKey()) === -1;
+    if (dr) {
+      var to = nextShown(state.row + dr, dr);
+      if (to >= 0 && to < layout.rows.length && shown(to)) {
+        state.row = to;
+        if (!state.arranging && rowKey() === 'dev' && !items('dev').length) state.zone = 'photos';
+      }
+    }
+    // Up and down from a row's Order go to the next row's.
+    if (dr && onSort) state.col[rowKey()] = -1;
+    if (dc) {
+      var kind = rowKey();
+      state.col[kind] = Math.max(state.arranging ? -1 : 0, Math.min(items(kind).length - 1, colOf(kind) + dc));
+    }
+    applyFocus();
+  }
+
+  function stageClass() {
+    $('stage').className = (state.arranging ? 'arranging' : '') + (state.quickArrange ? ' quick-arranging' : '') + (recents.open ? ' recents' : '') + (nightMode ? ' night' : '') + (drawer.open ? ' all-apps' : '');
+  }
+
+  // ---------------------------------------------------------------- photos and installed apps
+
+  // These are launch shortcuts only: no photo service, URL or credentials enter Home.
+  var drawer = { open: false, apps: [], index: 0, busy: false, revision: 0, returnRow: 0, returnCol: {} };
+  var photosBusy = false;
+  var DRAWER_COLUMNS = 5;
+  function photosStatus() {
+    var photos = data && data.photos;
+    if (!photos || !photos.appId) return t('home.photos.unconfigured', 'Non configuré');
+    return photos.installed ? t('home.photos.ready', 'Prêt') : t('home.photos.missing', 'Application absente');
+  }
+  function photosMarkup() {
+    // The official transparent flower stays consistent even if a client ships a white app icon.
+    var icon = '<img class="immich-logo" src="/assets/third-party/immich/immich-logo.svg" alt="">';
+    return '<aside id="photos" aria-labelledby="photosTitle"><h2 id="photosTitle">' + esc(t('home.photos.title', 'Photos')) + '</h2>' +
+      '<button type="button" id="photosTile" tabindex="-1" aria-label="Immich" aria-describedby="photosStatus"><span class="face photos-face immich">' + icon + '</span>' +
+      '<span id="photosStatus">' + esc(photosStatus()) + '</span></button></aside>';
+  }
+  function activatePhotos() {
+    var photos = data && data.photos;
+    if (!photos || !photos.appId) return toast(t('home.photos.unconfigured', 'Non configuré'),
+      t('home.photos.configureHint', 'Choisissez une application photo installée dans la configuration de Glasshouse.'));
+    if (!photos.installed) return toast(t('home.photos.missing', 'Application absente'),
+      t('home.photos.missingHint', 'Le client photo configuré n’est pas installé sur cette télévision.'));
+    if (photosBusy) return;
+    photosBusy = true;
+    postJson('/api/home/open', { kind: 'photos' }, function (r) {
+      photosBusy = false;
+      if (!r || !r.ok) toast(t('home.openFailed', 'That did not open'), r && r.error);
+    });
+  }
+  function installedApps() {
+    var ids = [];
+    return (data.apps || []).filter(function (app) {
+      if (!app || !app.id || app.id === LG_HOME_TILE || /^com\.webos\.app\.hdmi[1-4]$/.test(app.id) || ids.indexOf(app.id) !== -1) return false;
+      ids.push(app.id); return true;
+    });
+  }
+  function openDrawer() {
+    if (state.arranging || drawer.open) return;
+    resetPointerGlass();
+    closeRecents();
+    drawer.returnRow = state.row;
+    drawer.returnCol = {};
+    for (var key in state.col) drawer.returnCol[key] = state.col[key];
+    drawer.open = true; drawer.index = 0; drawer.revision++;
+    $('allAppsTrigger').setAttribute('aria-expanded', 'true');
+    $('allApps').setAttribute('aria-hidden', 'false');
+    renderDrawer(); stageClass(); applyFocus();
+  }
+  function closeDrawer() {
+    if (!drawer.open) return;
+    resetPointerGlass();
+    drawer.open = false; drawer.revision++;
+    state.zone = 'rows'; state.row = drawer.returnRow; state.col = drawer.returnCol;
+    if (!shown(state.row)) state.row = nextShown(0, 1);
+    if (rowKey() === 'dev' && !items('dev').length) state.row = layout.rows.indexOf('app');
+    $('allAppsTrigger').setAttribute('aria-expanded', 'false');
+    $('allApps').setAttribute('aria-hidden', 'true');
+    stageClass(); applyFocus();
+  }
+  function renderDrawer() {
+    resetPointerGlass();
+    var selected = drawer.apps[drawer.index];
+    drawer.apps = installedApps();
+    if (selected) {
+      for (var i = 0; i < drawer.apps.length; i++) if (drawer.apps[i].id === selected.id) drawer.index = i;
+    }
+    drawer.index = Math.max(0, Math.min(drawer.index, drawer.apps.length - 1));
+    $('allAppsGrid').innerHTML = drawer.apps.length ? drawer.apps.map(function (app, i) {
+      return TILE.app(app, i).replace('tile app', 'tile drawer-app').replace(/ hidden\b/g, '');
+    }).join('') : '<p class="empty">' + esc(t('home.allApps.empty', 'Aucune application disponible. Retour pour revenir au carrousel.')) + '</p>';
+    focusDrawer();
+  }
+  function focusDrawer() {
+    var tiles = $('allAppsGrid').querySelectorAll('.drawer-app');
+    for (var i = 0; i < tiles.length; i++) {
+      tiles[i].className = 'tile drawer-app' + (i === drawer.index ? ' focus' : '');
+      tiles[i].setAttribute('role', 'button');
+      tiles[i].setAttribute('aria-label', drawer.apps[i].title || drawer.apps[i].id);
+    }
+    var tile = tiles[drawer.index], scroll = $('allAppsScroll');
+    if (tile) {
+      var top = tile.offsetTop - $('allAppsGrid').offsetTop;
+      if (top < scroll.scrollTop) scroll.scrollTop = top;
+      if (top + tile.offsetHeight > scroll.scrollTop + scroll.clientHeight) scroll.scrollTop = top + tile.offsetHeight - scroll.clientHeight;
+    }
+    if (pointerGlass.tile && pointerGlass.tile !== tile) resetPointerGlass();
+  }
+  function activateDrawer() {
+    var app = drawer.apps[drawer.index];
+    if (!app || drawer.busy) return;
+    drawer.busy = true;
+    var revision = drawer.revision;
+    postJson('/api/home/open', { kind: 'app', id: app.id }, function (r) {
+      drawer.busy = false;
+      if (revision !== drawer.revision) return;
+      if (!r || !r.ok) return toast(t('home.openFailed', 'That did not open'), r && r.error);
+      closeDrawer();
+    });
+  }
+  function drawerKey(k) {
+    if (k === KEY.ok) return activateDrawer();
+    if (k === KEY.up && drawer.index < DRAWER_COLUMNS) return closeDrawer();
+    if (k === KEY.left) drawer.index = Math.max(0, drawer.index - 1);
+    else if (k === KEY.right) drawer.index = Math.min(drawer.apps.length - 1, drawer.index + 1);
+    else if (k === KEY.up) drawer.index = Math.max(0, drawer.index - DRAWER_COLUMNS);
+    else if (k === KEY.down) drawer.index = Math.min(drawer.apps.length - 1, drawer.index + DRAWER_COLUMNS);
+    drawer.index = Math.max(0, drawer.index);
+    focusDrawer();
+  }
+  function ancestorId(target, id) {
+    while (target && target !== document.body) {
+      if (target.id === id) return true;
+      target = target.parentNode;
+    }
+    return false;
+  }
+
+  // ---------------------------------------------------------------- recent apps
+
+  /*
+   * Back's panel: the TV's recent apps, newest first, as LG's Home shows them
+   * (lib/home-recent-apps). Up from the cards is Close all; down from a card
+   * is its Close. Where the TV has no list, Back goes to the first tile.
+   */
+  var recents = { open: false, loading: false, revision: 0, apps: [], col: 0, onX: false, onAll: false, busy: false, stamp: 0 };
+
+  function openRecents() {
+    resetPointerGlass();
+    if (recents.busy) return;
+    recents.busy = true;
+    recents.loading = true;
+    var revision = ++recents.revision;
+    getJson('/api/home/recents', function (r) {
+      recents.busy = false;
+      if (revision !== recents.revision) return;
+      recents.loading = false;
+      if (!r || !r.ok) {
+        state.row = nextShown(0, 1); state.col[rowKey()] = 0;
+        return applyFocus();
+      }
+      recents.open = true;
+      recents.col = 0; recents.onX = false; recents.onAll = false;
+      showRecents(r.apps);
+      stageClass();
+    });
+  }
+
+  function closeRecents() {
+    recents.revision++;
+    recents.loading = false;
+    recents.open = false;
+    stageClass();
+    // A periodic render can clear the rows' focus while this panel is open.
+    if (data && layout) applyFocus();
+  }
+
+  function showRecents(apps) {
+    recents.apps = apps || [];
+    recents.stamp = Date.now();
+    recents.col = Math.max(0, Math.min(recents.col, recents.apps.length - 1));
+    if (!recents.apps.length) { recents.onX = false; recents.onAll = false; }
+    var html = '';
+    recents.apps.forEach(function (a, i) {
+      var mono = '<span class="mono">' + esc(String(a.title).charAt(0)) + '</span>';
+      var shot = a.image ? '<img src="/api/home/recents/image?id=' + encodeURIComponent(a.id) + '&v=' + recents.stamp + '" alt="">' : mono;
+      html += '<div class="tile rc" data-c="' + i + '"><div class="shot">' + shot + '</div>' +
+        '<div class="nm">' + esc(a.title) + '</div><span class="x">' + esc(t('home.recents.close', 'Close')) + '</span></div>';
+    });
+    $('recentsTrack').innerHTML = html || '<div class="empty"><b>' + esc(t('home.recents.none', 'Nothing is open')) + '</b>' +
+      esc(t('home.recents.noneDesc', 'Apps stay here while they are open.')) + '</div>';
+    // A snapshot can be gone by the time it is asked for: the card keeps the app's initial.
+    var imgs = $('recentsTrack').querySelectorAll('img');
+    for (var j = 0; j < imgs.length; j++) {
+      imgs[j].onerror = function () {
+        var span = document.createElement('span');
+        span.className = 'mono';
+        span.textContent = (this.parentNode.parentNode.querySelector('.nm').textContent || '').charAt(0);
+        this.parentNode.replaceChild(span, this);
+      };
+    }
+    focusRecents(true);
+  }
+
+  function focusRecents(instant) {
+    var cards = $('recentsTrack').querySelectorAll('.rc');
+    for (var i = 0; i < cards.length; i++) {
+      var on = i === recents.col && !recents.onAll;
+      cards[i].className = 'tile rc' + (on ? ' focus' : '') + (on && recents.onX ? ' on-x' : '');
+    }
+    $('btnCloseAll').className = 'btn' + (recents.apps.length ? '' : ' none') + (recents.onAll ? ' focus' : '');
+    scrollTrack($('recents'), cards[recents.col], instant);
+  }
+
+  function recentAction(action, app) {
+    if (recents.busy) return;
+    recents.busy = true;
+    var revision = recents.revision;
+    postJson('/api/home/recents', { action: action, id: app && app.id }, function (r) {
+      recents.busy = false;
+      if (revision !== recents.revision) return;
+      if (!r || !r.ok) {
+        return toast(action === 'open' ? t('home.openFailed', 'That did not open') : t('home.recents.closeFailed', 'That did not close'), r && r.error);
+      }
+      if (action === 'open') return closeRecents();
+      if (action === 'closeAll') {
+        closeRecents();
+        return toast(t('home.recents.allClosed', 'Recent apps closed'));
+      }
+      showRecents(r.apps);
+    });
+  }
+
+  function recentsKey(k) {
+    var app = recents.apps[recents.col];
+    if (k === KEY.back) return closeRecents();
+    if (recents.onAll) {
+      if (k === KEY.ok) return recentAction('closeAll');
+      if (k === KEY.down) recents.onAll = false;
+      return focusRecents();
+    }
+    if (!app) return;
+    if (k === KEY.left || k === KEY.right) {
+      recents.col = Math.max(0, Math.min(recents.apps.length - 1, recents.col + (k === KEY.left ? -1 : 1)));
+      recents.onX = false;
+    } else if (k === KEY.up) {
+      if (recents.onX) recents.onX = false; else recents.onAll = true;
+    } else if (k === KEY.down) {
+      recents.onX = true;
+    } else if (k === KEY.ok) {
+      return recentAction(recents.onX ? 'close' : 'open', app);
+    } else if (k === KEY.red) {
+      return recentAction('close', app);
+    }
+    focusRecents();
+  }
+
+  function recentsClick(target) {
+    if (target.id === 'btnCloseAll') return recentAction('closeAll');
+    var card = tileAt(target);
+    if (!card || !/\brc\b/.test(card.className)) return closeRecents();
+    recents.col = +card.getAttribute('data-c');
+    recentAction(target.className === 'x' ? 'close' : 'open', recents.apps[recents.col]);
+  }
+
+  // ---------------------------------------------------------------- arranging
+
+  /*
+   * Only the rows whose tiles were moved send their order: a row left alone
+   * keeps following its default, the Apps row most-used first. Saved while
+   * arranging (stay), the rows are read again, so a row set to Last opened
+   * shows that order.
+   */
+  var movedRows = {}, channelsChanged = false;
+  function saveLayout(extra, stay, saved) {
+    layoutRevision++;
+    layoutBusy = true;
+    var order = {};
+    for (var kind in movedRows) order[kind] = data.order[kind];
+    var body = { rows: layout.rows, order: order, sort: layout.sort, hidden: layout.hidden };
+    if (channelsChanged) body.channels = layout.channels;
+    for (var k in extra) body[k] = extra[k];
+    postJson('/api/home/layout', body, function (r) {
+      layoutRevision++;
+      if (!r || !r.ok || !r.layout) {
+        layoutBusy = false;
+        return toast('Impossible d’enregistrer l’ordre');
+      }
+      movedRows = {};
+      channelsChanged = false;
+      layout = r.layout;
+      if (!stay) {
+        layoutBusy = false;
+        toast('Ordre enregistré');
+        return load();
+      }
+      // Keep edits blocked until the new order has arrived as well as the save.
+      load(function (loaded) { layoutBusy = false; render(); if (loaded && saved) saved(); }, true);
+    });
+  }
+
+  function setArranging(on, quick) {
+    resetPointerGlass();
+    if (layoutBusy) return;
+    layoutRevision++;
+    // The focus stays on the same item as hidden tiles appear or go.
+    var kind = rowKey(), cur = items(kind)[colOf(kind)];
+    state.arranging = on;
+    state.quickArrange = on && !!quick;
+    state.held = false;
+    state.bar = -1;
+    if (cur) {
+      var list = items(kind);
+      for (var i = 0; i < list.length; i++) if (list[i].id === cur.id) state.col[kind] = i;
+    }
+    if (!on) {
+      saveLayout({});
+    }
+    render();
+  }
+
+  /*
+   * Picking a tile up in a Last opened row puts the row in the order it
+   * shows, to be moved from there.
+   */
+  function pickUp() {
+    var kind = rowKey();
+    if (colOf(kind) === -1) return toggleSort(kind);
+    if (!state.held && items(kind).length && byRecent(kind)) {
+      layout.sort[kind] = 'custom';
+      movedRows[kind] = true;
+      toast(t('home.arrange.nowCustom', '{row} are now in your order', { row: ROW_TITLES[kind] }),
+            t('home.arrange.nowCustomDesc', 'The row\'s Order, left of its first tile, puts them back in last opened order'));
+      render();
+    }
+    state.held = !state.held;
+    applyFocus();
+  }
+
+  // A row's Order: between its own order and last opened.
+  function toggleSort(kind) {
+    if (layoutBusy) return;
+    state.held = false;
+    if (!layout.sort) layout.sort = {};
+    var recent = !byRecent(kind);
+    layout.sort[kind] = recent ? 'recent' : 'custom';
+    saveLayout({}, true, function () {
+      toast(recent ? t('home.arrange.sortedRecent', '{row}: last opened first', { row: ROW_TITLES[kind] })
+                   : t('home.arrange.sortedCustom', '{row}: in your order', { row: ROW_TITLES[kind] }),
+            recent ? t('home.arrange.sortedRecentDesc', 'Each tile moves to the front when it is opened')
+                   : t('home.arrange.sortedCustomDesc', 'Pick a tile up with OK to move it'));
+    });
+  }
+
+  function shiftTile(dc) {
+    var kind = rowKey(), list = items(kind), i = colOf(kind), j = i + dc;
+    if (j < 0 || j >= list.length) return;
+    var order = data.order[kind], a = order.indexOf(list[i].id), b = order.indexOf(list[j].id);
+    var tmp = order[a]; order[a] = order[b]; order[b] = tmp;
+    movedRows[kind] = true;
+    state.col[kind] = j;
+    render();
+  }
+
+  function shiftRow(dr) {
+    var i = state.row, j = i + dr;
+    if (j < 0 || j >= layout.rows.length) return;
+    var tmp = layout.rows[i]; layout.rows[i] = layout.rows[j]; layout.rows[j] = tmp;
+    state.row = j;
+    render();
+  }
+
+  function toggleHidden() {
+    var last = state.last;
+    // The LG Home tile is the way back to LG's Home, so it always shows.
+    if (!last || (last.kind === 'app' && last.id === LG_HOME_TILE)) return;
+    var kind = last.kind, it = byId(kind, last.id);
+    if (!it) return;
+    if (kind === 'ch') {
+      layout.channels = layout.channels.filter(function (id) { return id !== it.id; });
+      data.order.ch = data.order.ch.filter(function (id) { return id !== it.id; });
+      channelsChanged = true;
+      return render();
+    }
+    var h = layout.hidden[kind], i = h.indexOf(it.id);
+    if (i >= 0) h.splice(i, 1); else h.push(it.id);
+    render();
+  }
+
+  function resetLayout() {
+    if (layoutBusy) return;
+    layoutRevision++;
+    layoutBusy = true;
+    postJson('/api/home/layout', { reset: true }, function (r) {
+      layoutBusy = false;
+      layoutRevision++;
+      if (!r || !r.ok || !r.layout) return toast(t('home.arrange.resetFailed', 'Layout could not be reset'));
+      movedRows = {};
+      channelsChanged = false;
+      layout = r.layout;
+      state.row = 0; state.col = {}; state.held = false;
+      load(function () { render(); toast(t('home.arrange.resetDone', 'Layout reset'), t('home.arrange.resetDesc', 'Apps, Inputs, then Channels, in their first order')); }, true);
+    });
+  }
+
+  function pressBar(b) {
+    if (b === 0) { state.bar = -1; toggleHidden(); }
+    else if (b === 1) resetLayout();
+    else setArranging(false);
+  }
+
+  function arrangeKey(k) {
+    if (state.quickArrange) {
+      if (k === KEY.left) shiftTile(-1);
+      else if (k === KEY.right) shiftTile(1);
+      else if (k === KEY.ok) setArranging(false);
+      return;
+    }
+    if (state.bar >= 0) {
+      if (k === KEY.left) state.bar = Math.max(0, state.bar - 1);
+      else if (k === KEY.right) state.bar = Math.min(BAR.length - 1, state.bar + 1);
+      else if (k === KEY.up) state.bar = -1;
+      else if (k === KEY.ok) return pressBar(state.bar);
+      return applyFocus();
+    }
+    if (k === KEY.left) return state.held ? shiftTile(-1) : move(0, -1);
+    if (k === KEY.right) return state.held ? shiftTile(1) : move(0, 1);
+    if (k === KEY.up) return state.held ? shiftRow(-1) : move(-1, 0);
+    if (k === KEY.down) {
+      if (state.held) return shiftRow(1);
+      if (state.row === layout.rows.length - 1) { state.bar = 0; return applyFocus(); }
+      return move(1, 0);
+    }
+    if (k === KEY.ok) return pickUp();
+    if (k === KEY.red) return toggleHidden();
+    if (k === KEY.yellow) return resetLayout();
+  }
+
+  // ---------------------------------------------------------------- input
+
+  function onKeyDown(e) {
+    resetPointerGlass();
+    if (!data || !layout) return;
+    if (layoutBusy) { e.preventDefault(); return; }
+    var k = e.keyCode;
+    if (k === KEY.ok) {
+      // Acted on at release, unless held: a long press arranges.
+      e.preventDefault();
+      if (okDownAt) return;
+      okDownAt = Date.now();
+      okLong = false;
+      okInRecents = recents.open;
+      okSurface = drawer.open ? 'drawer' : okInRecents ? 'recents' : state.zone;
+      if (okInRecents || okSurface !== 'rows') return;
+      okTimer = setTimeout(function () {
+        okLong = true;
+        if (state.held) return;
+        if (state.arranging) return setArranging(false);
+        setArranging(true, true);
+        if (state.quickArrange) pickUp();
+      }, LONG_PRESS_MS);
+      return;
+    }
+    if (k === KEY.back || k === 27) {
+      e.preventDefault();
+      if (backDown) return;
+      backDown = true;
+      clearTimeout(okTimer); okDownAt = 0;
+      if (drawer.open) return closeDrawer();
+      if (state.zone !== 'rows') { state.zone = 'rows'; return applyFocus(); }
+      if (recents.open || recents.loading) return closeRecents();
+      if (state.quickArrange) return setArranging(false);
+      if (state.arranging && state.held) { state.held = false; return toggleHidden(); }
+      if (state.arranging) return setArranging(false);
+      return openRecents();
+    }
+    if (drawer.open) { e.preventDefault(); return drawerKey(k); }
+    if (recents.open) { e.preventDefault(); return recentsKey(k); }
+    if (state.arranging) { arrangeKey(k); e.preventDefault(); return; }
+    if (k === KEY.left) move(0, -1);
+    else if (k === KEY.right) move(0, 1);
+    else if (k === KEY.up) move(-1, 0);
+    else if (k === KEY.down) move(1, 0);
+    else return;
+    e.preventDefault();
+  }
+
+  function onKeyUp(e) {
+    if (e.keyCode === KEY.back || e.keyCode === 27) { backDown = false; return; }
+    if (e.keyCode !== KEY.ok || !okDownAt) return;
+    e.preventDefault();
+    clearTimeout(okTimer);
+    okDownAt = 0;
+    if (okLong || layoutBusy) return;
+    if (okSurface === 'drawer') { if (drawer.open) drawerKey(KEY.ok); return; }
+    if (okSurface === 'photos') { if (!drawer.open && state.zone === 'photos') activatePhotos(); return; }
+    if (okSurface === 'all') { if (!drawer.open && state.zone === 'all') openDrawer(); return; }
+    if (drawer.open) return;
+    if (okInRecents) { if (recents.open) recentsKey(KEY.ok); return; }
+    if (recents.open || recents.loading) return;
+    if (state.arranging) arrangeKey(KEY.ok);
+    else activate();
+  }
+
+  // One local reflection per pointer frame; no idle loop or full-screen blur.
+  // Viewport rectangles already include the TV stage's scale.
+  var motionPreference = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  var pointerGlass = { tile: null, face: null, glint: null, x: 0, y: 0, frame: null };
+  function resetPointerGlass() {
+    if (!pointerGlass) return;
+    if (pointerGlass.frame !== null) {
+      var cancel = window.cancelAnimationFrame || window.webkitCancelAnimationFrame;
+      if (cancel) cancel.call(window, pointerGlass.frame); else clearTimeout(pointerGlass.frame);
+    }
+    if (pointerGlass.face) {
+      pointerGlass.face.style.transform = '';
+      pointerGlass.face.style.webkitTransform = '';
+    }
+    if (pointerGlass.glint) pointerGlass.glint.style.opacity = '0';
+    pointerGlass.tile = pointerGlass.face = pointerGlass.glint = null;
+    pointerGlass.frame = null;
+  }
+  function paintPointerGlass() {
+    pointerGlass.frame = null;
+    var face = pointerGlass.face;
+    if (!face || (motionPreference && motionPreference.matches) || !/\bfocus\b/.test(pointerGlass.tile.className)) return resetPointerGlass();
+    var rect = face.getBoundingClientRect(), width = rect.right - rect.left, height = rect.bottom - rect.top;
+    if (!width || !height) return resetPointerGlass();
+    var x = Math.max(0, Math.min(1, (pointerGlass.x - rect.left) / width));
+    var y = Math.max(0, Math.min(1, (pointerGlass.y - rect.top) / height));
+    var transform = 'perspective(800px) translateY(-5px) scale(1.045) rotateX(' + ((.5 - y) * 7).toFixed(2) + 'deg) rotateY(' + ((x - .5) * 7).toFixed(2) + 'deg)';
+    face.style.transform = face.style.webkitTransform = transform;
+    pointerGlass.glint.style.backgroundImage = 'radial-gradient(ellipse at ' + (x * 100).toFixed(1) + '% ' + (y * 100).toFixed(1) + '%,rgba(255,255,255,.34),rgba(225,238,255,.1) 36%,rgba(255,255,255,0) 72%)';
+    pointerGlass.glint.style.opacity = '1';
+  }
+  function queuePointerGlass(tile, e) {
+    if (!tile || state.arranging || recents.open || (motionPreference && motionPreference.matches) ||
+        typeof e.clientX !== 'number' || typeof e.clientY !== 'number') return resetPointerGlass();
+    var face = tile.querySelector && tile.querySelector('.face');
+    if (!face || !face.getBoundingClientRect) return resetPointerGlass();
+    if (pointerGlass.tile !== tile) {
+      resetPointerGlass();
+      pointerGlass.tile = tile; pointerGlass.face = face;
+      pointerGlass.glint = face.querySelector('.glass-glint');
+      if (!pointerGlass.glint) {
+        pointerGlass.glint = document.createElement('span');
+        pointerGlass.glint.className = 'glass-glint';
+        pointerGlass.glint.setAttribute('aria-hidden', 'true');
+        face.appendChild(pointerGlass.glint);
+      }
+    }
+    pointerGlass.x = e.clientX; pointerGlass.y = e.clientY;
+    if (pointerGlass.frame === null) {
+      var request = window.requestAnimationFrame || window.webkitRequestAnimationFrame;
+      pointerGlass.frame = request ? request.call(window, paintPointerGlass) : setTimeout(paintPointerGlass, 16);
+    }
+  }
+  function onPointerOut(e) {
+    var target = e.relatedTarget;
+    while (target) { if (target === pointerGlass.tile) return; target = target.parentNode; }
+    resetPointerGlass();
+  }
+
+  // The Magic Remote's pointer: hovering focuses a tile, clicking opens it.
+  function tileAt(target) {
+    while (target && target !== document.body) {
+      if (target.className && /\btile\b/.test(target.className)) return target;
+      target = target.parentNode;
+    }
+    return null;
+  }
+  function onPointer(e) {
+    if (!data || !layout || layoutBusy) return;
+    var tile = tileAt(e.target);
+    if (drawer.open) {
+      if (tile && /\bdrawer-app\b/.test(tile.className)) {
+        drawer.index = +tile.getAttribute('data-c'); focusDrawer();
+        queuePointerGlass(tile, e);
+      } else resetPointerGlass();
+      return;
+    }
+    if (!state.arranging && !recents.open && ancestorId(e.target, 'photosTile')) {
+      state.zone = 'photos'; applyFocus(); queuePointerGlass($('photosTile'), e); return;
+    }
+    if (!state.arranging && !recents.open && ancestorId(e.target, 'allAppsTrigger')) {
+      resetPointerGlass(); state.zone = 'all'; applyFocus(); return;
+    }
+    if (recents.open) {
+      resetPointerGlass();
+      if (tile && /\brc\b/.test(tile.className) && (+tile.getAttribute('data-c') !== recents.col || recents.onAll)) {
+        recents.col = +tile.getAttribute('data-c'); recents.onAll = false; recents.onX = false;
+        focusRecents();
+      }
+      return;
+    }
+    if (!tile || state.held) return resetPointerGlass();
+    var rowEl = tile.parentNode;
+    while (rowEl && !/\brow\b/.test(rowEl.className)) rowEl = rowEl.parentNode;
+    if (!rowEl) return resetPointerGlass();
+    var r = +rowEl.getAttribute('data-row'), c = +tile.getAttribute('data-c'), kind = layout.rows[r];
+    if (state.row !== r || colOf(kind) !== c || state.bar >= 0 || state.zone !== 'rows') {
+      state.zone = 'rows'; state.row = r; state.col[kind] = c; state.bar = -1;
+      applyFocus();
+    }
+    queuePointerGlass(tile, e);
+  }
+  function onClick(e) {
+    if (!data || !layout || layoutBusy) return;
+    if (drawer.open) {
+      if (ancestorId(e.target, 'allAppsClose')) return closeDrawer();
+      var card = tileAt(e.target);
+      if (card && /\bdrawer-app\b/.test(card.className)) {
+        drawer.index = +card.getAttribute('data-c'); focusDrawer(); activateDrawer();
+      }
+      return;
+    }
+    if (recents.open) return recentsClick(e.target);
+    if (!state.arranging && ancestorId(e.target, 'photosTile')) { state.zone = 'photos'; applyFocus(); return activatePhotos(); }
+    if (!state.arranging && ancestorId(e.target, 'allAppsTrigger')) return openDrawer();
+    var btn = e.target && e.target.id;
+    if (BAR.indexOf(btn) !== -1) return pressBar(BAR.indexOf(btn));
+    if (state.arranging && /\bsort\b/.test(e.target.className || '')) {
+      var sortRow = e.target.parentNode.parentNode;
+      state.row = +sortRow.getAttribute('data-row');
+      state.col[rowKey()] = -1;
+      return toggleSort(rowKey());
+    }
+    if (!tileAt(e.target)) return;
+    onPointer(e);
+    if (state.quickArrange) setArranging(false);
+    else if (state.arranging) pickUp();
+    else activate();
+  }
+
+  // ---------------------------------------------------------------- wallpaper
+
+  // Strength is how far the picture shows through the black: lower at night.
+  var WALL_SLOTS = [
+    { key: 'night', from: 0, strength: 0.55 },
+    { key: 'morning', from: 6, strength: 0.7 },
+    { key: 'afternoon', from: 11, strength: 0.62 },
+    { key: 'evening', from: 17, strength: 0.72 },
+    { key: 'night', from: 21, strength: 0.65 }
+  ];
+  var wallShown = null, wallFront = 0, wallRequest = 0;
+  /*
+   * ?wall=morning or ?hour=19 shows another slot, to check each one, as does
+   * launching the app with { wall } or { hour }: a running app gets them at
+   * its relaunch, without loading the page again.
+   */
+  var preview = { wall: (/[?&]wall=([a-z]+)/.exec(location.search) || [])[1], hour: (/[?&]hour=(\d+)/.exec(location.search) || [])[1] };
+  function readLaunchParams() {
+    var p = {};
+    try { p = JSON.parse(window.PalmSystem.launchParams || '{}') || {}; } catch (e) {}
+    preview = { wall: /^[a-z]+$/.test(String(p.wall || '')) ? p.wall : undefined,
+                hour: /^\d{1,2}$/.test(String(p.hour || '')) ? p.hour : undefined };
+  }
+  function wallSlot() {
+    if (preview.wall) for (var i = 1; i < WALL_SLOTS.length; i++) if (WALL_SLOTS[i].key === preview.wall) return WALL_SLOTS[i];
+    var d = new Date(), h = preview.hour !== undefined ? +preview.hour % 24 : d.getHours(), slot = WALL_SLOTS[0];
+    for (var j = 0; j < WALL_SLOTS.length; j++) if (WALL_SLOTS[j].from <= h) slot = WALL_SLOTS[j];
+    if (preview.hour !== undefined) return slot;
+    var day = Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
+    return { key: ['morning', 'afternoon', 'evening', 'night'][day % 4], from: slot.from, strength: slot.strength };
+  }
+  function nightTime() {
+    var h = preview.hour !== undefined ? +preview.hour % 24 : new Date().getHours();
+    return h >= 17 || h < 6;
+  }
+  function updateWall() {
+    nightMode = nightTime();
+    stageClass();
+    var slot = wallSlot();
+    var dark = nightMode && !preview.wall;
+    var uploaded = wallAvailable && (!wallSlots || wallSlots[slot.key]);
+    if (!dark && !uploaded) {
+      wallRequest++;
+      var blank = $('wall').querySelectorAll('.layer');
+      for (var b = 0; b < blank.length; b++) { blank[b].style.opacity = 0; blank[b].style.backgroundImage = ''; }
+      wallShown = null;
+      return;
+    }
+    var revision = wallRevision, id = (dark ? 'dark@' : '') + slot.key + '@' + slot.strength + '@' + revision;
+    if (id === wallShown) return;
+    var request = ++wallRequest;
+    var layers = $('wall').querySelectorAll('.layer');
+    var next = layers[1 - wallFront], prev = layers[wallFront];
+    var src = '/api/home/wallpaper?slot=' + slot.key + '&v=' + encodeURIComponent(revision);
+    function current() {
+      return request === wallRequest && wallRevision === revision && wallSlot().key === slot.key &&
+        wallSlot().strength === slot.strength && (nightTime() && !preview.wall) === dark;
+    }
+    function loadImage(url, strength, fallback) {
+      var img = new Image();
+      img.onload = function () {
+        if (!current()) return;
+        wallShown = id;
+        next.style.backgroundImage = 'url(' + url + ')';
+        next.style.opacity = strength;
+        prev.style.opacity = 0;
+        wallFront = 1 - wallFront;
+      };
+      img.onerror = function () {
+        if (!current()) return;
+        if (fallback && uploaded) loadImage(src, slot.strength * 0.5, false);
+        else if (dark) prev.style.opacity = Math.min(Number(prev.style.opacity) || 0, 0.3);
+      };
+      img.src = url;
+    }
+    loadImage(dark ? '/assets/home-wallpaper-dark.jpg' : src, dark ? 0.82 : slot.strength, dark);
+  }
+
+  // ---------------------------------------------------------------- colours
+
+  /*
+   * The dashboards' choice of text and accent colour, swapped into this
+   * page's stylesheet: custom properties would need Chromium 49, and the TV
+   * pages are kept to what webOS 3's Chromium 38 runs (check-es5.py). The
+   * quieter text and the held tile's tint are mixed toward black from the
+   * chosen colours, in the proportions the page's own have to #ece7df and
+   * #e9ad55. The view's own look frames whatever has focus in its text
+   * colour, always as outline-color:#ece7df; chosen colours frame it in the
+   * accent.
+   */
+  var LOOK = $('look').textContent, lookShown = '';
+  function shade(hex, f) {
+    var n = parseInt(hex.slice(1), 16), out = '#';
+    [n >> 16, (n >> 8) & 255, n & 255].forEach(function (v) {
+      var x = Math.round(v * f);
+      out += (x < 16 ? '0' : '') + x.toString(16);
+    });
+    return out;
+  }
+  function applyColours(c) {
+    var key = c ? c.text + c.accent : '';
+    if (key === lookShown) return;
+    lookShown = key;
+    if (!c) { $('look').textContent = LOOK; return; }
+    var swap = { '#ece7df': c.text, '#a39d93': shade(c.text, 0.69), '#6b665e': shade(c.text, 0.45),
+                 '#e9ad55': c.accent, '#231d12': shade(c.accent, 0.15) };
+    // Replace once: a chosen accent may itself be one of the original colours.
+    $('look').textContent = LOOK.replace(/outline-color:#ece7df\b|#(?:ece7df|a39d93|6b665e|e9ad55|231d12)\b/g,
+      function (m) { return m === 'outline-color:#ece7df' ? 'outline-color:' + c.accent : swap[m]; });
+  }
+
+  // ---------------------------------------------------------------- data
+
+  function load(cb, whileArranging) {
+    if ((layoutBusy || state.arranging) && !whileArranging) return;
+    var revision = layoutRevision;
+    getJson('/api/home/catalogue', function (r) {
+      if (!r || !r.ok) {
+        if (!data) {
+          $('fault').className = 'show';
+          // A live HTTP server is not enough: Home needs its tiles and escape tile.
+          if (!document.hidden && !initialEscape) {
+            initialEscape = true;
+            postJson('/api/home/open', { kind: 'lg', recovery: true });
+          }
+          clearTimeout(loadRetry);
+          loadRetry = setTimeout(function () { if (!document.hidden) load(); }, 2000);
+        }
+        return cb && cb(false);
+      }
+      // A reply sent before arranging or saving must not replace local edits.
+      if (revision !== layoutRevision || ((layoutBusy || state.arranging) && !whileArranging)) return;
+      var firstLoad = !data;
+      data = r;
+      layout = r.layout;
+      applyColours(layout.colours);
+      if (r.layoutVersion) layoutVersion = r.layoutVersion;
+      refreshPicture();
+      clearTimeout(loadRetry);
+      wallAvailable = !!(r.wallpapers && r.wallpapers.available);
+      wallSlots = r.wallpapers && r.wallpapers.slots;
+      wallRevision = r.wallpapers && r.wallpapers.revision || '';
+      updateWall();
+      if (!state.arranging) render();
+      if (firstLoad) beat();
+      if (!layout.hintSeen) {
+        toast(t('home.hint.title', 'Hold OK to arrange'), t('home.hint.desc', 'Move or hide tiles and rows. LG\'s Home is the last tile in Apps.'));
+        postJson('/api/home/layout', { hintSeen: true });
+        layout.hintSeen = true;
+      }
+      refreshGuide();
+      if (cb) cb(true);
+    });
+    refreshNow();
+  }
+
+  function refreshNow() {
+    getJson('/api/home/now', function (r) {
+      if (!r) return;
+      lastOn = r;
+      renderNow();
+      refreshPicture();
+      if (data && !state.arranging) render();
+    });
+  }
+
+  function refreshGuide() {
+    if (!layout || !layout.channels.length) return;
+    getJson('/api/home/guide', function (r) {
+      if (!r || !r.guide) return;
+      guideData = r.guide;
+      if (!state.arranging && data) render();
+    });
+  }
+
+  /*
+   * The server watches for these: the view in front without them for ten
+   * seconds is taken to be broken, and LG's Home opens instead. With the
+   * server gone, the page says so; the page is LG's Home's app, so only the
+   * server's watchdog can put LG's back (tvwebctl).
+   */
+  function beat() {
+    // With no usable catalogue, let the server's ten-second watchdog recover Home.
+    if (!data || !layout) return;
+    postJson('/api/home/beat', {}, function (r) {
+      if (r && r.ok) {
+        beatFails = 0;
+        wallAvailable = !!(r.wallpapers && r.wallpapers.available);
+        wallSlots = r.wallpapers && r.wallpapers.slots;
+        wallRevision = r.wallpapers && r.wallpapers.revision || '';
+        updateWall();
+        $('fault').className = '';
+        // A new release of the server: the page is the old one's until reloaded.
+        if (build && r.build && r.build !== build) {
+          if (!state.arranging && !layoutBusy) location.reload();
+          return;
+        }
+        build = r.build || build;
+        if (r.layoutVersion && layoutVersion && r.layoutVersion !== layoutVersion && !state.arranging && !layoutBusy) load();
+        return;
+      }
+      if (++beatFails === 3) $('fault').className = 'show';
+    });
+  }
+
+  function returned() {
+    resetPointerGlass();
+    initialEscape = false;
+    clearTimeout(okTimer);
+    okDownAt = 0; backDown = false;
+    closeRecents();
+    closeDrawer(); state.zone = 'rows';
+    readLaunchParams();
+    updateWall();
+    state.row = 0; state.col = {}; state.bar = -1;
+    if (state.arranging) setArranging(false);
+    beat();
+    load();
+    refreshWeather();
+  }
+
+  window.addEventListener('resize', fit);
+  document.addEventListener('keydown', onKeyDown, true);
+  document.addEventListener('keyup', onKeyUp, true);
+  document.addEventListener('mousemove', onPointer);
+  document.addEventListener('mouseout', onPointerOut);
+  document.addEventListener('click', onClick);
+  window.addEventListener('blur', resetPointerGlass);
+  if (motionPreference) {
+    if (motionPreference.addEventListener) motionPreference.addEventListener('change', resetPointerGlass);
+    else if (motionPreference.addListener) motionPreference.addListener(resetPointerGlass);
+  }
+  // Home pressed with the view already open reaches it as a relaunch.
+  document.addEventListener('webOSRelaunch', returned);
+  document.addEventListener('visibilitychange', function () { resetPointerGlass(); if (!document.hidden) returned(); });
+
+  fit();
+  refreshWeather();
+  renderNow();
+  updateWall();
+  beat();
+  load();
+  setInterval(beat, BEAT_MS);
+  setInterval(function () { renderNow(); updateWall(); if (!document.hidden) refreshPicture(); }, 15000);
+  setInterval(function () { refreshNow(); refreshGuide(); refreshWeather(); }, 60000);
+  setInterval(function () { if (!state.arranging) load(); }, 5 * 60000);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "baseVersion": "0.118.0",
+  "baseCommit": "859f5e134e0d9d4b499afe48084b9cdb82db9164",
+  "patches": [
+    {
+      "file": "assets/home.html",
+      "patch": "patches/assets-home.html.patch",
+      "baseSha256": "292735c255dc1f296713b5c5bff95c3edafa69df56dd93b73de72145a644045f",
+      "customSha256": "67f4921b3162c933eb49e57ab6ec3f4b938a890f94dafe0389acff674aa27fdb"
+    },
+    {
+      "file": "lib/home.js",
+      "patch": "patches/lib-home.js.patch",
+      "baseSha256": "a4c2a497044712d9556f4f35b538ea93da071330a741bfba448740b81fa71680",
+      "customSha256": "d0ead70902080b7244d001324e69dae63fa53b6d1f83036683962d6cb24f3ef6"
+    },
+    {
+      "file": "lib/routes.js",
+      "patch": "patches/lib-routes.js.patch",
+      "baseSha256": "1590eb5471882b5f73cb8b0576abfd10cb385deba936212304c3254f377efaf6",
+      "customSha256": "2bef23e17870d19907e06b3f19a7280b6092ee187141e300fb92e3ef3241dcee"
+    },
+    {
+      "file": "lib/remotekeys.js",
+      "patch": "patches/lib-remotekeys.js.patch",
+      "baseSha256": "68c58dfd63747ff1b4b4b537f70c13d3228f16e019fdf650a4a5a103c9f9c5f1",
+      "customSha256": "7903024964225ee87725e059a008873110ecb1a3b0c0f0a6e9cf47a883a800bd"
+    }
+  ],
+  "assets": [
+    {
+      "file": "lib/home-weather.js",
+      "source": "files/lib/home-weather.js",
+      "sha256": "84b7c5fda8e558bd1373a2ae71740d34a2611f08b0287be81691fa4908a713e5"
+    },
+    {
+      "file": "assets/home-wallpaper-dark.jpg",
+      "source": "files/assets/home-wallpaper-dark.jpg",
+      "sha256": "4652dfebf1ca05c576cffcd7eabb9f53104a62cda716cf84b0218fb5f76fe7d3"
+    },
+    {
+      "file": "assets/third-party/immich/immich-logo.svg",
+      "source": "files/assets/third-party/immich/immich-logo.svg",
+      "sha256": "dfa5ef704d07854914306c0c224173bda2710f8fc0dffeb7d78690f58f9811a6"
+    },
+    {
+      "file": "assets/third-party/immich/LICENSE-AGPL-3.0.txt",
+      "source": "files/assets/third-party/immich/LICENSE-AGPL-3.0.txt",
+      "sha256": "a3bad629f67f442b23b5224419e49edafc32e6b9c876b89464f7aafe6091ccde"
+    },
+    {
+      "file": "assets/third-party/immich/NOTICE.txt",
+      "source": "files/assets/third-party/immich/NOTICE.txt",
+      "sha256": "18fb9ded86f5ae87b0c3a2191258b254127e611a85b7c1c9c8f38a72d05e5cca"
+    }
+  ]
+}

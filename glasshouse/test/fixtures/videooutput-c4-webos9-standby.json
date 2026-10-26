@@ -1,0 +1,84 @@
+{
+    "video": [
+        {
+            "displayOutput": {
+                "width": 0,
+                "y": 0,
+                "x": 0,
+                "height": 0
+            },
+            "extraInfo": null,
+            "sourceInput": {
+                "width": 0,
+                "y": 0,
+                "x": 0,
+                "height": 0
+            },
+            "zOrder": 0,
+            "fullScreen": false,
+            "scanType": "unknown",
+            "frameRate": 0,
+            "connected": false,
+            "height": 0,
+            "connectedSourcePort": 0,
+            "context": "unknown",
+            "muted": false,
+            "sink": "MAIN",
+            "connectedSource": "unknown",
+            "width": 0,
+            "appId": "unknown",
+            "videoInfo": null,
+            "opacity": 0,
+            "contentType": "unknown"
+        },
+        {
+            "displayOutput": {
+                "width": 0,
+                "y": 0,
+                "x": 0,
+                "height": 0
+            },
+            "extraInfo": null,
+            "sourceInput": {
+                "width": 0,
+                "y": 0,
+                "x": 0,
+                "height": 0
+            },
+            "zOrder": 0,
+            "fullScreen": false,
+            "scanType": "unknown",
+            "frameRate": 0,
+            "connected": false,
+            "height": 0,
+            "connectedSourcePort": 0,
+            "context": "unknown",
+            "muted": false,
+            "sink": "SUB0",
+            "connectedSource": "unknown",
+            "width": 0,
+            "appId": "unknown",
+            "videoInfo": null,
+            "opacity": 0,
+            "contentType": "unknown"
+        }
+    ],
+    "clients": [
+        {
+            "activation": false,
+            "appId": "com.webos.app.hdmi1",
+            "sinkName": "MAIN",
+            "sourceName": "HDMI",
+            "clientId": "65e24l6s619fevll"
+        },
+        {
+            "activation": false,
+            "appId": "com.webos.app.hdmi4",
+            "sinkName": "MAIN",
+            "sourceName": "HDMI",
+            "clientId": "ohsgo9iifhc3l8m0"
+        }
+    ],
+    "returnValue": true,
+    "subscribed": false
+}

@@ -1,0 +1,6 @@
+/backups/
+/apply.lock/
+/.stage-*/
+/status.json
+/status.json.new.*
+*.personalisation-*

@@ -1,0 +1,30 @@
+--- a/lib/remotekeys.js
++++ b/lib/remotekeys.js
+@@ -160,6 +160,9 @@
+   { key: 'amazon', symbol: 'WebOS.Key_webOS_Amazon', title: 'Prime Video' },
+   { key: 'disneyplus', symbol: 'WebOS.Key_webOS_Disneyplus', title: 'Disney+' },
+   { key: 'lgchannels', symbol: 'WebOS.Key_webOS_LGChannels', title: 'LG Channels' },
++  // News sends KEY_HAYSTACK on recent Magic Remotes. Its native mapping is
++  // known; no JavaScript-compositor symbol is assumed on older webOS TVs.
++  { key: 'haystack', title: 'News', nativeOnly: true, nativeMapping: true },
+   { key: 'rakutentv', symbol: 'WebOS.Key_webOS_RakutenTV', title: 'Rakuten TV' },
+   { key: 'hulu', symbol: 'WebOS.Key_webOS_Hulu', title: 'Hulu', regions: ['us'] },
+   { key: 'iplayer', symbol: 'WebOS.Key_webOS_IPlayer', title: 'BBC iPlayer', regions: ['gb'] },
+@@ -670,7 +673,7 @@
+     if (NATIVE_SETTINGS[k.key]) return !!(tv.settings && tv.settings[NATIVE_SETTINGS[k.key]]);
+     if (NATIVE_SERVICE_KEYS[k.key]) return !!(servicesModule && servicesModule.available(NATIVE_SERVICE_KEYS[k.key]));
+     if (NATIVE_BLOCK_KEYS[k.key]) return !!((tv.apps && tv.apps[NATIVE_BLOCK_KEYS[k.key]]) || lg.blocks[NATIVE_BLOCK_KEYS[k.key]]);
+-    if (k.nativeOnly) return false;
++    if (k.nativeOnly && !k.nativeMapping) return false;
+     var entry = lg.mapping[k.key] || mappingEntry(tv.list, k.key);
+     return !!(entry && typeof entry === 'object' && entry.isActive !== false);
+   });
+@@ -760,7 +763,7 @@
+     (nextList || []).forEach(function (entry) {
+       Object.keys(entry || {}).forEach(function (name) {
+         var def = keyByName(name);
+-        if (!def || def.nativeOnly || NATIVE_ACTIONS[name]) return;
++        if (!def || (def.nativeOnly && !def.nativeMapping) || NATIVE_ACTIONS[name]) return;
+         var v = reconcile(name, entry[name], function (lgEntry) { return mappingWanted(map, name, lgEntry); },
+           lg.mapping, lg.mappingWritten);
+         if (v !== undefined) { entry[name] = v; listChanged = true; }

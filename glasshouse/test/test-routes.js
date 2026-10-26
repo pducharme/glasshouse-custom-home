@@ -1,0 +1,1449 @@
+// Strict ES5 - node v0.12.2 on webOS 4 (LG OLED B8) has no ES6 support.
+var assert = require('assert');
+var events = require('events');
+var fs = require('fs');
+var os = require('os');
+var path = require('path');
+var routes = require('../server/lib/routes');
+
+console.log('Running test-routes.js ...');
+
+function createMockReq(opts) {
+  opts = opts || {};
+  var req = new events.EventEmitter();
+  req.url = opts.url || '/';
+  req.method = opts.method || 'GET';
+  req.headers = opts.headers || {};
+  req.connection = { remoteAddress: opts.remoteAddress !== undefined ? opts.remoteAddress : '127.0.0.1' };
+  req.destroy = function () { req.destroyed = true; };
+  return req;
+}
+
+function createMockRes(cb) {
+  var res = {
+    statusCode: null,
+    headers: null,
+    body: '',
+    writeHead: function (code, hdrs) {
+      res.statusCode = code;
+      res.headers = hdrs;
+    },
+    end: function (chunk) {
+      if (chunk) res.body += chunk.toString();
+      if (cb) cb(res);
+    }
+  };
+  return res;
+}
+
+// 1. Constants and exports integrity
+(function testExports() {
+  assert.strictEqual(typeof routes.init, 'function');
+  assert.strictEqual(typeof routes.handleRequest, 'function');
+  assert.strictEqual(typeof routes.send, 'function');
+  assert.strictEqual(typeof routes.readJsonBody, 'function');
+  assert.strictEqual(typeof routes.authed, 'function');
+  assert.strictEqual(typeof routes.fromTV, 'function');
+  assert.strictEqual(typeof routes.validateSettings, 'function');
+  assert.strictEqual(typeof routes.writeSettings, 'function');
+  assert.strictEqual(typeof routes.readConfigFile, 'function');
+  assert.strictEqual(typeof routes.setNetworkAccess, 'function');
+  assert.strictEqual(typeof routes.lanAddress, 'function');
+  assert.strictEqual(typeof routes.networkOpen, 'function');
+  assert.strictEqual(typeof routes.lanOrigin, 'function');
+  assert.strictEqual(typeof routes.setupPending, 'function');
+  assert.strictEqual(typeof routes.setupState, 'function');
+  assert.strictEqual(typeof routes.startHandoff, 'function');
+  assert.strictEqual(typeof routes.stopHandoff, 'function');
+  assert.strictEqual(typeof routes.loadUI, 'function');
+  assert.strictEqual(typeof routes.updateSummary, 'function');
+  assert.strictEqual(typeof routes.missingAssetsPage, 'function');
+  assert.strictEqual(typeof routes.parseUrl, 'function');
+  assert.strictEqual(typeof routes.MIME, 'object');
+
+  assert.strictEqual(routes.MIME['.html'], 'text/html; charset=utf-8');
+  assert.strictEqual(routes.MIME['.json'], 'application/json; charset=utf-8');
+
+  console.log('  ✓ Module structure and exports are verified');
+})();
+
+// 1b. URL Parsing (parseUrl)
+(function testParseUrl() {
+  var u1 = routes.parseUrl('/api/stats?k=token123&section=display');
+  assert.strictEqual(u1.pathname, '/api/stats');
+  assert.strictEqual(u1.query.k, 'token123');
+  assert.strictEqual(u1.query.section, 'display');
+
+  var u2 = routes.parseUrl('');
+  assert.strictEqual(u2.pathname, '/');
+  assert.deepEqual(u2.query, {});
+
+  var u3 = routes.parseUrl(null);
+  assert.strictEqual(u3.pathname, '/');
+  assert.deepEqual(u3.query, {});
+
+  console.log('  ✓ parseUrl handles query strings and missing paths cleanly');
+})();
+
+// 2. Loopback checks (fromTV)
+(function testFromTV() {
+  assert.strictEqual(routes.fromTV(createMockReq({ remoteAddress: '127.0.0.1' })), true);
+  assert.strictEqual(routes.fromTV(createMockReq({ remoteAddress: '::1' })), true);
+  assert.strictEqual(routes.fromTV(createMockReq({ remoteAddress: '::ffff:127.0.0.1' })), true);
+
+  assert.strictEqual(routes.fromTV(createMockReq({ remoteAddress: '192.168.1.50' })), false);
+  assert.strictEqual(routes.fromTV(createMockReq({ remoteAddress: '10.0.0.2' })), false);
+  assert.strictEqual(routes.fromTV(createMockReq({ remoteAddress: '' })), false);
+  assert.strictEqual(routes.fromTV(null), false);
+
+  console.log('  ✓ fromTV correctly recognizes local loopback addresses');
+})();
+
+// 3. Authentication (authed)
+(function testAuthed() {
+  var conf = { token: 'secret-token-123', web: { enabled: false } };
+  routes.init({ config: conf });
+
+  // Token configured: remote without token is rejected
+  var remoteReq = createMockReq({ remoteAddress: '192.168.1.100' });
+  assert.strictEqual(routes.authed({}, remoteReq), false);
+  assert.strictEqual(routes.authed({ k: 'wrong-token' }, remoteReq), false);
+
+  // Token configured: remote with token is allowed
+  assert.strictEqual(routes.authed({ k: 'secret-token-123' }, remoteReq), true);
+
+  // Local loopback is always allowed regardless of token
+  var localReq = createMockReq({ remoteAddress: '127.0.0.1' });
+  assert.strictEqual(routes.authed({}, localReq), true);
+
+  // Authorization: Bearer is an alternative to ?k=, scheme in any case
+  function withAuth(value) {
+    return createMockReq({ remoteAddress: '192.168.1.100', headers: { authorization: value } });
+  }
+  assert.strictEqual(routes.authed({}, withAuth('Bearer secret-token-123')), true);
+  assert.strictEqual(routes.authed({}, withAuth('bearer secret-token-123')), true);
+  assert.strictEqual(routes.authed({}, withAuth('Bearer wrong-token')), false);
+  assert.strictEqual(routes.authed({ k: 'secret-token-123' }, withAuth('Bearer wrong-token')), true);
+  assert.strictEqual(routes.authed({}, withAuth('Basic c2VjcmV0LXRva2VuLTEyMw==')), false);
+  assert.strictEqual(routes.authed({ k: 'secret-token-123' }, withAuth('Basic dXNlcjpwYXNz')), true);
+
+  // A prefix, an extension or a repeated ?k= of the token is not the token
+  assert.strictEqual(routes.authed({}, withAuth('Bearer secret-token-12')), false);
+  assert.strictEqual(routes.authed({}, withAuth('Bearer secret-token-1234')), false);
+  assert.strictEqual(routes.authed({ k: 'secret-token-12' }, remoteReq), false);
+  assert.strictEqual(routes.authed({ k: '' }, remoteReq), false);
+  assert.strictEqual(routes.authed({ k: ['secret-token-123', 'x'] }, remoteReq), false);
+
+  // No token configured: all are allowed
+  routes.init({ config: { token: '', web: { enabled: false } } });
+  assert.strictEqual(routes.authed({}, remoteReq), true);
+  assert.strictEqual(routes.authed({}, withAuth('Bearer anything')), true);
+
+  console.log('  ✓ authed enforces token checks for remote callers and bypasses for local');
+})();
+
+// 4. Settings Validation (validateSettings)
+(function testValidateSettings() {
+  // Empty settings require telemetryIntervalMs and device.id
+  var vEmpty = routes.validateSettings({});
+  assert.strictEqual(vEmpty.errors.length, 2);
+
+  // Valid base configuration
+  var validBase = {
+    mqtt: { telemetryIntervalMs: 10000 },
+    device: { id: 'lg_living_room' }
+  };
+  var v1 = routes.validateSettings(validBase);
+  assert.strictEqual(v1.errors.length, 0);
+  assert.strictEqual(v1.value.mqtt.enabled, false);
+  assert.strictEqual(v1.value.mqtt.topicPrefix, 'lgtv');
+  assert.strictEqual(v1.value.mqtt.discoveryPrefix, 'homeassistant');
+  assert.strictEqual(v1.value.device.id, 'lg_living_room');
+
+  // MQTT enabled without host produces error
+  var v2 = routes.validateSettings({
+    mqtt: { enabled: true, host: '', telemetryIntervalMs: 10000 },
+    device: { id: 'lg_tv' }
+  });
+  assert.ok(v2.errors.length > 0);
+  assert.ok(v2.errors[0].indexOf('broker address is required') !== -1);
+
+  // Port boundaries
+  var v3 = routes.validateSettings({
+    mqtt: { port: 70000, telemetryIntervalMs: 10000 },
+    device: { id: 'lg_tv' }
+  });
+  assert.ok(v3.errors.length > 0);
+  assert.ok(v3.errors[0].indexOf('port must be between 1 and 65535') !== -1);
+
+  var v4 = routes.validateSettings({
+    mqtt: { port: 1883, telemetryIntervalMs: 10000 },
+    device: { id: 'lg_tv' }
+  });
+  assert.strictEqual(v4.errors.length, 0);
+  assert.strictEqual(v4.value.mqtt.port, 1883);
+
+  // Topic validation
+  var v5 = routes.validateSettings({
+    mqtt: { topicPrefix: 'invalid/prefix/', telemetryIntervalMs: 10000 },
+    device: { id: 'lg_tv' }
+  });
+  assert.ok(v5.errors.length > 0);
+
+  var v6 = routes.validateSettings({
+    mqtt: { topicPrefix: 'valid_prefix', telemetryIntervalMs: 10000 },
+    device: { id: 'lg_tv' }
+  });
+  assert.strictEqual(v6.errors.length, 0);
+  assert.strictEqual(v6.value.mqtt.topicPrefix, 'valid_prefix');
+
+  // Device ID validation
+  var v7 = routes.validateSettings({
+    mqtt: { telemetryIntervalMs: 10000 },
+    device: { id: 'bad ID with spaces!' }
+  });
+  assert.ok(v7.errors.length > 0);
+
+  console.log('  ✓ validateSettings strictly validates broker, ports, topics, and device IDs');
+
+  // The MQTT form's icon switch: saved when given as a boolean, else left alone.
+  assert.strictEqual(routes.validateSettings({ mqtt: validBase.mqtt, device: validBase.device, iconServer: true }).value.iconServer, true);
+  assert.strictEqual(routes.validateSettings({ mqtt: validBase.mqtt, device: validBase.device, iconServer: false }).value.iconServer, false);
+  assert.strictEqual('iconServer' in v1.value, false, 'absent, config.json keeps what it had');
+  assert.strictEqual('iconServer' in routes.validateSettings({ mqtt: validBase.mqtt, device: validBase.device, iconServer: 'yes' }).value, false);
+  console.log('  ✓ the icon server switch is saved from the MQTT form only as true or false');
+})();
+
+// 4b. Settings Persistence (writeSettings) and Update Summary (updateSummary)
+(function testWriteSettingsAndSummary() {
+  var cfgPath = path.join(os.tmpdir(), 'tvweb-writesettings-' + process.pid + '.json');
+  fs.writeFileSync(cfgPath, JSON.stringify({ port: 8080, mqtt: { enabled: true } }), 'utf8');
+
+  var mockApps = { tileHidingAllowed: function () { return true; } };
+  var mockSavers = {
+    allowedAnyway: function () { return true; },
+    slowSwitch: function () { return true; },
+    experimental: function () { return true; }
+  };
+  var mockUpdater = { updateSummary: function () { return { ok: true, installed: '0.76.1' }; } };
+  var mockPrivacy = { tvUpdatesBlocked: function () { return false; } };
+
+  routes.init({
+    configFile: cfgPath,
+    apps: mockApps,
+    screensavers: mockSavers,
+    updater: mockUpdater,
+    privacy: mockPrivacy
+  });
+
+  // Check updateSummary reporting
+  var summary = routes.updateSummary();
+  assert.strictEqual(summary.allowTileHiding, true);
+  assert.strictEqual(summary.allowExperimentalScreensavers, true);
+  assert.strictEqual(summary.isWebos10, true);
+  assert.ok(summary.daemon, 'has daemon health info');
+  assert.strictEqual(typeof summary.daemon.port, 'number');
+  assert.strictEqual(typeof summary.daemon.uptime, 'number');
+  assert.strictEqual(typeof summary.daemon.pid, 'number');
+
+  // Write top-level primitive values along with section updates
+  routes.writeSettings({ allowTileHiding: false, allowExperimentalScreensavers: true, mqtt: { port: 1883 } }, function (err) {
+    assert.ifError(err);
+    var saved = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+    assert.strictEqual(saved.port, 8080);
+    assert.strictEqual(saved.allowTileHiding, false);
+    assert.strictEqual(saved.allowExperimentalScreensavers, true);
+    assert.strictEqual(saved.mqtt.enabled, true);
+    assert.strictEqual(saved.mqtt.port, 1883);
+
+    // Clean up
+    try { fs.unlinkSync(cfgPath); } catch (e) {}
+    console.log('  ✓ writeSettings preserves sections and updates top-level primitive flags');
+  });
+})();
+
+// 5. CSRF & Request Body Parsing (readJsonBody)
+(function testReadJsonBody() {
+  // Missing or non-json Content-Type
+  var reqBadType = createMockReq({
+    method: 'POST',
+    headers: { 'content-type': 'text/plain' }
+  });
+  var resBadType = createMockRes(function (res) {
+    assert.strictEqual(res.statusCode, 415);
+    var body = JSON.parse(res.body);
+    assert.strictEqual(body.ok, false);
+    assert.strictEqual(body.error, 'Content-Type must be application/json');
+  });
+  routes.readJsonBody(reqBadType, resBadType, function () {
+    assert.fail('Should not be called on bad Content-Type');
+  });
+
+  // Mismatched Origin
+  var reqBadOrigin = createMockReq({
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'host': '192.168.1.131:8080',
+      'origin': 'http://evil-attacker.com'
+    }
+  });
+  var resBadOrigin = createMockRes(function (res) {
+    assert.strictEqual(res.statusCode, 403);
+    var body = JSON.parse(res.body);
+    assert.strictEqual(body.ok, false);
+    assert.strictEqual(body.error, 'cross-origin request refused');
+  });
+  routes.readJsonBody(reqBadOrigin, resBadOrigin, function () {
+    assert.fail('Should not be called on mismatched origin');
+  });
+
+  // Malformed JSON
+  var reqMalformed = createMockReq({
+    method: 'POST',
+    headers: { 'content-type': 'application/json' }
+  });
+  var resMalformed = createMockRes(function (res) {
+    assert.strictEqual(res.statusCode, 400);
+    var body = JSON.parse(res.body);
+    assert.strictEqual(body.ok, false);
+    assert.strictEqual(body.error, 'malformed JSON');
+  });
+  routes.readJsonBody(reqMalformed, resMalformed, function () {
+    assert.fail('Should not be called on malformed JSON');
+  });
+  reqMalformed.emit('data', '{ not valid json');
+  reqMalformed.emit('end');
+
+  // Non-object JSON
+  var reqNonObject = createMockReq({
+    method: 'POST',
+    headers: { 'content-type': 'application/json' }
+  });
+  var resNonObject = createMockRes(function (res) {
+    assert.strictEqual(res.statusCode, 400);
+    var body = JSON.parse(res.body);
+    assert.strictEqual(body.ok, false);
+    assert.strictEqual(body.error, 'malformed JSON');
+  });
+  routes.readJsonBody(reqNonObject, resNonObject, function () {
+    assert.fail('Should not be called on non-object JSON');
+  });
+  reqNonObject.emit('data', '12345');
+  reqNonObject.emit('end');
+
+  // Valid JSON and matching Origin
+  var reqValid = createMockReq({
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'host': '192.168.1.131:8080',
+      'origin': 'http://192.168.1.131:8080'
+    }
+  });
+  var resValid = createMockRes();
+  var parsedResult = null;
+  routes.readJsonBody(reqValid, resValid, function (data) {
+    parsedResult = data;
+  });
+  reqValid.emit('data', JSON.stringify({ action: 'volume', value: 20 }));
+  reqValid.emit('end');
+  assert.deepEqual(parsedResult, { action: 'volume', value: 20 });
+
+  console.log('  ✓ readJsonBody enforces Content-Type, Origin matching, and JSON parsing');
+})();
+
+// 5b. The dashboard's stylesheet and scripts are put back inline
+(function testInlineUI() {
+  var assets = path.join(__dirname, '..', 'server', 'assets');
+  var gone = null;
+  routes.init({
+    assetDirs: [assets],
+    assetPath: function (sub) {
+      var p = path.join(assets, sub);
+      return sub !== gone && fs.existsSync(p) ? p : null;
+    }
+  });
+  var html = fs.readFileSync(path.join(assets, 'ui.html'), 'utf8');
+  var page = routes.inlineUI(html);
+  assert.ok(page, 'every part is found');
+  assert.strictEqual(page.indexOf('/assets/ui/'), -1, 'no part is left to fetch');
+  assert.strictEqual(page.split('<style>').length - 1, 1, 'one stylesheet');
+  // i18n.js stays a fetch; the parts become one script after it, in order.
+  var scripts = page.split('<script>');
+  assert.strictEqual(scripts.length - 1, 1, 'one inline script');
+  var script = scripts[1];
+  assert.ok(script.indexOf('const K = (() => {') < script.indexOf('startPolling();'), 'core.js first, main.js last');
+
+  gone = 'ui/game.js';
+  assert.strictEqual(routes.inlineUI(html), null, 'a missing part means no page');
+  assert.ok(routes.missingAssetsPage().indexOf('<code>ui/game.js</code> was not found') !== -1,
+            'and the missing-assets page names it');
+
+  console.log('  ✓ inlineUI puts the stylesheet and scripts back inline, and names a missing one');
+})();
+
+// 6. Route Dispatching via handleRequest
+(function testRouteDispatch() {
+  var controlDispatched = null;
+  var mockControls = {
+    doControl: function (action, val, cb) {
+      controlDispatched = { action: action, val: val };
+      if (cb) cb({ ok: true });
+    }
+  };
+
+  routes.init({
+    config: {
+      web: { enabled: false },
+      allowControl: true,
+      allowPower: true,
+      token: 'test-token',
+      port: 8080,
+      host: '0.0.0.0'
+    },
+    version: '0.64.0',
+    controls: mockControls,
+    fromHomebrewChannel: function () { return false; },
+    assetPath: function (sub) {
+      var p = path.join(__dirname, '..', 'server', 'assets', sub);
+      return fs.existsSync(p) ? p : null;
+    },
+    screensavers: {
+      screensaverList: function () {
+        return { ok: true, current: 'bokeh', modes: [{ id: 'bokeh', label: 'Bokeh' }] };
+      }
+    }
+  });
+
+  // GET /api/caps
+  var reqCaps = createMockReq({ url: '/api/caps?k=test-token', remoteAddress: '192.168.1.50' });
+  var resCaps = createMockRes(function (res) {
+    assert.strictEqual(res.statusCode, 200);
+    var body = JSON.parse(res.body);
+    assert.strictEqual(body.ok, true);
+    assert.strictEqual(body.allowControl, true);
+    assert.strictEqual(body.version, '0.64.0');
+    assert.strictEqual(body.key, undefined, 'Token should not be exposed to remote callers');
+  });
+  routes.handleRequest(reqCaps, resCaps);
+
+  // Local caller GET /api/caps includes key
+  var reqLocalCaps = createMockReq({ url: '/api/caps', remoteAddress: '127.0.0.1' });
+  var resLocalCaps = createMockRes(function (res) {
+    assert.strictEqual(res.statusCode, 200);
+    var body = JSON.parse(res.body);
+    assert.strictEqual(body.key, 'test-token', 'Token should be exposed to TV app on localhost');
+  });
+  routes.handleRequest(reqLocalCaps, resLocalCaps);
+
+  // Unauthenticated remote GET /api/stats returns 401
+  var reqUnauth = createMockReq({ url: '/api/stats', remoteAddress: '192.168.1.50' });
+  var resUnauth = createMockRes(function (res) {
+    assert.strictEqual(res.statusCode, 401);
+  });
+  routes.handleRequest(reqUnauth, resUnauth);
+
+  // The Authorization header alone authenticates /api/ requests
+  var mockMqttStatus = {
+    state: 'disabled',
+    broker: '',
+    tls: false,
+    detail: '',
+    since: Date.now(),
+    lastPublish: 0,
+    latencyMs: null
+  };
+  routes.init({
+    telemetry: { collectStats: function (cb) { cb({ ok: true }); } },
+    piccapStatus: function (cb) { cb(null); },
+    getMqttStatus: function () { return mockMqttStatus; }
+  });
+  var bearer = { authorization: 'Bearer test-token' };
+  routes.handleRequest(
+    createMockReq({ url: '/api/stats', remoteAddress: '192.168.1.50', headers: bearer }),
+    createMockRes(function (res) { assert.strictEqual(res.statusCode, 200); }));
+  // GET /api/settings reports unconfigured/disabled state with null latency
+  routes.handleRequest(
+    createMockReq({ url: '/api/settings', remoteAddress: '192.168.1.50', headers: bearer }),
+    createMockRes(function (res) {
+      assert.strictEqual(res.statusCode, 200);
+      var b = JSON.parse(res.body);
+      assert.strictEqual(b.ok, true);
+      assert.strictEqual(b.mqtt.enabled, false);
+      assert.strictEqual(b.mqtt.host, '');
+      assert.strictEqual(b.status.state, 'disabled');
+      assert.strictEqual(b.status.broker, '');
+      assert.strictEqual(b.status.latencyMs, null);
+      assert.strictEqual(b.status.lastPublishMs, null);
+    }));
+  // GET /api/settings surfaces active connection details and latency
+  mockMqttStatus = {
+    state: 'connected',
+    broker: '10.0.0.1:1883',
+    tls: false,
+    detail: '',
+    since: Date.now() - 10000,
+    lastPublish: Date.now() - 1200,
+    latencyMs: 14
+  };
+  routes.handleRequest(
+    createMockReq({ url: '/api/settings', remoteAddress: '192.168.1.50', headers: bearer }),
+    createMockRes(function (res) {
+      assert.strictEqual(res.statusCode, 200);
+      var b = JSON.parse(res.body);
+      assert.strictEqual(b.ok, true);
+      assert.strictEqual(b.status.state, 'connected');
+      assert.strictEqual(b.status.broker, '10.0.0.1:1883');
+      assert.strictEqual(b.status.latencyMs, 14);
+      assert.strictEqual(typeof b.status.lastPublishMs, 'number');
+    }));
+  routes.handleRequest(
+    createMockReq({ url: '/api/stats', remoteAddress: '192.168.1.50', headers: { authorization: 'Bearer wrong' } }),
+    createMockRes(function (res) { assert.strictEqual(res.statusCode, 401); }));
+
+  // GET /api/screensaver returns catalogue
+  var reqSs = createMockReq({ url: '/api/screensaver?k=test-token', remoteAddress: '192.168.1.50' });
+  var resSs = createMockRes(function (res) {
+    assert.strictEqual(res.statusCode, 200);
+    var body = JSON.parse(res.body);
+    assert.strictEqual(body.ok, true);
+    assert.strictEqual(body.modes[0].id, 'bokeh');
+  });
+  routes.handleRequest(reqSs, resSs);
+
+  // POST /api/control dispatches to controls module
+  var reqCtrl = createMockReq({
+    url: '/api/control?k=test-token',
+    method: 'POST',
+    remoteAddress: '192.168.1.50',
+    headers: {
+      'content-type': 'application/json',
+      'host': '192.168.1.131:8080'
+    }
+  });
+  var resCtrl = createMockRes(function (res) {
+    assert.strictEqual(res.statusCode, 200);
+    var body = JSON.parse(res.body);
+    assert.strictEqual(body.ok, true);
+    // val == null: node 0.10's deepEqual tells undefined from null.
+    assert.strictEqual(controlDispatched.action, 'volumeUp');
+    assert.ok(controlDispatched.val == null);
+  });
+  routes.handleRequest(reqCtrl, resCtrl);
+  reqCtrl.emit('data', JSON.stringify({ action: 'volumeUp' }));
+  reqCtrl.emit('end');
+
+  // POST /api/control with invalid JSON body returns 400
+  var reqBadCtrl = createMockReq({
+    url: '/api/control?k=test-token',
+    method: 'POST',
+    remoteAddress: '192.168.1.50',
+    headers: {
+      'content-type': 'application/json',
+      'host': '192.168.1.131:8080'
+    }
+  });
+  var resBadCtrl = createMockRes(function (res) {
+    assert.strictEqual(res.statusCode, 400);
+    var body = JSON.parse(res.body);
+    assert.strictEqual(body.ok, false);
+    assert.strictEqual(body.error, 'malformed JSON');
+  });
+  routes.handleRequest(reqBadCtrl, resBadCtrl);
+  reqBadCtrl.emit('data', '{ not valid');
+  reqBadCtrl.emit('end');
+
+  // Static assets: GET /assets/i18n.js returns 200 with ETag
+  var assetEtag = null;
+  var reqAsset = createMockReq({ url: '/assets/i18n.js', remoteAddress: '192.168.1.50' });
+  var resAsset = createMockRes(function (res) {
+    assert.strictEqual(res.statusCode, 200);
+    assert.ok(res.headers && res.headers['ETag'], 'Static asset should return ETag');
+    assetEtag = res.headers['ETag'];
+    assert.ok(res.body.length > 0);
+
+    // Static assets: GET with matching If-None-Match returns 304 Not Modified
+    var reqAsset304 = createMockReq({
+      url: '/assets/i18n.js',
+      remoteAddress: '192.168.1.50',
+      headers: { 'if-none-match': assetEtag }
+    });
+    var resAsset304 = createMockRes(function (r304) {
+      assert.strictEqual(r304.statusCode, 304);
+      assert.strictEqual(r304.body, '', '304 response should have empty body');
+    });
+    routes.handleRequest(reqAsset304, resAsset304);
+  });
+  routes.handleRequest(reqAsset, resAsset);
+
+  // Unknown route returns 404
+  var req404 = createMockReq({ url: '/api/does-not-exist?k=test-token', remoteAddress: '192.168.1.50' });
+  var res404 = createMockRes(function (res) {
+    assert.strictEqual(res.statusCode, 404);
+    var body = JSON.parse(res.body);
+    assert.strictEqual(body.ok, false);
+    assert.strictEqual(body.error, 'not found');
+  });
+  routes.handleRequest(req404, res404);
+
+  console.log('  ✓ handleRequest dispatches endpoints, auth guards, and 404 handling');
+})();
+
+// A dashboard uninstall that succeeds tells the server the apps changed; one
+// that fails does not.
+(function () {
+  var changed = 0;
+  routes.init({
+    config: { web: { enabled: false }, allowControl: true, token: 'test-token', port: 8080, host: '0.0.0.0' },
+    apps: { uninstallApp: function (id, cb) { cb({ ok: id === 'spotify-beehive' }); } },
+    appsChanged: function () { changed++; }
+  });
+  function uninstall(id, expectCode, then) {
+    var req = createMockReq({
+      url: '/api/apps/uninstall?k=test-token', method: 'POST', remoteAddress: '192.168.1.50',
+      headers: { 'content-type': 'application/json', 'host': '192.168.1.131:8080' }
+    });
+    var res = createMockRes(function (r) {
+      assert.strictEqual(r.statusCode, expectCode);
+      then();
+    });
+    routes.handleRequest(req, res);
+    req.emit('data', JSON.stringify({ id: id }));
+    req.emit('end');
+  }
+  uninstall('spotify-beehive', 200, function () {
+    assert.strictEqual(changed, 1);
+    uninstall('com.webos.app.livetv', 400, function () {
+      assert.strictEqual(changed, 1);
+      console.log('  ✓ a dashboard uninstall refreshes the app list only when it succeeds');
+    });
+  });
+})();
+
+// 6. Install routes: Host check, controls switch, catalog, install flow, restart refusal
+(function testInstallRoutes() {
+  var calls = [];
+  var busy = false;      // a job is downloading or installing
+  var waiting = false;   // a preview is waiting for confirmation
+  var pkg = { id: 'org.example.app', title: 'Example', version: '1.0.0', ipkUrl: 'https://example.org/a.ipk', sha256: new Array(65).join('a') };
+  var repoStub = {
+    getCatalog: function (force, cb) { calls.push(['catalog', force]); cb({ ok: true, apps: [pkg], fetchedAt: 1 }); },
+    findPackage: function (id, repo, cb) { calls.push(['find', id, repo]); id === pkg.id ? cb(null, pkg) : cb(new Error('not in the catalog: ' + id)); },
+    DEFAULT_REPO: 'https://repo.webosbrew.org/api/apps.json',
+    repoUrls: function () { return [repoStub.DEFAULT_REPO].concat((currentConf.apps && currentConf.apps.repos) || []); },
+    checkCatalog: function (u, cb) {
+      calls.push(['check', u]);
+      if (u === 'https://github.com/someone/fork') return cb(null, 'https://raw.githubusercontent.com/someone/fork/HEAD/repo.json');
+      cb(new Error('not a package catalog: ' + u));
+    },
+    forget: function () { calls.push(['forget']); }
+  };
+  var currentConf = {};
+  var snap = { state: 'downloading', jobId: 'j1', progress: { bytes: 0, total: null }, preview: null, error: null, result: null };
+  var installerStub = {
+    start: function (r, cb) { calls.push(['start', r]); cb(null, snap); },
+    confirm: function (r, cb) { calls.push(['confirm', r]); cb(null, snap); },
+    cancel: function (id, cb) { calls.push(['cancel', id]); cb(null); },
+    status: function () { return { state: busy ? 'installing' : 'idle', jobId: null, progress: null, preview: null, error: null, result: null }; },
+    isBusy: function () { return busy || waiting; },
+    isWorking: function () { return busy; }
+  };
+  var restarts = 0;
+  var written = 0;
+  var cfgFile = path.join(require('os').tmpdir(), 'tvweb-routes-test-' + process.pid + '.json');
+  function setup(conf) {
+    calls = [];
+    currentConf = conf;
+    routes.init({
+      config: conf, configFile: cfgFile, repo: repoStub, installer: installerStub,
+      restartSelf: function () { restarts++; return true; }
+    });
+  }
+  var checks = 0;
+  function call(method, url, host, body, cb, remote) {
+    var req = createMockReq({
+      url: url, method: method, remoteAddress: remote || '192.168.1.50',
+      headers: { 'content-type': 'application/json', host: host }
+    });
+    var res = createMockRes(function (r) { checks++; cb(r, r.body ? JSON.parse(r.body) : null); });
+    routes.handleRequest(req, res);
+    if (method === 'POST') {
+      req.emit('data', JSON.stringify(body || {}));
+      req.emit('end');
+    }
+  }
+  var base = { allowControl: true, token: '', web: { enabled: false } };
+  var HOST = '192.168.1.131:8080';
+
+  // Host check: refused names, accepted literals, localhost and listed names
+  setup({ allowControl: true, token: '', web: { enabled: false }, apps: { hosts: ['lgtv.local'] } });
+  var paths = ['/api/apps/catalog', '/api/apps/install/status'];
+  ['evil.example', 'evil.example:8080', 'lgtv.local.evil.example', '', 'lgtv.localx'].forEach(function (h) {
+    paths.forEach(function (u) {
+      call('GET', u, h, null, function (r, b) {
+        assert.strictEqual(r.statusCode, 403, 'host "' + h + '" must be refused');
+        assert.ok(/apps\.hosts/.test(b.error), 'the refusal names apps.hosts');
+      });
+    });
+  });
+  call('POST', '/api/apps/install/fetch', 'evil.example', { id: pkg.id }, function (r) {
+    assert.strictEqual(r.statusCode, 403);
+  });
+  assert.strictEqual(calls.length, 0, 'a refused host reaches neither repo nor installer');
+  ['192.168.1.131', HOST, '[::1]:8080', '[fe80::1]', '[fd12:3456:789a::5]:8080', 'localhost:8080', 'LOCALHOST', 'lgtv.local', 'LGTV.local:8080', 'lgtv.local.'].forEach(function (h) {
+    call('GET', '/api/apps/install/status', h, null, function (r, b) {
+      assert.strictEqual(r.statusCode, 200, 'host "' + h + '" must be accepted');
+      assert.strictEqual(b.state, 'idle');
+    });
+  });
+
+  // The Host check comes before the token check
+  setup({ allowControl: true, token: 'tok', web: { enabled: false }, apps: {} });
+  call('GET', '/api/apps/catalog', 'evil.example', null, function (r) { assert.strictEqual(r.statusCode, 403); });
+  call('GET', '/api/apps/catalog', HOST, null, function (r) { assert.strictEqual(r.statusCode, 401); });
+  call('GET', '/api/apps/catalog?k=tok', HOST, null, function (r) { assert.strictEqual(r.statusCode, 200); });
+
+  // Controls off
+  setup({ allowControl: false, token: '', web: { enabled: false } });
+  call('GET', '/api/apps/catalog', HOST, null, function (r) { assert.strictEqual(r.statusCode, 403); });
+  call('POST', '/api/apps/install/fetch', HOST, { id: pkg.id }, function (r) { assert.strictEqual(r.statusCode, 403); });
+  call('POST', '/api/apps/install/confirm', HOST, { jobId: 'j1' }, function (r) { assert.strictEqual(r.statusCode, 403); });
+  assert.strictEqual(calls.length, 0);
+
+  // Catalog and install flow
+  setup(base);
+  call('GET', '/api/apps/catalog?force=1', HOST, null, function (r, b) {
+    assert.strictEqual(r.statusCode, 200);
+    assert.strictEqual(b.apps[0].id, pkg.id);
+    assert.deepEqual(calls.pop(), ['catalog', true]);
+  });
+  call('GET', '/api/apps/catalog', HOST, null, function () { assert.deepEqual(calls.pop(), ['catalog', false]); });
+  call('GET', '/api/apps/install/status', HOST, null, function (r, b) {
+    assert.strictEqual(b.writable, true);
+    assert.strictEqual(b.state, 'idle');
+  });
+  call('POST', '/api/apps/install/fetch', HOST, { id: pkg.id }, function (r, b) {
+    assert.strictEqual(r.statusCode, 200);
+    assert.strictEqual(b.install.jobId, 'j1');
+    var start = calls.pop();
+    assert.strictEqual(start[0], 'start');
+    assert.strictEqual(start[1].source, 'catalog');
+    assert.strictEqual(start[1].pkg.id, pkg.id);
+  });
+  call('POST', '/api/apps/install/fetch', HOST, { id: 'nope' }, function (r, b) {
+    assert.strictEqual(r.statusCode, 400);
+    assert.ok(/not in the catalog/.test(b.error));
+  });
+  call('POST', '/api/apps/install/fetch', HOST, {}, function (r, b) {
+    assert.strictEqual(r.statusCode, 400);
+    assert.ok(/app id is required/.test(b.error));
+  });
+  calls = [];
+  call('POST', '/api/apps/install/confirm', HOST, { jobId: 'j1', elevate: true, confirmRoot: ['a.service'], replaceStore: 'yes' }, function (r) {
+    assert.strictEqual(r.statusCode, 200);
+    assert.deepEqual(calls.pop(), ['confirm', { jobId: 'j1', elevate: true, confirmRoot: ['a.service'], replaceStore: false }]);
+  });
+  call('POST', '/api/apps/install/cancel', HOST, { jobId: 'j1' }, function (r, b) {
+    assert.strictEqual(r.statusCode, 200);
+    assert.strictEqual(b.ok, true);
+    assert.deepEqual(calls.pop(), ['cancel', 'j1']);
+  });
+  call('POST', '/api/apps/install/fetch', HOST, { id: pkg.id, auto: true }, function (r) {
+    assert.strictEqual(r.statusCode, 200);
+    var start = calls.pop();
+    assert.strictEqual(start[1].auto, true);
+  });
+  call('POST', '/api/apps/install/sideload', HOST, { enabled: true }, function (r, b) {
+    assert.strictEqual(r.statusCode, 200);
+    assert.strictEqual(b.ok, true);
+    assert.strictEqual(b.sideload, true);
+  });
+  call('POST', '/api/apps/install/sideload', HOST, { enabled: false }, function (r, b) {
+    assert.strictEqual(r.statusCode, 200);
+    assert.strictEqual(b.ok, true);
+    assert.strictEqual(b.sideload, false);
+  });
+  // Catalogs: added and removed only where a URL install is allowed, read
+  // before they are kept, and an install names the one it is from
+  var FORK = 'https://raw.githubusercontent.com/someone/fork/HEAD/repo.json';
+  call('POST', '/api/apps/install/repos', HOST, { action: 'add', url: 'https://github.com/someone/fork' }, function (r) {
+    assert.strictEqual(r.statusCode, 403, 'adding a catalog needs what a URL install needs');
+  });
+  setup({ allowControl: true, token: '', web: { enabled: false }, apps: { sideload: true } });
+  call('POST', '/api/apps/install/repos', HOST, { action: 'add', url: 'https://example.com/page' }, function (r, b) {
+    assert.strictEqual(r.statusCode, 400);
+    assert.ok(/not a package catalog/.test(b.error));
+  });
+  call('POST', '/api/apps/install/repos', HOST, { action: 'add', url: 'https://github.com/someone/fork' }, function (r, b) {
+    assert.strictEqual(r.statusCode, 200, JSON.stringify(b));
+    assert.deepEqual(b.repos, [FORK]);
+    assert.deepEqual(JSON.parse(fs.readFileSync(cfgFile, 'utf8')).apps.repos, [FORK]);
+    assert.deepEqual(calls.pop(), ['forget']);
+  });
+  call('POST', '/api/apps/install/repos', HOST, { action: 'add', url: 'https://github.com/someone/fork' }, function (r, b) {
+    assert.strictEqual(r.statusCode, 400);
+    assert.ok(/already listed/.test(b.error));
+  });
+  call('POST', '/api/apps/install/fetch', HOST, { id: pkg.id, repo: FORK }, function (r) {
+    assert.strictEqual(r.statusCode, 200);
+    calls.pop();
+    assert.deepEqual(calls.pop(), ['find', pkg.id, FORK]);
+  });
+  call('POST', '/api/apps/install/repos', HOST, { action: 'remove', url: FORK }, function (r, b) {
+    assert.strictEqual(r.statusCode, 200);
+    assert.deepEqual(b.repos, []);
+    assert.deepEqual(JSON.parse(fs.readFileSync(cfgFile, 'utf8')).apps.repos, []);
+  });
+  call('POST', '/api/apps/install/repos', HOST, { action: 'remove', url: FORK }, function (r) {
+    assert.strictEqual(r.statusCode, 400);
+  });
+  setup(base);
+  // An installer refusal is reported as an error, not a success
+  var realStart = installerStub.start;
+  installerStub.start = function (r, cb) { cb('an install is already in progress'); };
+  call('POST', '/api/apps/install/fetch', HOST, { id: pkg.id }, function (r, b) {
+    assert.strictEqual(r.statusCode, 400);
+    assert.strictEqual(b.error, 'an install is already in progress');
+  });
+  installerStub.start = realStart;
+  // Wrong method and content type
+  call('GET', '/api/apps/install/fetch', HOST, null, function (r) { assert.strictEqual(r.statusCode, 404); });
+  var badType = createMockReq({ url: '/api/apps/install/fetch', method: 'POST', headers: { host: HOST, 'content-type': 'text/plain' } });
+  routes.handleRequest(badType, createMockRes(function (r) { checks++; assert.strictEqual(r.statusCode, 415); }));
+
+  // apps.* is file-only: the settings form cannot write it
+  var v = routes.validateSettings({ mqtt: { telemetryIntervalMs: 10000 }, device: { id: 'lg' }, apps: { hosts: ['evil.example'], repos: ['http://x'] } });
+  assert.strictEqual(v.value.apps, undefined);
+  assert.deepEqual(Object.keys(v.value).sort(), ['device', 'mqtt']);
+
+  // Restart paths refuse while an install runs, before anything is written
+  setup(base);
+  try { fs.unlinkSync(cfgFile); } catch (e) {}
+  busy = true;
+  call('POST', '/api/settings', HOST, { mqtt: { telemetryIntervalMs: 10000 }, device: { id: 'lg' } }, function (r, b) {
+    assert.strictEqual(r.statusCode, 409);
+    assert.ok(/install is in progress/.test(b.error));
+  });
+  call('POST', '/api/setup', HOST, { action: 'network', open: true }, function (r, b) {
+    assert.strictEqual(r.statusCode, 409);
+  }, '127.0.0.1');
+  assert.ok(!fs.existsSync(cfgFile), 'a refused settings save writes nothing');
+  assert.strictEqual(restarts, 0);
+  busy = false;
+
+  // A preview waiting for confirmation does not hold the network switch
+  // (already open here, so nothing is written or restarted)
+  waiting = true;
+  call('POST', '/api/setup', HOST, { action: 'network', open: true }, function (r, b) {
+    assert.strictEqual(r.statusCode, 200, JSON.stringify(b));
+    assert.strictEqual(b.restarting, false);
+  }, '127.0.0.1');
+  waiting = false;
+
+  assert.strictEqual(checks, 51, 'every callback ran');
+  try { fs.unlinkSync(cfgFile); } catch (e) {}
+  console.log('  ✓ install routes: Host check, controls switch, catalog, install flow, restart refusal');
+})();
+
+// 7. Sideload routes: opt-in gating, URL checks, upload streaming
+(function testSideloadRoutes() {
+  var os = require('os');
+  var childProcess = require('child_process');
+  var installer = require('../server/lib/installer');
+  var fetchLib = require('../server/lib/fetch');
+  var root = path.join(os.tmpdir(), 'tvweb-sideload-test-' + process.pid);
+  var staging = path.join(root, 'staging');
+  // execSync arrived in node 0.12; webOS 2 runs 0.10.
+  [staging, path.join(root, 'state')].forEach(function mkdirp(dir) {
+    if (fs.existsSync(dir)) return;
+    mkdirp(path.dirname(dir));
+    fs.mkdirSync(dir);
+  });
+  var cfgFile = path.join(root, 'config.json');
+  var df = path.join(root, 'df');
+  function fakeDf(avail) {
+    fs.writeFileSync(df, '#!/bin/sh\nprintf "Filesystem 1K-blocks Used Available Use%% Mounted on\\n/dev/x 9999 1 ' + avail + ' 1%% /\\n"\n');
+    fs.chmodSync(df, parseInt('755', 8));
+  }
+  var started = [];
+  var touched = 0;
+  var realStart = installer.start;
+  // Records what the route handed over, and the staged file as it was at that moment.
+  var wrapper = {
+    start: function (r, cb) {
+      var rec = { req: r };
+      if (r.source === 'file') {
+        rec.exists = fs.existsSync(r.path);
+        rec.body = rec.exists ? fs.readFileSync(r.path) : null;
+      }
+      started.push(rec);
+      if (r.source === 'url') return cb(null, { state: 'downloading', jobId: 'j1' });
+      realStart(r, cb);
+    },
+    confirm: installer.confirm, cancel: installer.cancel, status: installer.status, isBusy: installer.isBusy,
+    isWorking: installer.isWorking, prepareUpload: installer.prepareUpload, releaseUpload: installer.releaseUpload,
+    touchUpload: function () { touched++; installer.touchUpload(); }
+  };
+  function initInstaller(caps) {
+    installer.init({
+      luna: function (m, p, cb) { cb({ returnValue: true, apps: [] }); },
+      stateDir: path.join(root, 'state'), stagingDir: staging, dfPath: df,
+      caps: caps || { uploadBytes: 1000 }, fetch: fetchLib, tvMachine: 'arm'
+    });
+  }
+  function init(conf, avail, caps) {
+    started = [];
+    touched = 0;
+    fakeDf(avail === undefined ? 9999999 : avail);
+    initInstaller(caps);
+    routes.init({
+      config: conf, configFile: cfgFile, installer: wrapper, repo: {},
+      restartSelf: function () { return true; }
+    });
+  }
+  function staged() { return fs.readdirSync(staging); }
+  var HOST = '192.168.1.131:8080';
+  var REMOTE = '192.168.1.50';
+  var base = { allowControl: true, token: '', web: { enabled: false } };
+  var open = { allowControl: true, token: '', web: { enabled: false }, apps: { sideload: true } };
+
+  function postJson(url, body, remote, cb, host) {
+    var req = createMockReq({
+      url: url, method: 'POST', remoteAddress: remote || REMOTE,
+      headers: { 'content-type': 'application/json', host: host || HOST }
+    });
+    routes.handleRequest(req, createMockRes(function (r) { cb(r, r.body ? JSON.parse(r.body) : null); }));
+    req.emit('data', JSON.stringify(body));
+    req.emit('end');
+  }
+  function getJson(url, remote, cb) {
+    var req = createMockReq({ url: url, remoteAddress: remote || REMOTE, headers: { host: HOST } });
+    routes.handleRequest(req, createMockRes(function (r) { cb(r, JSON.parse(r.body)); }));
+  }
+
+  /*
+   * An upload request. The chunks arrive on later ticks, so the route has its
+   * file open by then; `then` is 'end' (default), 'abort', 'close' or 'none'.
+   * cb(res, body, req) runs when the route answers, or at once for an abort.
+   */
+  function upload(o, cb) {
+    var h = { host: HOST };
+    if (o.type !== null) h['content-type'] = o.type || 'application/octet-stream';
+    if (o.length !== undefined) h['content-length'] = String(o.length);
+    for (var k in o.headers || {}) h[k] = o.headers[k];
+    var req = createMockReq({ url: '/api/apps/install/upload', method: 'POST', remoteAddress: REMOTE, headers: h });
+    req.paused = 0;
+    req.resumed = 0;
+    req.pause = function () { req.paused++; };
+    req.resume = function () { req.resumed++; };
+    var answered = false;
+    routes.handleRequest(req, createMockRes(function (r) {
+      answered = true;
+      cb(r, r.body ? JSON.parse(r.body) : null, req);
+    }));
+    var chunks = o.chunks || [];
+    var retries = 0;
+    (function next(i) {
+      setTimeout(function () {
+        if (req.destroyed || answered) return;
+        // Paused, a real request sends nothing more until resumed. An 'end'
+        // sent anyway can reach the file before it drains, and Node emits
+        // no 'drain' after end(), so the route would never resume.
+        if (req.paused > req.resumed && ++retries <= 500) return next(i);
+        if (i < chunks.length) {
+          if (req.listeners('data').length === 0) {
+            if (++retries > 100) return;
+            return setTimeout(function () { next(i); }, 10);
+          }
+          req.emit('data', chunks[i]);
+          return next(i + 1);
+        }
+        if (o.then === 'abort') { req.emit('aborted'); req.emit('close'); return cb(null, null, req); }
+        if (o.then === 'close') { req.emit('close'); return cb(null, null, req); }
+        if (o.then !== 'none') {
+          if (req.listeners('end').length === 0) {
+            if (++retries > 100) return;
+            return setTimeout(function () { next(i); }, 10);
+          }
+          req.emit('end');
+        }
+      }, 15);
+    })(0);
+  }
+  function later(fn) { setTimeout(fn, 120); }
+  var FILE = new Buffer('0123456789');
+  var ok = { url: 'https://example.org/app.ipk' };
+
+  // Gating matrix on the URL route
+  init(base);
+  postJson('/api/apps/install/url', ok, REMOTE, function (r, b) {
+    assert.strictEqual(r.statusCode, 403, 'no token, no opt-in, not the TV: refused');
+    assert.ok(/sideload/.test(b.error) && /token/.test(b.error), 'the refusal says how to turn it on');
+  });
+  assert.strictEqual(started.length, 0);
+  postJson('/api/apps/install/url', ok, '127.0.0.1', function (r) { assert.strictEqual(r.statusCode, 200, 'the TV itself is allowed'); }, '127.0.0.1:8080');
+  postJson('/api/apps/install/url', ok, '::ffff:127.0.0.1', function (r) { assert.strictEqual(r.statusCode, 200); });
+  postJson('/api/apps/install/url', ok, '::1', function (r) { assert.strictEqual(r.statusCode, 200); }, '[::1]:8080');
+  assert.deepEqual(started.map(function (s) { return s.req.source; }), ['url', 'url', 'url']);
+  getJson('/api/apps/install/status', REMOTE, function (r, b) {
+    assert.strictEqual(b.sideload, false);
+    assert.strictEqual(b.sideloadVia, null);
+  });
+  getJson('/api/apps/install/status', '127.0.0.1', function (r, b) {
+    assert.strictEqual(b.sideload, true);
+    assert.strictEqual(b.sideloadVia, 'tv');
+  });
+
+  init(open);
+  postJson('/api/apps/install/url', ok, REMOTE, function (r) { assert.strictEqual(r.statusCode, 200, 'apps.sideload opens it'); });
+  getJson('/api/apps/install/status', REMOTE, function (r, b) { assert.strictEqual(b.sideloadVia, 'config'); });
+  ['true', 1, 'yes'].forEach(function (v) {
+    init({ allowControl: true, token: '', web: { enabled: false }, apps: { sideload: v } });
+    postJson('/api/apps/install/url', ok, REMOTE, function (r) { assert.strictEqual(r.statusCode, 403, 'only boolean true counts'); });
+  });
+
+  init({ allowControl: true, token: 'tok', web: { enabled: false }, apps: {} });
+  postJson('/api/apps/install/url?k=tok', ok, REMOTE, function (r) { assert.strictEqual(r.statusCode, 200, 'a token opens it'); });
+  postJson('/api/apps/install/url', ok, REMOTE, function (r) { assert.strictEqual(r.statusCode, 401, 'and is still required'); });
+  getJson('/api/apps/install/status?k=tok', REMOTE, function (r, b) { assert.strictEqual(b.sideloadVia, 'token'); });
+
+  // The Host check comes first, then the controls switch
+  init(open);
+  postJson('/api/apps/install/url', ok, REMOTE, function (r, b) {
+    assert.strictEqual(r.statusCode, 403);
+    assert.ok(/apps\.hosts/.test(b.error), 'refused by the Host check, not the sideload rule');
+  }, 'evil.example');
+  upload({ length: 10, chunks: [FILE], headers: { host: 'evil.example' } }, function (r, b) {
+    assert.strictEqual(r.statusCode, 403);
+    assert.ok(/apps\.hosts/.test(b.error));
+  });
+  // The Apps tab's switch opens and closes it, and is saved to config.json
+  try { fs.unlinkSync(cfgFile); } catch (e) {}
+  init({ allowControl: true, token: '', web: { enabled: false } });
+  postJson('/api/apps/install/sideload', { enabled: true }, REMOTE, function (r, b) {
+    assert.strictEqual(r.statusCode, 200);
+    assert.strictEqual(b.sideloadVia, 'config');
+  });
+  assert.strictEqual(JSON.parse(fs.readFileSync(cfgFile, 'utf8')).apps.sideload, true);
+  postJson('/api/apps/install/url', ok, REMOTE, function (r) { assert.strictEqual(r.statusCode, 200, 'the switch opens it'); });
+  postJson('/api/apps/install/sideload', { enabled: 'yes' }, REMOTE, function (r, b) { assert.strictEqual(b.sideload, false, 'only boolean true turns it on'); });
+  postJson('/api/apps/install/url', ok, REMOTE, function (r) { assert.strictEqual(r.statusCode, 403, 'and switching off closes it'); });
+  assert.strictEqual(JSON.parse(fs.readFileSync(cfgFile, 'utf8')).apps.sideload, false);
+  postJson('/api/apps/install/sideload', { enabled: true }, REMOTE, function (r, b) {
+    assert.strictEqual(r.statusCode, 403);
+    assert.ok(/apps\.hosts/.test(b.error), 'a rebinding page cannot flip it');
+  }, 'evil.example');
+  init({ allowControl: true, token: 'tok', web: { enabled: false } });
+  postJson('/api/apps/install/sideload', { enabled: true }, REMOTE, function (r) { assert.strictEqual(r.statusCode, 401, 'a token guards it'); });
+  init({ allowControl: false, token: '', web: { enabled: false } });
+  postJson('/api/apps/install/sideload', { enabled: true }, REMOTE, function (r) { assert.strictEqual(r.statusCode, 403, 'so does allowControl'); });
+  assert.strictEqual(JSON.parse(fs.readFileSync(cfgFile, 'utf8')).apps.sideload, false, 'refused requests change nothing');
+  fs.unlinkSync(cfgFile);
+
+  init({ allowControl: false, token: '', web: { enabled: false }, apps: { sideload: true } });
+  postJson('/api/apps/install/url', ok, REMOTE, function (r) { assert.strictEqual(r.statusCode, 403); });
+  upload({ length: 10, chunks: [FILE] }, function (r) { assert.strictEqual(r.statusCode, 403); });
+  assert.strictEqual(started.length, 0);
+
+  // Gating on the upload route
+  init(base);
+  upload({ length: 10, chunks: [FILE] }, function (r, b) {
+    assert.strictEqual(r.statusCode, 403);
+    assert.ok(/sideload/.test(b.error));
+    assert.deepEqual(staged(), [], 'nothing is written for a refused upload');
+    assert.strictEqual(started.length, 0);
+  });
+
+  // URL validation: nothing malformed reaches the installer
+  init(open);
+  ['-K/etc/passwd', '--output=/etc/x', 'file:///etc/passwd', 'ftp://example.org/a.ipk', 'https://example.org/a b.ipk',
+    'https://example.org/a\nX: y', 'https://example.org/a\u0000', '', 'x', 7, null, 'https://' + new Array(2100).join('a') + '.org/'].forEach(function (u) {
+    postJson('/api/apps/install/url', { url: u }, REMOTE, function (r, b) {
+      assert.strictEqual(r.statusCode, 400, 'url ' + JSON.stringify(u).slice(0, 40) + ' must be refused');
+      assert.strictEqual(b.ok, false);
+    });
+  });
+  ['xyz', new Array(64).join('a'), new Array(66).join('a'), 5].forEach(function (h) {
+    postJson('/api/apps/install/url', { url: ok.url, sha256: h }, REMOTE, function (r, b) {
+      assert.strictEqual(r.statusCode, 400, 'hash ' + h + ' must be refused');
+      assert.ok(/sha256/.test(b.error));
+    });
+  });
+  assert.strictEqual(started.length, 0, 'a refused URL never reaches the installer');
+  var good = new Array(65).join('A');
+  postJson('/api/apps/install/url', { url: ok.url, sha256: good }, REMOTE, function (r) {
+    assert.strictEqual(r.statusCode, 200);
+    assert.deepEqual(started.pop().req, { source: 'url', url: ok.url, sha256: good });
+  });
+  postJson('/api/apps/install/url', { url: ok.url, sha256: '' }, REMOTE, function (r) {
+    assert.strictEqual(r.statusCode, 200);
+    assert.strictEqual(started.pop().req.sha256, null);
+  });
+
+  // apps.sideload cannot be set from the settings form, in the validator or on the wire
+  var v = routes.validateSettings({ mqtt: { telemetryIntervalMs: 10000 }, device: { id: 'lg' }, apps: { sideload: true } });
+  assert.strictEqual(v.value.apps, undefined);
+  init(base);
+  postJson('/api/settings', { mqtt: { telemetryIntervalMs: 10000 }, device: { id: 'lg' }, apps: { sideload: true } }, '127.0.0.1', function (r) {
+    assert.strictEqual(r.statusCode, 200);
+    var written = JSON.parse(fs.readFileSync(cfgFile, 'utf8'));
+    assert.strictEqual(written.apps, undefined, 'the saved file has no apps section');
+  }, '127.0.0.1:8080');
+
+
+  // Upload: request rules, all refused before a byte is written
+  init(open);
+  ['multipart/form-data; boundary=x', 'application/json', 'text/plain', 'application/octet-stream; charset=binary',
+    'application/x-www-form-urlencoded', null].forEach(function (ty) {
+    upload({ type: ty, length: 10, chunks: [FILE], then: 'none' }, function (r) {
+      assert.strictEqual(r.statusCode, 415, 'content type ' + ty + ' must be refused');
+      assert.deepEqual(staged(), []);
+    });
+  });
+  upload({ chunks: [FILE], then: 'none' }, function (r, b) {
+    assert.strictEqual(r.statusCode, 411, 'no Content-Length');
+    assert.ok(/in advance/.test(b.error));
+  });
+  upload({ length: 10, headers: { 'transfer-encoding': 'chunked' }, chunks: [FILE], then: 'none' }, function (r) {
+    assert.strictEqual(r.statusCode, 411, 'chunked is refused even with a length');
+  });
+  ['abc', '0', '-5', '1e3', '99999999999999999999'].forEach(function (n) {
+    upload({ length: n, then: 'none' }, function (r) { assert.strictEqual(r.statusCode, 400, 'length ' + n); });
+  });
+  upload({ length: 10, headers: { origin: 'https://evil.example' }, chunks: [FILE], then: 'none' }, function (r) {
+    assert.strictEqual(r.statusCode, 403, 'a cross-origin upload is refused');
+  });
+  upload({ length: 1001, then: 'none' }, function (r, b) {
+    assert.strictEqual(r.statusCode, 413);
+    assert.ok(/larger than/.test(b.error));
+    assert.deepEqual(staged(), []);
+  });
+  assert.strictEqual(started.length, 0, 'none of these reached the installer');
+
+  later(function () {
+    // Not enough space: the file needs three times its size
+    init(open, 1);
+    upload({ length: 500, chunks: [new Buffer(500)], then: 'none' }, function (r, b) {
+      assert.strictEqual(r.statusCode, 507);
+      assert.ok(/not enough free space/.test(b.error));
+      assert.deepEqual(staged(), []);
+      happy();
+    });
+  });
+
+  function happy() {
+    // The bytes land in the staging directory and the installer is given that path
+    init(open);
+    upload({ type: 'Application/Octet-Stream', length: 10, chunks: [FILE.slice(0, 4), FILE.slice(4)] }, function (r, b) {
+      assert.strictEqual(r.statusCode, 200, 'the type is case-insensitive');
+      assert.strictEqual(b.ok, true);
+      assert.strictEqual(touched, 2, 'each chunk refreshes the upload hold');
+      assert.strictEqual(started.length, 1);
+      var s = started[0];
+      assert.strictEqual(s.req.source, 'file');
+      assert.strictEqual(path.dirname(s.req.path), staging);
+      assert.ok(s.exists);
+      assert.strictEqual(s.body.toString(), '0123456789');
+      later(backpressure);
+    });
+  }
+
+  function backpressure() {
+    // The job that followed rejected the junk bytes and cleared its staging directory
+    assert.deepEqual(staged(), []);
+    init(open, undefined, { uploadBytes: 10 * 1024 * 1024 });
+    var big = new Buffer(512 * 1024);
+    big.fill(7);
+    upload({ length: big.length, chunks: [big] }, function (r, b, req) {
+      assert.strictEqual(r.statusCode, 200);
+      assert.ok(req.paused >= 1, 'the request was paused while the file caught up');
+      assert.ok(req.resumed >= 1, 'and resumed');
+      assert.strictEqual(started[0].body.length, big.length);
+      later(mismatch);
+    });
+  }
+
+  function mismatch() {
+    init(open);
+    upload({ length: 10, chunks: [new Buffer(6), new Buffer(6)], then: 'none' }, function (r, b) {
+      assert.strictEqual(r.statusCode, 400);
+      assert.ok(/stated size/.test(b.error));
+      later(function () {
+        assert.deepEqual(staged(), [], 'an oversize upload leaves no file');
+        upload({ length: 10, chunks: [new Buffer(6)] }, function (r2) {
+          assert.strictEqual(r2.statusCode, 400, 'a body that ends early is refused');
+          later(function () {
+            assert.deepEqual(staged(), [], 'a short upload leaves no file');
+            aborted();
+          });
+        });
+      });
+    });
+  }
+
+  function aborted() {
+    // Aborted and closed uploads leave nothing behind and free the way for the next
+    upload({ length: 10, chunks: [new Buffer(6)], then: 'abort' }, function () {
+      later(function () {
+        assert.deepEqual(staged(), [], 'an aborted upload leaves no file');
+        upload({ length: 10, chunks: [new Buffer(3)], then: 'close' }, function () {
+          later(function () {
+            assert.deepEqual(staged(), [], 'a closed connection leaves no file');
+            upload({ length: 10, chunks: [], then: 'abort' }, function () {
+              later(function () {
+                assert.deepEqual(staged(), [], 'an upload aborted before its file opened leaves no file');
+                assert.strictEqual(started.length, 0);
+                oneAtATime();
+              });
+            });
+          });
+        });
+      });
+    });
+  }
+
+  function oneAtATime() {
+    upload({ length: 10, chunks: [new Buffer(3)], then: 'none' }, function () {});
+    setTimeout(function () {
+      upload({ length: 10, chunks: [FILE] }, function (r) {
+        assert.strictEqual(r.statusCode, 409, 'a second upload is refused while one is streaming');
+        initInstaller();
+        try { childProcess.execSync('rm -rf "' + root + '"'); } catch (e) {}
+        console.log('  ✓ sideload routes: opt-in gating, Host check first, URL checks, upload streaming and cleanup');
+      });
+    }, 60);
+  }
+})();
+
+// /api/adblock/custom takes a body larger than /api/control's, under the
+// same rules: controls on, JSON, same origin
+(function testAdblockCustomRoute() {
+  var seen = [];
+  function post(conf, body, headers) {
+    var out = null;
+    routes.init({
+      config: conf,
+      privacy: { setCustomHosts: function (o, cb) { seen.push(o); cb({ ok: true }); } }
+    });
+    var h = { 'content-type': 'application/json', host: '127.0.0.1:8080' };
+    for (var k in headers || {}) h[k] = headers[k];
+    var req = createMockReq({ url: '/api/adblock/custom', method: 'POST', remoteAddress: '127.0.0.1', headers: h });
+    routes.handleRequest(req, createMockRes(function (r) { out = r; }));
+    req.emit('data', typeof body === 'string' ? body : JSON.stringify(body));
+    req.emit('end');
+    return out;
+  }
+  var on = { web: { enabled: false }, allowControl: true, token: '' };
+  var big = new Array(20001).join('0.0.0.0 h.example.com\n');
+  assert.ok(big.length > 4096 * 50, 'well past /api/control\'s limit');
+  assert.strictEqual(post(on, { mode: 'add', text: big }).statusCode, 200);
+  assert.strictEqual(seen[0].text.length, big.length, 'the whole file reaches privacy.js');
+  assert.strictEqual(post({ web: { enabled: false }, allowControl: false, token: '' }, { clear: true }).statusCode, 403);
+  assert.strictEqual(post(on, { clear: true }, { 'content-type': 'text/plain' }).statusCode, 415);
+  assert.strictEqual(post(on, { clear: true }, { origin: 'http://evil.example' }).statusCode, 403);
+  assert.strictEqual(post(on, 'not json').statusCode, 400);
+  assert.strictEqual(seen.length, 1, 'refused requests reach nothing');
+})();
+
+// /api/oledcare says whether the TV has an OLED panel, so the TV app drops its
+// OLED Care tab on an LCD TV as the web dashboard does
+(function testOledCareAvailable() {
+  function oledCare(stats) {
+    var body = null;
+    routes.init({
+      config: { web: { enabled: false }, allowControl: true, token: '' },
+      oled: {
+        oledProtControllable: function () { return false; }
+      },
+      telemetry: { collectStats: function (cb) { cb(stats); } }
+    });
+    routes.handleRequest(createMockReq({
+      url: '/api/oledcare', method: 'GET', remoteAddress: '127.0.0.1',
+      headers: { host: '127.0.0.1:8080' }
+    }), createMockRes(function (r) { body = JSON.parse(r.body); }));
+    return body;
+  }
+  var oled = oledCare({ oled: { panel_hours: 4200, gsr_enabled: true, tpc_enabled: false, gsr_stress_count: 3 } });
+  assert.strictEqual(oled.available, true);
+  assert.strictEqual(oled.panelHours, 4200);
+  assert.strictEqual(oled.compInterval, 4);
+  assert.strictEqual(oled.refresherInterval, 2000);
+  // The protections as the stats have them, with the precedence oled.js applies.
+  assert.strictEqual(oled.gsr, true);
+  assert.strictEqual(oled.tpc, false);
+  assert.strictEqual(oled.gsrStressCount, 3);
+  var unreported = oledCare({ oled: { panel_hours: 4200, gsr_enabled: null } });
+  assert.strictEqual(unreported.gsr, null);
+  assert.strictEqual(unreported.tpc, null);
+  assert.strictEqual(unreported.gsrStressCount, null);
+  var lcd = oledCare({ oled: null });
+  assert.strictEqual(lcd.available, false);
+  assert.strictEqual(lcd.isOled, false);
+  console.log('  ✓ /api/oledcare is unavailable on a TV without an OLED panel');
+})();
+
+// SSH keys are a way in that outlasts the server: changing them needs a
+// token, even from the TV itself, and without one the comments are not shown.
+(function testSshKeysNeedToken() {
+  var added = [];
+  var keys = {
+    status: function (cb) { cb({ ok: true, keys: [{ type: 'ssh-ed25519', comment: 'me@example.com', options: '', fingerprint: 'SHA256:x' }] }); },
+    add: function (key, cb) { added.push(key); cb({ ok: true, keys: [] }); },
+    remove: function (p, cb) { cb({ ok: true, keys: [] }); },
+    deleteFile: function (cb) { cb({ ok: true, keys: [] }); }
+  };
+  function call(token, method, url, from, body) {
+    var out = null;
+    routes.init({ config: { web: { enabled: false }, allowControl: true, token: token }, sshKeys: keys });
+    var req = createMockReq({
+      url: url, method: method, remoteAddress: from,
+      headers: { host: '192.168.8.20:8080', 'content-type': 'application/json' }
+    });
+    routes.handleRequest(req, createMockRes(function (r) { out = { code: r.statusCode, body: JSON.parse(r.body) }; }));
+    if (body) { req.emit('data', JSON.stringify(body)); req.emit('end'); }
+    return out;
+  }
+  var add = { action: 'add', key: 'ssh-ed25519 AAAA' };
+
+  var r = call('', 'GET', '/api/ssh', '192.168.8.10');
+  assert.strictEqual(r.body.writable, false);
+  assert.strictEqual(r.body.needsToken, true);
+  r = call('', 'POST', '/api/ssh', '192.168.8.10', add);
+  assert.strictEqual(r.code, 403);
+  assert.deepEqual(added, [], 'nothing added from the network without a token');
+
+  r = call('', 'GET', '/api/ssh', '192.168.8.10');
+  assert.strictEqual(r.body.keys[0].comment, undefined, 'no comment without a token');
+  assert.strictEqual(r.body.keys[0].fingerprint, 'SHA256:x');
+
+  // A rebinding page in the TV's browser, or an app on the TV, comes from 127.0.0.1 too.
+  r = call('', 'POST', '/api/ssh', '127.0.0.1', add);
+  assert.strictEqual(r.code, 403, 'not from the TV itself either');
+  assert.deepEqual(added, []);
+
+  r = call('secret', 'POST', '/api/ssh', '192.168.8.10', add);
+  assert.strictEqual(r.code, 401, 'the token is checked first');
+  r = call('secret', 'POST', '/api/ssh?k=secret', '192.168.8.10', add);
+  assert.strictEqual(r.code, 200);
+  assert.strictEqual(added.length, 1);
+  r = call('secret', 'GET', '/api/ssh?k=secret', '192.168.8.10');
+  assert.strictEqual(r.body.writable, true);
+  assert.strictEqual(r.body.needsToken, false);
+  assert.strictEqual(r.body.keys[0].comment, 'me@example.com');
+  console.log('  ✓ SSH keys can be changed only with a token, even from the TV itself, and their comments shown only with it');
+})();
+
+// Opening the dashboard in setup unsets host (dual-stack); closing it binds
+// loopback.
+(function testNetworkAccess() {
+  var cfgFile = path.join(require('os').tmpdir(), 'tvweb-network-test-' + process.pid + '.json');
+  function open(host) {
+    routes.init({ config: { web: { enabled: false }, host: host }, configFile: cfgFile });
+    return routes.networkOpen();
+  }
+  assert.strictEqual(open('::'), true);
+  assert.strictEqual(open('0.0.0.0'), true);
+  assert.strictEqual(open('::1'), false);
+  assert.strictEqual(open('127.0.0.1'), false);
+  fs.writeFileSync(cfgFile, JSON.stringify({ host: '0.0.0.0', port: 8080 }));
+  routes.setNetworkAccess(false, function (err) { assert.ifError(err); });
+  assert.deepEqual(JSON.parse(fs.readFileSync(cfgFile, 'utf8')), { host: '127.0.0.1', port: 8080 });
+  routes.setNetworkAccess(true, function (err) { assert.ifError(err); });
+  assert.deepEqual(JSON.parse(fs.readFileSync(cfgFile, 'utf8')), { port: 8080 });
+  fs.unlinkSync(cfgFile);
+  console.log('  ✓ setup opens the dashboard on the default host and closes it to loopback');
+})();
+
+// Testing the setup wizard emulation (dry-run mode).
+(function testSetupEmulation() {
+  var cfg = { allowControl: true, port: 8080, host: '0.0.0.0', emulateSetup: true };
+  routes.init({
+    config: cfg,
+    telemetry: { alwaysOnSupported: function (cb) { cb(true); }, lanHostname: function () { return 'lg.lan'; } }
+  });
+  routes.resetSimulatedSetup();
+
+  assert.strictEqual(routes.setupPending(), true, 'setupPending is true when emulateSetup is set');
+
+  function call(method, url, body, cb, remoteIp) {
+    var req = createMockReq({ method: method, url: url, remoteAddress: remoteIp || '192.168.1.100', headers: { 'content-type': 'application/json' } });
+    var res = createMockRes(function (r) {
+      var parsed = null;
+      try { parsed = JSON.parse(r.body); } catch (e) {}
+      cb(r, parsed);
+    });
+    routes.handleRequest(req, res);
+    if (body) {
+      req.emit('data', JSON.stringify(body));
+      req.emit('end');
+    }
+  }
+
+  // GET /api/setup?demo=1 from non-TV remote address succeeds in demo mode
+  call('GET', '/api/setup?demo=1', null, function (r, b) {
+    assert.strictEqual(r.statusCode, 200);
+    assert.strictEqual(b.ok, true);
+    assert.strictEqual(b.demo, true);
+    assert.strictEqual(b.needed, true);
+  });
+
+  // POST /api/setup with action network simulates without restart
+  call('POST', '/api/setup', { action: 'network', open: true, demo: true }, function (r, b) {
+    assert.strictEqual(r.statusCode, 200);
+    assert.strictEqual(b.ok, true);
+    assert.strictEqual(b.demo, true);
+    assert.strictEqual(b.restarting, false);
+  });
+
+  // POST /api/setup with action alwaysReady simulates
+  call('POST', '/api/setup', { action: 'alwaysReady', on: true, demo: true }, function (r, b) {
+    assert.strictEqual(r.statusCode, 200);
+    assert.strictEqual(b.ok, true);
+    assert.strictEqual(b.demo, true);
+  });
+
+  // POST /api/setup with action handoff simulates link
+  call('POST', '/api/setup', { action: 'handoff', demo: true }, function (r, b) {
+    assert.strictEqual(r.statusCode, 200);
+    assert.strictEqual(b.ok, true);
+    assert.strictEqual(b.demo, true);
+    assert.ok(b.url && b.url.indexOf('?c=demo') !== -1);
+  });
+
+  // POST /api/setup with action done simulates completion
+  call('POST', '/api/setup', { action: 'done', demo: true }, function (r, b) {
+    assert.strictEqual(r.statusCode, 200);
+    assert.strictEqual(b.ok, true);
+    assert.strictEqual(b.demo, true);
+  });
+
+  console.log('  ✓ setup emulation: safe dry-run responses without restart or persistent writes');
+})();
+
+// The dashboard's icon route answers through the icon server's shared reply.
+(function testAppIconRoute() {
+  var iconFile = path.join(os.tmpdir(), 'routes-icon-' + process.pid + '.png');
+  fs.writeFileSync(iconFile, 'png bytes');
+  routes.init({
+    config: { allowControl: true, token: '', web: { enabled: false } },
+    apps: { getIconPath: function (id, cb) { cb(id === 'com.example.app' ? iconFile : null); } }
+  });
+  routes.handleRequest(createMockReq({ url: '/api/apps/icon?id=com.example.app' }), createMockRes(function (r) {
+    assert.strictEqual(r.statusCode, 200);
+    assert.strictEqual(r.body, 'png bytes');
+    var etag = r.headers.ETag;
+    assert.ok(etag);
+    routes.handleRequest(createMockReq({ url: '/api/apps/icon?id=com.example.app', headers: { 'if-none-match': etag } }), createMockRes(function (r304) {
+      assert.strictEqual(r304.statusCode, 304);
+      routes.handleRequest(createMockReq({ url: '/api/apps/icon?id=other' }), createMockRes(function (r404) {
+        assert.strictEqual(r404.statusCode, 404);
+        assert.strictEqual(JSON.parse(r404.body).error, 'icon not found');
+        try { fs.unlinkSync(iconFile); } catch (e) {}
+        console.log('  ✓ /api/apps/icon serves the icon with an ETag and a 304');
+      }));
+    }));
+  }));
+})();
+
+console.log('ALL test-routes.js assertions passed!');
