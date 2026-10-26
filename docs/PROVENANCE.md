@@ -48,6 +48,8 @@ données sous CC BY 4.0 et conditions du service applicables; le widget fournit 
 La démo utilise exclusivement des données synthétiques.
 
 Les captures de documentation upstream, ses workflows de publication et de mesure
-du trafic, et les scripts locaux hors source n'ont pas été importés. Certains liens
-illustratifs des documents upstream renvoient donc à leur dépôt d'origine. Le guide
-public de ce dépôt est `README.md`.
+du trafic, et les scripts locaux hors source n'ont pas été importés. Les 60 liens
+illustratifs concernés pointent vers les fichiers vérifiés du dépôt d'origine,
+épinglés au commit upstream indiqué plus haut; aucune capture supplémentaire
+n'est redistribuée ici. Le [README](../README.md) distingue l'état des branches;
+le [guide manuel](MANUAL_GUIDE.md) décrit le parcours autonome de cette variante.

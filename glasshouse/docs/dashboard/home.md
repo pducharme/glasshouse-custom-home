@@ -2,7 +2,7 @@
 
 **Experimental.** Glasshouse Home is a home screen of Glasshouse's own, shown in place of LG's when the remote's Home or Back button is pressed and when the TV switches on. The Home tab switches it on and off and arranges it. It has been tried on webOS 9 and 10, and requires the dashboard on port 8080. On webOS 11 it is offered once `"allowExperimentalHome": true` is set in `config.json`. Elsewhere neither dashboard shows it, unless it is still switched on or LG's Home has not yet been fully restored.
 
-![Glasshouse Home on an OLED55G36LA (webOS 9.2): clock and the Apps, Inputs and Channels rows over an uploaded afternoon wallpaper](../screenshots/home.jpg)
+![Glasshouse Home on an OLED55G36LA (webOS 9.2): clock and the Apps, Inputs and Channels rows over an uploaded afternoon wallpaper](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/home.jpg)
 
 The screen has a clock and date, what was last on (an app, an input and the devices on it, or a channel and its programme), and three rows:
 
@@ -25,11 +25,11 @@ The background is black. The browser dashboard can add an image for each time of
 
 Uploads are stored in `/var/lib/tvweb/home-wallpaper-uploads`, outside the update and rollback payload. A failed or interrupted upload leaves the previous image intact. The directory is removed when Glasshouse is uninstalled; the layout backup does not include image files.
 
-![Personal wallpapers uploaded for all four time-of-day slots](../screenshots/home-wallpaper-upload.png)
+![Personal wallpapers uploaded for all four time-of-day slots](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/home-wallpaper-upload.png)
 
-![Home with no wallpaper uploaded: the same apps, inputs and channels on black](../screenshots/home-black.jpg)
+![Home with no wallpaper uploaded: the same apps, inputs and channels on black](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/home-black.jpg)
 
-![An uploaded evening wallpaper](../screenshots/home-evening.jpg)
+![An uploaded evening wallpaper](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/home-evening.jpg)
 
 **Colours** sets the text and the accent of Glasshouse Home. The quieter text is a darker shade of the text colour. Once colours are chosen, the accent frames the focused tile and marks what was last on and the tiles being arranged; the default frames the focused tile in the text colour. The tab shows six presets, each as a small preview of the clock, a row name and the accent, with **Text** and **Accent** pickers for any other colour and **Use the default colours** to go back. The TV app's Home section steps through the same presets with OK, and shows Custom for colours picked in the browser. Glasshouse Home changes colour within a few seconds, without being reopened.
 
@@ -67,9 +67,9 @@ Over SSH, `tvwebctl restore-glasshouse-home` does what **Use LG Home** does. Uni
 
 Earlier builds installed a separate Glasshouse Home app and changed the TV's Home and start-up settings to it. The first start of a newer server puts back any of those settings that still name that app, gives the Home button back to LG's filters, and removes the app.
 
-![The Home tab in the browser dashboard: the Channels row with its added channels, and Add channels below them](../screenshots/home-dashboard.png)
+![The Home tab in the browser dashboard: the Channels row with its added channels, and Add channels below them](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/home-dashboard.png)
 
-![The Home section of the TV app: inputs shown or hidden, channels removed with OK, and Add channels](../screenshots/home-tv-app.jpg)
+![The Home section of the TV app: inputs shown or hidden, channels removed with OK, and Add channels](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/home-tv-app.jpg)
 
 ## Arranging
 
@@ -83,4 +83,4 @@ The browser dashboard locks editing until each save and refresh finishes. A fail
 
 If the first catalogue fails, input waits for usable tiles, the view asks the server for LG Home and retries while visible. It sends its first heartbeat immediately after rendering. A catalogue reply arriving during arranging cannot replace the edits. Reset leaves the Apps row following its default order. A server update waits until arranging and saving finish before reloading the view.
 
-![Arranging on the TV: Sky News focused in the Channels row, with the bar for removing it, resetting and finishing](../screenshots/home-arrange.jpg)
+![Arranging on the TV: Sky News focused in the Channels row, with the bar for removing it, resetting and finishing](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/home-arrange.jpg)

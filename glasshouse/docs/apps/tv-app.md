@@ -4,7 +4,7 @@ The dashboard can also run directly on the TV's home screen, driven by the remot
 
 It is drawn on true black for OLED panels in 1080p, with high-contrast text and a layout designed for remote control: Left and Right flip between sections, Up and Down move within rows, Channel Up and Channel Down page through long lists, and OK acts on the selected item.
 
-![The Glasshouse TV app showing live hardware metrics, temperatures, and storage health on true black](../screenshots/tv-app.png)
+![The Glasshouse TV app showing live hardware metrics, temperatures, and storage health on true black](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/tv-app.png)
 
 *The TV app's Metrics view, showing SoC temperature, CPU load, memory, swap, eMMC storage wear, and TV model.*
 
@@ -30,19 +30,19 @@ Opening the TV app on a fresh install starts an on-screen setup wizard to config
 
 All choices made during setup can be changed at any time from the TV app's **Settings** tab or the web dashboard.
 
-![Welcome screen of the Glasshouse TV app setup wizard](../screenshots/tv-app-setup-welcome.png)
+![Welcome screen of the Glasshouse TV app setup wizard](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/tv-app-setup-welcome.png)
 
 *The setup wizard welcome screen.*
 
-![Network access choice in the TV app setup wizard](../screenshots/tv-app-setup-network.png)
+![Network access choice in the TV app setup wizard](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/tv-app-setup-network.png)
 
 *Choosing whether the web dashboard is open to devices on the home network or TV-local only.*
 
-![Home Assistant phone pairing QR code in the TV app setup wizard](../screenshots/tv-app-setup-handoff.png)
+![Home Assistant phone pairing QR code in the TV app setup wizard](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/tv-app-setup-handoff.png)
 
 *Scanning the phone handoff code to configure Home Assistant without typing on the remote.*
 
-![Setup wizard summary screen ready to open the dashboard](../screenshots/tv-app-setup-summary.png)
+![Setup wizard summary screen ready to open the dashboard](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/tv-app-setup-summary.png)
 
 *The final summary screen confirming your settings before opening the dashboard.*
 
@@ -55,7 +55,7 @@ Its **Settings** tab gives the web dashboard's address, with a QR code to scan o
 
 Scanning the code automatically pairs the phone with the TV, passing the access token if one is configured, allowing the dashboard to be opened without typing an IP address with the remote.
 
-![Settings tab on the TV app, showing web dashboard address and pairing QR code](../screenshots/tv-app-settings.png)
+![Settings tab on the TV app, showing web dashboard address and pairing QR code](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/tv-app-settings.png)
 
 *The Settings view, presenting the web dashboard's LAN address and phone pairing QR code.*
 
@@ -65,7 +65,7 @@ The **Apps** tab can install packages directly from the Homebrew Channel catalog
 
 It also provides system app hiding, allowing built-in LG apps and tiles (such as Always Ready, Alexa, or Camera) to be hidden from the webOS home screen.
 
-![Apps tab on the TV app, showing Homebrew catalog installation and home screen app hiding](../screenshots/tv-app-apps.png)
+![Apps tab on the TV app, showing Homebrew catalog installation and home screen app hiding](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/tv-app-apps.png)
 
 *The Apps view, showing Homebrew Channel catalog browsing and system app hiding.*
 

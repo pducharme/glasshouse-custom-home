@@ -29,6 +29,6 @@ How much the Glasshouse server writes is set in `/var/lib/tvweb/config.json`:
 
 `info`, the default, writes the server's normal activity. `quiet` leaves that out and writes only warnings and errors. `debug` adds extra detail for troubleshooting: each call to the TV's services as it starts and ends, flushed to disk at once so the last lines survive a TV that restarts itself, and the timing of each remote key. The level is read when the server starts, so a change takes effect after `/var/lib/tvweb/tvwebctl restart` or a reboot of the TV.
 
-![Tools tab: source, level and line filters, search, Live switch, and the log](../screenshots/tools.png)
+![Tools tab: source, level and line filters, search, Live switch, and the log](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/tools.png)
 
 *Live webOS system logs, Glasshouse daemon events, and kernel ring buffer diagnostics.*

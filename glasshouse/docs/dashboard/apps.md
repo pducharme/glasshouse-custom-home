@@ -2,7 +2,7 @@
 
 The **Apps** tab, `/?tab=apps`, has three groups: **Apps**, for installing and removing apps and the web pages saved to the Home screen; **Home screen and remote**, for what the Home screen shows and what the remote's keys do; and **Background**, for the memory LG's background apps and services take up.
 
-![Apps tab in three groups: installed applications and saved web pages under Apps, the Home screen layout with its inputs and parts, Quick Access and hidden system apps under Home screen and remote, and apps kept ready and background services under Background](../screenshots/apps.png)
+![Apps tab in three groups: installed applications and saved web pages under Apps, the Home screen layout with its inputs and parts, Quick Access and hidden system apps under Home screen and remote, and apps kept ready and background services under Background](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/apps.png)
 
 *The three groups, with installed applications, saved web pages, the Home screen layout, apps kept ready in the background and background services open.*
 
@@ -10,13 +10,13 @@ The **Apps** tab, `/?tab=apps`, has three groups: **Apps**, for installing and r
 
 ### Manage applications
 
-![Manage applications, listing each installed app with its size and Launch and Uninstall buttons](../screenshots/apps-manage.png)
+![Manage applications, listing each installed app with its size and Launch and Uninstall buttons](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/apps-manage.png)
 
 Lists the apps downloaded from the LG store or installed by hand, with their version, vendor, and storage badge showing disk footprint. Launch opens the application on the TV, while Uninstall deletes an app completely and frees its storage. LG's built-in apps can't be removed this way; they can be hidden instead.
 
 ### Install homebrew apps
 
-![Install homebrew apps, with category filters, a search box and the Homebrew Channel catalog, each app with its size and an Install button](../screenshots/apps-install.png)
+![Install homebrew apps, with category filters, a search box and the Homebrew Channel catalog, each app with its size and an Install button](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/apps-install.png)
 
 Lists the Homebrew Channel catalog, with category filters (All, Media, Games, Utilities, Ambilight, Screensavers) and keyword search, and Install, Update or Uninstall for each app, with Launch beside an installed one. The list shows 10 apps at a time, with **Show 10 more** beneath; a search or category looks through the whole catalog. Downloads are checked against the catalog before they are installed, and the dashboard asks first when something needs a decision, such as replacing a copy installed from the LG store.
 
@@ -32,7 +32,7 @@ Adding or removing a catalog needs **Install app from a URL or file** turned on,
 
 ### Install app from a URL or file
 
-![Install app from a URL or file while it is off, with the button that turns it on](../screenshots/apps-sideload.png)
+![Install app from a URL or file while it is off, with the button that turns it on](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/apps-sideload.png)
 
 Installs an `.ipk` package from outside the catalog. **From URL...** downloads one from an http or https address, with an optional sha256 to check it against, and **Upload .ipk** sends one from the browser. Both show the same preview as a catalog install.
 
@@ -40,7 +40,7 @@ It is off until it is switched on in this section (after a warning) or a token i
 
 ### Saved web pages
 
-![Saved web pages, two pages with Edit and Remove buttons, and the fields for adding another](../screenshots/apps-saved-pages.png)
+![Saved web pages, two pages with Edit and Remove buttons, and the fields for adding another](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/apps-saved-pages.png)
 
 Lists the web pages on the Home screen, each of which opens in the TV's browser. A page saved from the browser takes its whole title as its name, so a long one can be given a shorter name here. Pages can also be added, pointed at a new address, or removed.
 
@@ -48,7 +48,7 @@ Lists the web pages on the Home screen, each of which opens in the TV's browser.
 
 ### Home screen layout
 
-![Home screen layout on webOS 9, with HDMI 1 and HDMI 2 on Home, the banner, Quick Cards and recent input hidden, and the app tiles shown](../screenshots/apps-home-layout.png)
+![Home screen layout on webOS 9, with HDMI 1 and HDMI 2 on Home, the banner, Quick Cards and recent input hidden, and the app tiles shown](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/apps-home-layout.png)
 
 Switches parts of LG's Home screen off, for a Home screen with only the apps and inputs on it:
 
@@ -76,7 +76,7 @@ On webOS 10 the section has a switch at the top, with its warning, and nothing i
 
 ### Quick Access
 
-![Quick Access, number keys 1 to 9, each with what it opens](../screenshots/apps-quick-access.png)
+![Quick Access, number keys 1 to 9, each with what it opens](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/apps-quick-access.png)
 
 Sets what each number key on the remote opens when it is held: an installed app, an HDMI input or Live TV, for keys 1 to 9. The keys are tiles laid out as the remote's number pad, each showing what it opens; choosing one opens the choices under its row, as for Remote keys. Holding 0 shows the list on the TV. A change applies straight away, the same as changing it in the TV's own Quick Access list, which shows it too.
 
@@ -84,7 +84,7 @@ Sets what each number key on the remote opens when it is held: an installed app,
 
 ### Remote keys
 
-![Remote keys as tiles in streaming buttons, color keys and other keys, each showing what the key does, with buttons on remotes sold elsewhere folded at the end](../screenshots/apps-remote-keys.png)
+![Remote keys as tiles in streaming buttons, color keys and other keys, each showing what the key does, with buttons on remotes sold elsewhere folded at the end](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/apps-remote-keys.png)
 
 Sets what a key on the remote does: **As LG has it**, **Nothing**, **Input switcher**, a media control (**Play**, **Pause**, **Stop**, **Rewind**, **Fast forward**, **Volume up**, **Volume down** or **Mute**), or opening an installed app, an HDMI input or Live TV instead. A media control acts as the remote's own play or pause key would on what is on screen. The volume controls change the volume as the remote's own keys do, a sound bar on HDMI ARC included, and repeat while the key is held. **Input switcher** opens LG's list of inputs, as the remote's Input button does; it is offered on TVs that have LG's quick input picker, such as a C5 on webOS 11. Each key is a tile showing what it does now, grouped as streaming buttons, color keys and other keys; choosing a tile opens the choices under its row. The keys listed are the ones this TV's own key handling names, so a C5 lists its Disney+ button and a CX does not; Netflix, Prime Video, Guide, Input, TV, Search, Info, Help and the four color keys are typical, and recent Magic Remotes add Alexa and Google Assistant buttons. The microphone button is not offered, since it drives voice control itself. Home, Back, volume, mute, channel and power are not offered.
 
@@ -104,7 +104,7 @@ The **Alexa** button set here keeps Alexa from opening until it is **As LG has i
 
 ### Hide home screen system apps
 
-![Hide home screen system apps switched on, with each built-in LG app as a tile marked hidden or shown](../screenshots/apps-system-apps.png)
+![Hide home screen system apps switched on, with each built-in LG app as a tile marked hidden or shown](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/apps-system-apps.png)
 
 Hides built-in LG apps that can't be uninstalled, such as Gallery, Music, Sports, Alexa and the User Guide, from the Home screen ribbon. Each app is a tile, dimmed and marked **Hidden** while hidden; choosing one hides or shows it. The apps themselves stay on the TV, and switching the feature off brings every one back. The Web Browser is not offered: hidden, it no longer opens, and saved web pages and links from other apps open in it. A TV that had it hidden shows it again.
 
@@ -116,7 +116,7 @@ It is experimental, and off until it is turned on under **Server** → **Advance
 
 ### Apps kept ready in the background
 
-![Apps kept ready in the background, each as a tile with the memory it takes when loaded, all switched off](../screenshots/apps-preload.png)
+![Apps kept ready in the background, each as a tile with the memory it takes when loaded, all switched off](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/apps-preload.png)
 
 LG keeps some apps loaded so they open faster, including ones that are never used, and each takes up memory. Each app is a tile with roughly how much memory it takes once loaded, and whether it is loaded now; choosing one switches it off, or keeps it ready again. A switched-off app's tile is dimmed and marked in orange, the colour the Apps tab uses for a change from LG's own setting.
 
@@ -124,7 +124,7 @@ Switching an app off frees its memory once the app is next closed or the TV rest
 
 ### Turn off background services
 
-![Turn off background services, each with what it does, its memory or effect, and a Disabled button](../screenshots/apps-services.png)
+![Turn off background services, each with what it does, its memory or effect, and a Disabled button](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/apps-services.png)
 
 Stops background services that most TVs don't need, such as the connected-car listener, the USB camera watcher, and LG's diagnostics and telemetry uploaders. Only the services present on the TV are listed. A service switched off stays off across restarts, and is stopped again if something on the TV starts it.
 

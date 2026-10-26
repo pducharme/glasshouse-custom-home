@@ -17,10 +17,10 @@ On webOS 10 and later they are experimental: the tab shows a switch above the li
 
 **Start screen saver** asks the TV for its screen saver. Some TVs accept the request and then refuse it; a G3 on webOS 9.2.2 refused every one, its own idle screen saver included. There the dashboard opens the screen saver itself, unless something is playing full screen or playback cannot be checked. Any key on the remote, including Home and the coloured buttons, or a second press of the button closes it. A failed close leaves it tracked so another press can retry. The TV does not know about a screen saver opened this way: its power state stays On, in the dashboards and in Home Assistant, and watch time counts the app beneath it. The Screen Saver sensor does show it.
 
-![Screensaver tab: LG default, Clock, Starfield, Fireworks, Bokeh and Panel vitals, with brightness and a start button beside them](../screenshots/screensaver.png)
+![Screensaver tab: LG default, Clock, Starfield, Fireworks, Bokeh and Panel vitals, with brightness and a start button beside them](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/screensaver.png)
 
 *Built-in screen saver choices, including the panel-vitals display.*
 
-![Starfield screen saver on OLED: drifting stars and meteor with ion trail](../screenshots/screensaver-starfield.png)
+![Starfield screen saver on OLED: drifting stars and meteor with ion trail](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/screensaver-starfield.png)
 
 *The Starfield screen saver with continuously moving elements.*

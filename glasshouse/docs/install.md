@@ -1,4 +1,4 @@
-> Public C6 distribution: use [the repository installation guide](../../docs/INSTALLATION.md). The upstream guide below describes general Glasshouse features; its default settings and release commands do not replace the public distribution guide.
+> Public C6 distribution: start with [the standalone manual](../../docs/MANUAL_GUIDE.md) and [the repository installation reference](../../docs/INSTALLATION.md). The upstream guide below describes general Glasshouse features; its default settings and release commands do not replace the public distribution guide.
 
 # Installing
 
@@ -44,13 +44,14 @@ Find the TV's address under Settings → Network on the TV, or in the router's l
 Then, from the `server/` directory in a terminal:
 
 ```bash
-./deploy.sh <tv-ip>
+TV_HOST=tv.example.invalid # Replace locally with your verified TV host.
+./deploy.sh "$TV_HOST"
 ```
 
 For example:
 
 ```bash
-./deploy.sh 192.168.1.50
+./deploy.sh tv.example.invalid # Placeholder, not a reachable TV.
 ```
 
 The script takes about ten seconds to copy the server files and verify that the service is running. Once complete:
@@ -77,7 +78,7 @@ Glasshouse can be configured in two ways:
 
 When Glasshouse is installed, opening the app on the TV for the first time starts an interactive setup wizard designed for the remote.
 
-![Network access selection in the Glasshouse TV app setup wizard](screenshots/tv-app-setup-network.png)
+![Network access selection in the Glasshouse TV app setup wizard](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/tv-app-setup-network.png)
 
 *Choosing whether the web dashboard is open to devices on the home network or TV-local only.*
 
@@ -109,7 +110,7 @@ These are the most common properties you can set in `config.json`:
 | `allowControl` | `true` | When `false`, disables remote TV controls (volume, inputs, screen on/off, app launch, toast). |
 | `allowPower` | `true` | When `false`, hides and refuses power off, power on, and reboot actions. |
 | `mqtt.enabled` | `false` | Enables the Home Assistant MQTT bridge. |
-| `mqtt.host` | `""` | IP address or hostname of your MQTT broker (e.g., `"192.168.1.5"`). |
+| `mqtt.host` | `""` | IP address or hostname of your MQTT broker (e.g., `"mqtt.example.invalid"`). |
 | `mqtt.port` | `1883` / `8883` | Broker port. Defaults to `1883` (plain) or `8883` when `mqtt.tls` is `true`. |
 | `mqtt.tls` | `false` | Encrypts the broker connection with TLS. |
 | `mqtt.username` | `""` | MQTT username (use a dedicated user restricted to the TV's topics). |
@@ -125,7 +126,7 @@ An example `config.json` with Home Assistant enabled:
   "token": "my-secret-token",
   "mqtt": {
     "enabled": true,
-    "host": "192.168.1.50",
+    "host": "mqtt.example.invalid",
     "username": "lgtv",
     "password": "broker-password"
   }

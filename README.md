@@ -1,5 +1,17 @@
 # Glasshouse — accueil C6 reproductible
 
+> **Vérifier la source téléchargée.** L’interface a été préparée dans la
+> [PR nº1](https://github.com/pducharme/glasshouse-wallpapers/pull/1). Avant sa fusion,
+> `main` ne contenait que les cinq fonds et leur README. Les commandes ci-dessous
+> utilisent `main` et vérifient la présence du code; si vous consultez la PR avant
+> sa fusion, choisissez sa branche `codex/reproducible-glasshouse-interface`.
+> [Audit initial, compatibilité et différences](docs/REPRODUCIBILITY.md).
+
+Aucun agent n’est nécessaire : le [guide manuel autonome](docs/MANUAL_GUIDE.md)
+couvre la démo, les prérequis, la sauvegarde, l’installation et la restauration.
+Des [prompts pour Claude ou Codex](docs/AI_PROMPTS.md) sont disponibles si vous
+préférez être accompagné. Ils ne remplacent pas les vérifications propres à votre TV.
+
 Ce dépôt contient les sources de l'accueil personnalisé Glasshouse, son serveur,
 les cinq fonds déjà publiés, les tests et la protection contre l'écrasement des
 personnalisations lors d'une mise à jour. Base : **Glasshouse 0.118.0**, commit
@@ -23,16 +35,20 @@ La variante Lightkeeper d'une autre télévision n'est pas incluse.
 Prérequis : Node.js 22 ou plus récent. Aucun paquet npm n'est nécessaire à la démo.
 
 ```sh
-git clone https://github.com/pducharme/glasshouse-wallpapers.git
-cd glasshouse-wallpapers/glasshouse
-npm run demo -- --port 8766
+git clone --branch main --single-branch \
+  https://github.com/pducharme/glasshouse-wallpapers.git glasshouse-interface
+cd glasshouse-interface
+git rev-parse HEAD
+test -f glasshouse/package.json
+npm --prefix glasshouse run demo -- --port 8766
 ```
 
 Ouvrir `http://127.0.0.1:8766/`. Le serveur écoute exclusivement sur la boucle locale;
 il ne contacte ni télévision ni service externe. Les données privées ne sont pas
 lues. Les lancements sont simulés, et l'ordre revient à sa valeur initiale à chaque
-redémarrage. `Ctrl+C` arrête la démo. Dans une PR, sélectionner sa branche après le
-clone avant d'exécuter ces commandes.
+redémarrage. `Ctrl+C` arrête la démo. Notez le SHA affiché : une branche peut évoluer.
+Si `glasshouse/package.json` est absent, arrêtez et vérifiez la branche; un ancien
+checkout de fonds seuls ne contient pas la démo.
 
 Navigation : flèches, Entrée pour OK, appui long sur Entrée pour déplacer une tuile,
 Retour/Echap pour annuler. `?hour=12` montre le jour et `?hour=19` le mode sombre.
@@ -43,7 +59,9 @@ n'accède à aucune photothèque. Voir [Photos et navigation](docs/PHOTOS.md).
 
 ## Sources et installation
 
-- `glasshouse/` : serveur, interface et tests; [guide d'installation](docs/INSTALLATION.md).
+- [Guide manuel autonome](docs/MANUAL_GUIDE.md) : parcours complet sans Codex.
+- [Prompts Claude / Codex](docs/AI_PROMPTS.md) : diagnostic puis préparation et validation.
+- `glasshouse/` : serveur, interface et tests; [référence de configuration](docs/INSTALLATION.md).
 - `personalisation/` : patches reproductibles et garde de persistance;
   [installation facultative](personalisation/README.md).
 - `examples/home.example.json` : ordre synthétique des tuiles.
@@ -52,7 +70,11 @@ n'accède à aucune photothèque. Voir [Photos et navigation](docs/PHOTOS.md).
 - [Lanceur Photos, clients Immich et navigation](docs/PHOTOS.md).
 
 L'installation sur une télé est manuelle et distincte de la démo. Elle exige une
-télé déjà rootée et compatible. Aucun script de la démo ne déploie le système.
+télé déjà rootée et compatible. Le Developer Mode seul ne fournit pas les droits
+requis pour remplacer HOME ou installer le serveur et ses hooks. La démo ne déploie
+rien. Le script de déploiement TV, lui, écrit les fichiers, installe par défaut un
+hook de démarrage et relance le serveur; `--no-app` évite seulement la tuile du
+tableau de bord. Lire le guide et préparer le retour arrière avant son utilisation.
 Les réglages réels, adresses, clés, mots de passe, cookies, sauvegardes, journaux et
 captures personnelles restent privés; `.gitignore` couvre les emplacements usuels.
 Une configuration existante ne doit pas être remplacée par l'exemple.

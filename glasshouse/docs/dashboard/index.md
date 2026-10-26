@@ -27,8 +27,8 @@ with the star beside a search result, keeping shortcuts to them in the sidebar.
 
 ## In both themes
 
-![Metrics tab: SoC temperature, system readouts, storage, watch time, Magic Remote battery and HDMI ports, dark theme (OLED42C24LA)](../screenshots/dashboard.png)
+![Metrics tab: SoC temperature, system readouts, storage, watch time, Magic Remote battery and HDMI ports, dark theme (OLED42C24LA)](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/dashboard.png)
 
-![Control tab: panel, source, volume, playback, sleep timer and power, light theme (OLED42C24LA)](../screenshots/dashboard-light.png)
+![Control tab: panel, source, volume, playback, sleep timer and power, light theme (OLED42C24LA)](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/dashboard-light.png)
 
 *Metrics and Control tabs, shown in dark and light themes.*

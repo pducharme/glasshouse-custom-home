@@ -2,13 +2,13 @@
 
 The **Server** tab, `/?tab=server`, holds Glasshouse's own settings: Glasshouse itself and an Advanced section for developers and home-lab setups. Preferences for this browser (theme, sidebar, and language) are located in the sidebar navigation area.
 
-![Server tab: Glasshouse's version and updates, server health, the daily update check, watch time, the settings backup and daily backup, the app on the TV's home screen, and the Advanced section](../screenshots/server.png)
+![Server tab: Glasshouse's version and updates, server health, the daily update check, watch time, the settings backup and daily backup, the app on the TV's home screen, and the Advanced section](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/server.png)
 
 *Glasshouse's updates, watch time, settings backups and the Advanced section.*
 
 ## Glasshouse
 
-![Glasshouse: the version and Check now, server health, daily update check, watch time, settings backup, daily backup and the app on the home screen](../screenshots/server-glasshouse.png)
+![Glasshouse: the version and Check now, server health, daily update check, watch time, settings backup, daily backup and the app on the home screen](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/server-glasshouse.png)
 
 Shows the installed version and whether a newer release is out. **Check now** looks straight away, and **Install** appears when there is something to install, with **What's new**: a short summary of what each release since the installed one brings, newest first, and a link to its full notes. **Roll back**, under the version, puts back the version installed before, after asking first. [Updating](../managing.md#updating) covers installs from before the tab existed.
 
@@ -28,7 +28,7 @@ Shows the installed version and whether a newer release is out. **Check now** lo
 
 ## Advanced
 
-![Advanced opened: time server, Prometheus metrics, the web app debugger, SSH keys and experimental features](../screenshots/server-advanced.png)
+![Advanced opened: time server, Prometheus metrics, the web app debugger, SSH keys and experimental features](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/server-advanced.png)
 
 Folded away, since nothing in it needs changing for everyday use. Once opened, it stays open in that browser.
 

@@ -1,5 +1,11 @@
 # Installation et configuration
 
+Pour un premier parcours sans assistant, suivre le [guide manuel autonome](MANUAL_GUIDE.md).
+Ce document est la référence des réglages du profil public. Vérifier d’abord
+[l’audit initial et la compatibilité](REPRODUCIBILITY.md), puis la présence du code
+dans la référence téléchargée. Les anciens commits de `main`, antérieurs à la
+fusion de la PR nº1, ne contiennent que les fonds.
+
 La démo du README est le parcours recommandé pour examiner le rendu sans matériel.
 Cette procédure facultative concerne une télé déjà rootée avec Homebrew Channel et
 un accès SSH personnel, jamais une installation de root ou de firmware.
@@ -13,7 +19,11 @@ L'expérience historique C6 ne prouve pas la compatibilité de tous les modèles
 
 Avant un déploiement, conserver hors du dépôt une sauvegarde privée de l'installation
 et des réglages, puis vérifier les modifications. Le script ci-dessous installe et
-redémarre Glasshouse; il ne fait pas partie des commandes de démonstration ou de CI.
+redémarre Glasshouse et ajoute par défaut le hook `50-tvweb`; `--no-app` évite
+seulement la tuile du tableau de bord. Il n’active pas automatiquement Glasshouse
+Home. Il ne réalise pas une sauvegarde complète ni une restauration de version
+prête à l’emploi; préparer celles du guide manuel avant de le lancer. Il ne fait
+pas partie des commandes de démonstration ou de CI.
 
 Pour une première installation, préparer d'abord un fichier privé minimal. Cette
 commande refuse d'écraser un fichier existant et génère le token sans l'afficher :
@@ -56,10 +66,12 @@ sont souhaitées. `allowPower` reste facultatif. Sur une installation existante,
 modifier le `/var/lib/tvweb/config.json` de la télévision via les réglages ou SSH :
 la copie locale d’amorçage ne remplace jamais ce fichier.
 
-L'accueil sur une version webOS au-delà de celles reconnues par upstream exige
-`allowExperimentalHome: true` (notamment webOS 11). Cette option est désactivée dans
-l'exemple; la choisir uniquement après vérification de la version et de la
-compatibilité. Elle ne doit pas servir à prétendre que tous les modèles sont testés.
+Le code de cette version exige le port serveur **8080** et propose Home sur
+**webOS 9**, **webOS 10** (expérimental), puis **webOS 11** seulement avec
+`allowExperimentalHome: true`. Ce drapeau n’active pas Home sur webOS 5 ou sur
+toute autre version non reconnue. Le Developer Mode ne remplace pas le root
+requis. L’option reste désactivée dans l’exemple; vérifier la cible avant de
+l’activer. La variante Lightkeeper des anciens modèles n’est pas incluse.
 
 ## Reproduire les rangées
 

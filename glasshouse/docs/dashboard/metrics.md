@@ -12,13 +12,13 @@ This is useful both for monitoring and for troubleshooting. It shows whether a h
 * Magic Remote battery (webOS 4, 9 and 10), live Bluetooth connection status (Connected / Standby status pill), signal strength, model, and firmware version, with persistence across restarts; webOS and firmware version, SoC architecture, OLED cell ID and TCON firmware where the platform exposes them.
 * On demand: what is resident in memory, and which processes are using the processor right now. Each process is listed with its pid, the number the TV's logs name it by.
 
-![Metrics tab: processor, memory, swap and network readouts](../screenshots/metrics-system.png)
+![Metrics tab: processor, memory, swap and network readouts](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/metrics-system.png)
 
 *Metrics including processor, memory, swap and network.*
 
 ## Watch time
 
-![Watch time: today, 7 days and 30 days, a bar for each of the last 14 days, and the time per app and input](../screenshots/metrics-watch-time.png)
+![Watch time: today, 7 days and 30 days, a bar for each of the last 14 days, and the time per app and input](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/metrics-watch-time.png)
 
 Shown while **Watch time** is on in the [Server tab](server.md#glasshouse). It
 is off until then, as it records what the household watches. While on, the

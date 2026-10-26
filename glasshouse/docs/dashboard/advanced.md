@@ -4,7 +4,7 @@ The **Advanced** tab, `/?tab=advanced`, surfaces system settings that LG places 
 
 ## Power and standby
 
-![Power and standby: Quick Boot, Stay connected when off, Always Ready, Nightly power-down and Wake-on-LAN](../screenshots/advanced-power.png)
+![Power and standby: Quick Boot, Stay connected when off, Always Ready, Nightly power-down and Wake-on-LAN](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/advanced-power.png)
 
 ### Staying connected while the TV is off
 
@@ -34,7 +34,7 @@ It is close to being on: an OLED42C24LA draws 31 W showing the clock. The dashbo
 
 ### On and Off Timers
 
-![Timers: the On Timer and Off Timer, each with a time, a switch and the days of the week](../screenshots/advanced-timers.png)
+![Timers: the On Timer and Off Timer, each with a time, a switch and the days of the week](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/advanced-timers.png)
 
 LG's On Timer and Off Timer switch the TV on or off at a scheduled time, once or on chosen days of the week. Both are configured under **Advanced &rarr; Power** in the web dashboard, with the time and days. The TV dashboard shows them under **System &rarr; Power** and switches them on and off; the specific time and days are configured from a browser.
 
@@ -42,7 +42,7 @@ A TV switched on by the On Timer shuts back off after two hours without a button
 
 ## Screen time
 
-![Screen time: the limits switch, daily limit, bedtime, app and input limits, and what happens at each](../screenshots/advanced-screen-time.png)
+![Screen time: the limits switch, daily limit, bedtime, app and input limits, and what happens at each](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/advanced-screen-time.png)
 
 Limits on how long the screen is on each day, under **Advanced &rarr; Screen time**:
 
@@ -56,32 +56,32 @@ The limits are counted by [watch time](metrics.md#watch-time), so they apply onl
 
 ## System updates
 
-![System updates: Block TV software updates, set to Blocked](../screenshots/advanced-updates.png)
+![System updates: Block TV software updates, set to Blocked](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/advanced-updates.png)
 
 * **Block TV software updates:** Stops the TV installing LG's system updates, which can take away the access Glasshouse runs with. Apps and Glasshouse's own updates are unaffected.
 
 ## Display and ambient light
 
-![Display: the LG logo switch](../screenshots/advanced-display.png)
+![Display: the LG logo switch](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/advanced-display.png)
 
 * **LG logo:** Controls whether the LG logo animation displays during power-on and power-off (LG Logo Display).
 * **Ambient light (PicCap):** When PicCap is installed, captures on-screen content and streams it to a Hyperion server to drive ambient backlighting behind the TV. Turning it off stops video capture and the ambient lighting with it. See [PicCap and ambient light](../piccap.md) for how it works and setup details.
 
 ## Sound
 
-![Sound: sound output and mode, digital sound output, balance, automatic volume, Bluetooth speaker mode and eARC](../screenshots/advanced-sound.png)
+![Sound: sound output and mode, digital sound output, balance, automatic volume, Bluetooth speaker mode and eARC](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/advanced-sound.png)
 
 Hold the TV's advanced audio settings, including sound output, sound mode, digital sound output format, balance, automatic volume leveling, eARC, and Bluetooth speaker mode. Sound mode and balance apply to the internal TV speakers only.
 
 ## HDMI inputs
 
-![HDMI inputs: Deep Colour and audio format for each input, changeable only for the input on screen](../screenshots/advanced-hdmi.png)
+![HDMI inputs: Deep Colour and audio format for each input, changeable only for the input on screen](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/advanced-hdmi.png)
 
 Per-port settings for HDMI Deep Colour (extended bandwidth for 4K HDR) and audio input format (Bitstream or PCM). In accordance with webOS design, an HDMI input's settings can be adjusted only while that specific input is actively displayed on screen.
 
 ## Devices and connectivity
 
-![Devices: SIMPLINK, auto power sync, IP control and auto device detection](../screenshots/advanced-devices.png)
+![Devices: SIMPLINK, auto power sync, IP control and auto device detection](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/advanced-devices.png)
 
 * **SIMPLINK (HDMI-CEC):** Enables CEC control and auto power synchronization with connected devices over HDMI.
 * **IP control:** Enables external IP control protocol support.
@@ -89,10 +89,10 @@ Per-port settings for HDMI Deep Colour (extended bandwidth for 4K HDR) and audio
 
 ## Front lights
 
-![Front lights: the standby light switch](../screenshots/advanced-lights.png)
+![Front lights: the standby light switch](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/advanced-lights.png)
 
 * **Standby light:** Toggles the red standby indicator LED located on the front bezel of the TV.
 
-![Advanced tab: Quick Boot, Stay connected when off, Always Ready, nightly power-down and Wake-on-LAN, the On and Off Timers, screen-time limits, system updates, LG logo, sound, HDMI inputs, devices and the standby light](../screenshots/advanced.png)
+![Advanced tab: Quick Boot, Stay connected when off, Always Ready, nightly power-down and Wake-on-LAN, the On and Off Timers, screen-time limits, system updates, LG logo, sound, HDMI inputs, devices and the standby light](https://raw.githubusercontent.com/rorygallagher2024/glasshouse/859f5e134e0d9d4b499afe48084b9cdb82db9164/docs/screenshots/advanced.png)
 
 *The TV's own settings, grouped as Power & standby, Timers, Screen time, System updates, Display, Sound, HDMI inputs, Devices and Front lights.*
