@@ -1,5 +1,18 @@
 # Glasshouse — accueil C6 reproductible
 
+## L’accueil en images
+
+Un accueil C6 en français : applications favorites, consoles, météo et recommandations dans un accordéon discret. Le tiroir donne accès aux autres applications installées; les paramètres restent dans un petit panneau avec un interrupteur pour les recommandations et un accès à Glasshouse.
+
+![Accueil C6 avec les recommandations YouTube dépliées](docs/images/c6-home-recommendations-2026-10-28.png)
+
+| Toutes les apps | Paramètres compacts |
+| --- | --- |
+| ![Tiroir des applications installées](docs/images/c6-all-apps-2026-10-28.png) | ![Panneau des paramètres avec recommandations, Fermer et Glasshouse](docs/images/c6-settings-2026-10-28.png) |
+
+*Captures du 28 octobre 2026 de la page Home réellement servie par la C6 sous Glasshouse 0.130.0, affichée dans un navigateur. Il ne s’agit ni de la démo synthétique ni d’une capture directe de la dalle. Les recommandations affichées viennent de YouTube. Les marques et visuels des services appartiennent à leurs titulaires.*
+
+
 > **Version de cette branche : 0.130.0.** Au contrôle du 28 octobre 2026,
 > [main](https://github.com/pducharme/glasshouse-wallpapers/tree/1711bdb79d680ea87e74a68e33e3ee265ec81f14)
 > livre encore l’adaptation 0.118.0; la [PR nº1](https://github.com/pducharme/glasshouse-wallpapers/pull/1)
