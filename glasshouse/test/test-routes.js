@@ -48,7 +48,7 @@ function createMockRes(cb) {
   assert.strictEqual(typeof routes.writeSettings, 'function');
   assert.strictEqual(typeof routes.readConfigFile, 'function');
   assert.strictEqual(typeof routes.setNetworkAccess, 'function');
-  assert.strictEqual(typeof routes.lanAddress, 'function');
+  assert.strictEqual(typeof routes.localAddress4, 'function');
   assert.strictEqual(typeof routes.networkOpen, 'function');
   assert.strictEqual(typeof routes.lanOrigin, 'function');
   assert.strictEqual(typeof routes.setupPending, 'function');
@@ -83,6 +83,37 @@ function createMockRes(cb) {
   assert.deepEqual(u3.query, {});
 
   console.log('  ✓ parseUrl handles query strings and missing paths cleanly');
+})();
+
+// The setup state gives the local addresses and the name, each with the port.
+(function testSetupStateAddress() {
+  var origInterfaces = os.networkInterfaces;
+  var named = [];
+  routes.init({
+    config: { port: 8080, host: '::', web: { enabled: false } },
+    telemetry: { localName: function (ip4, ip6) {
+      named.push([ip4, ip6]);
+      return ip4 === '192.0.2.17' ? 'tv.example.net' : null;
+    } },
+    getMqttStatus: function () { return { state: 'disconnected' }; }
+  });
+  os.networkInterfaces = function () {
+    return { wlan0: [{ address: '192.0.2.17', family: 'IPv4', internal: false },
+                     { address: 'fd12:3456:789a:1::17', family: 'IPv6', internal: false }] };
+  };
+  try {
+    var st = routes.setupState();
+    assert.strictEqual(st.address, '192.0.2.17:8080');
+    assert.strictEqual(st.address6, '[fd12:3456:789a:1::17]:8080');
+    assert.strictEqual(st.hostname, 'tv.example.net:8080');
+    assert.deepEqual(named, [['192.0.2.17', 'fd12:3456:789a:1::17']], 'named from both addresses');
+    os.networkInterfaces = function () { return {}; };
+    st = routes.setupState();
+    assert.strictEqual(st.address, null, 'no address');
+    assert.strictEqual(st.address6, null);
+    assert.strictEqual(st.hostname, null, 'no address, no name');
+  } finally { os.networkInterfaces = origInterfaces; }
+  console.log('  ✓ setupState gives the addresses, the IPv4 one with its port, and the name');
 })();
 
 // 2. Loopback checks (fromTV)
@@ -1190,17 +1221,48 @@ function createMockRes(cb) {
         upload({ length: 10, chunks: [new Buffer(3)], then: 'close' }, function () {
           later(function () {
             assert.deepEqual(staged(), [], 'a closed connection leaves no file');
-            upload({ length: 10, chunks: [], then: 'abort' }, function () {
-              later(function () {
-                assert.deepEqual(staged(), [], 'an upload aborted before its file opened leaves no file');
-                assert.strictEqual(started.length, 0);
-                oneAtATime();
-              });
-            });
+            abortBeforeOpen();
           });
         });
       });
     });
+  }
+
+  function abortBeforeOpen() {
+    var req = createMockReq({ url: '/api/apps/install/upload', method: 'POST', remoteAddress: REMOTE,
+      headers: { host: HOST, 'content-type': 'application/octet-stream', 'content-length': '10' } });
+    var realOpen = fs.open;
+    var deadline = Date.now() + 3000;
+    var watchdog = setTimeout(function () { throw new Error('aborted upload did not finish cleaning up'); }, 4000);
+    // Hold the actual open until the abort: a timer alone does not guarantee
+    // this ordering, especially on Node 0.12 where destroy does not await open.
+    fs.open = function (file, flags, mode, cb) {
+      if (path.dirname(file) !== staging) return realOpen.apply(fs, arguments);
+      fs.open = realOpen;
+      process.nextTick(function () {
+        req.emit('aborted');
+        req.emit('close');
+        realOpen.call(fs, file, flags, mode, function (err, fd) {
+          assert.ifError(err);
+          cb(err, fd);
+          (function cleaned() {
+            fs.fstat(fd, function (statError) {
+              var closed = statError && statError.code === 'EBADF';
+              var files = staged();
+              if ((!closed || files.length) && Date.now() < deadline) return setTimeout(cleaned, 10);
+              clearTimeout(watchdog);
+              assert.ok(closed, 'an upload aborted before open closes its eventual descriptor');
+              assert.deepEqual(files, [], 'an upload aborted before open leaves no file');
+              assert.strictEqual(started.length, 0);
+              oneAtATime();
+            });
+          })();
+        });
+      });
+    };
+    routes.handleRequest(req, createMockRes(function () {
+      throw new Error('an aborted upload must not send a response');
+    }));
   }
 
   function oneAtATime() {
@@ -1360,7 +1422,7 @@ function createMockRes(cb) {
   var cfg = { allowControl: true, port: 8080, host: '0.0.0.0', emulateSetup: true };
   routes.init({
     config: cfg,
-    telemetry: { alwaysOnSupported: function (cb) { cb(true); }, lanHostname: function () { return 'lg.lan'; } }
+    telemetry: { alwaysOnSupported: function (cb) { cb(true); }, localName: function () { return 'lg.lan'; } }
   });
   routes.resetSimulatedSetup();
 

@@ -340,7 +340,23 @@ console.log('Running test-ha.js ...');
     assert.ok(require('../server/lib/controls').RCU_KEY_CODES[m[1]], 'controls knows ' + m[1]);
     assert.ok(ha.HA_ENTITIES.some(function (e) { return e.id === m[0] && e.type === 'button' && e.cat === 'controls'; }));
   });
-  console.log('  ✓ OLED Light is a slider on the live topic, and the D-pad, Back, Home, Rewind and Fast Forward are buttons');
+  var text = by['text.keyboard_text'];
+  assert.ok(text, 'Keyboard Text');
+  assert.strictEqual(text.payload.command_topic, 'test/tv/command/keyboardText');
+  assert.strictEqual(text.payload.mode, 'text');
+  assert.ok(text.payload.state_topic, 'a state topic, so Home Assistant never keeps the typed text as the state');
+  assert.strictEqual(text.payload.value_template, "{{ '' }}", 'the state is always empty');
+  assert.strictEqual(text.payload.max, require('../server/lib/controls').KEYBOARD_TEXT_MAX, 'the length controls keeps');
+  [['keyboard_enter', 'enter'], ['keyboard_backspace', 'backspace']].forEach(function (m) {
+    var b = by['button.' + m[0]];
+    assert.ok(b, m[0]);
+    assert.strictEqual(b.payload.command_topic, 'test/tv/command/keyboardKey');
+    assert.strictEqual(b.payload.payload_press, m[1]);
+  });
+  ['keyboard_text', 'keyboard_enter', 'keyboard_backspace'].forEach(function (id) {
+    assert.ok(ha.HA_ENTITIES.some(function (e) { return e.id === id && e.cat === 'controls'; }), id);
+  });
+  console.log('  ✓ OLED Light is a slider on the live topic, and the D-pad, Back, Home, Rewind, Fast Forward and keyboard are controls');
 })();
 
 // LG's PHY error count is no longer published, and Home Assistant is told to
@@ -425,6 +441,39 @@ console.log('Running test-ha.js ...');
   var retired = ha.RETIRED_ENTITIES.map(function (e) { return e.type + '.' + e.id; });
   assert.ok(retired.indexOf('sensor.soc_current') !== -1 && retired.indexOf('binary_sensor.standby_stuck') !== -1);
   console.log('  ✓ every template reads telemetry fields with get(), and the removed SoC current and standby sensors are cleared');
+})();
+
+// Input Source names its HDMI inputs as the TV's settings do, as the Active
+// App sensor shows them, and still sends the port's key
+(function testInputSourceNames() {
+  function inputSource(opts) {
+    opts.pfx = 'test/tv';
+    return ha.buildEntities(opts).filter(function (e) { return e.id === 'input_source'; })[0];
+  }
+
+  var plain = inputSource({});
+  assert.deepEqual(plain.payload.options, ['HDMI 1', 'HDMI 2', 'HDMI 3', 'HDMI 4', 'Live TV']);
+  assert.ok(plain.payload.command_template.indexOf('"HDMI 2":"hdmi2"') !== -1);
+
+  var named = inputSource({ inputNames: {
+    hdmi1: 'HDMI 1',              // the built-in name, not repeated as a title
+    hdmi2: 'Apple TV',            // a name the TV's settings give it
+    hdmi3: 'Apple TV',            // two inputs sharing one name stay distinct
+    hdmi4: 'hdmi4'                // an id rather than a name is no name
+  } });
+  assert.deepEqual(named.payload.options, ['HDMI 1', 'Apple TV (HDMI2)', 'Apple TV (HDMI3)', 'HDMI 4', 'Live TV']);
+  assert.ok(named.payload.command_template.indexOf('"Apple TV (HDMI2)":"hdmi2"') !== -1);
+  assert.ok(named.payload.value_template.indexOf('"hdmi3":"Apple TV (HDMI3)"') !== -1);
+  assert.deepEqual(ha.inputSourceNames({ hdmi2: 'Apple TV' }).hdmi2, 'Apple TV (HDMI2)');
+  assert.deepEqual(ha.inputSourceNames({}).hdmi2, 'HDMI 2');
+  // input_ids: each option's input, the same whatever the TV calls it.
+  var attrs = named.payload.json_attributes_template;
+  assert.strictEqual(named.payload.json_attributes_topic, 'test/tv/telemetry');
+  assert.ok(attrs.indexOf('"input_ids":{"HDMI 1":"hdmi1","Apple TV (HDMI2)":"hdmi2","Apple TV (HDMI3)":"hdmi3","HDMI 4":"hdmi4","Live TV":"livetv"}') !== -1, attrs);
+  assert.ok(plain.payload.json_attributes_template.indexOf('"HDMI 2":"hdmi2"') !== -1);
+  // The state is the input just chosen while the TV switches, else what it reports.
+  assert.ok(named.payload.value_template.indexOf("(value_json.get('input_source') or value_json.get('app'))") !== -1, named.payload.value_template);
+  console.log('  ✓ Input Source shows the names the TV gives its inputs, sends the port key, lists input_ids, and holds a chosen input');
 })();
 
 console.log('ALL test-ha.js assertions passed!\n');

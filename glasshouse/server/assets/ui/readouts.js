@@ -286,6 +286,13 @@ async function tick() {
       // Each setting shows only where the TV has it; Display only when it has any.
       const qbVal = getLease('quickBoot', d.quickBoot);
       advPill('quickboot', 'btn_quickboot', qbVal !== undefined ? qbVal : d.quickBoot);
+      const halVal = getLease('homeAutoLaunch', d.homeAutoLaunch);
+      const halNow = halVal !== undefined ? halVal : d.homeAutoLaunch;
+      if (typeof halNow === 'boolean' && typeof homeStatus === 'object' && homeStatus && homeStatus.homeAutoLaunch !== halNow) {
+        homeStatus.homeAutoLaunch = halNow;
+        const hb = q('home-autolaunch');
+        if (hb) updateToggle(hb, { cls: halNow ? 'good' : 'idle', label: halNow ? t('common.on', 'On') : t('common.off', 'Off'), on: halNow });
+      }
       lastArOff = d.alwaysReadyOff;
       const arLeased = getLease('alwaysReady', d.alwaysReady);
       const arVal = arLeased !== undefined ? arLeased : d.alwaysReady;
@@ -296,18 +303,28 @@ async function tick() {
       powerTimerRows(d.powerTimers);
       const wolVal = getLease('wakeOnLan', d.wakeOnLan);
       advPill('wol', 'btn_wol', wolVal !== undefined ? wolVal : d.wakeOnLan);
+      const clock12Val = getLease('clockHour12', d.clockHour12);
+      const clock12Now = clock12Val !== undefined ? clock12Val : d.clockHour12;
+      advPill('clock12', 'btn_clock12', clock12Now);
+      if (typeof clock12Now === 'boolean' && typeof homeStatus === 'object' && homeStatus && homeStatus.clockHour12 !== clock12Now) {
+        homeStatus.clockHour12 = clock12Now;
+        if (typeof renderHomeColours === 'function') renderHomeColours();
+      }
       const logoVal = getLease('lgLogo', d.lgLogo);
       advPill('lglogo', 'btn_lglogo', logoVal !== undefined ? logoVal : d.lgLogo);
       const sbVal = getLease('standbyLight', lights.standby);
       advPill('standby', 'lt_standby', sbVal !== undefined ? sbVal : lights.standby);
       const ltLogoVal = getLease('logoLight', lights.logo);
       advPill('logolight', 'lt_logo', lights.hasLogo ? (ltLogoVal !== undefined ? ltLogoVal : lights.logo) : undefined);
-      if (q('adv-display')) q('adv-display').hidden = d.lgLogo === undefined;
+      if (q('adv-display')) q('adv-display').hidden = d.lgLogo === undefined && d.clockHour12 === undefined;
       if (q('adv-lights')) q('adv-lights').hidden = lights.standby === undefined && !lights.hasLogo;
       const pc = d.piccapCapture;
       const pcVal = getLease('piccap', pc ? pc.running : undefined);
       advPill('piccap', 'btn_piccap', pc ? (pcVal !== undefined ? pcVal : pc.running) : undefined);
-      if (q('adv-piccap')) q('adv-piccap').hidden = !pc;
+      const hs = d.huesyncStreaming;
+      const hsVal = getLease('huesync', hs ? hs.streaming : undefined);
+      advPill('huesync', 'btn_huesync', hs ? (hsVal !== undefined ? hsVal : hs.streaming) : undefined);
+      if (q('adv-piccap')) q('adv-piccap').hidden = !pc && !hs;
       const devVal = getLease('deviceDetection', d.deviceDetection);
       advPill('devdetect', 'btn_devdetect', devVal !== undefined ? devVal : d.deviceDetection);
       if (q('adv-devices')) q('adv-devices').hidden = d.deviceDetection === undefined && !advLgsDevices;
@@ -430,7 +447,8 @@ async function tick() {
        measured on, so a Wi-Fi set reads its own counters, not a dormant eth0. */
     const nt = d.netTotal;
     const netParts = [];
-    if (d.ssid) netParts.push(esc(d.ssid));
+    // row() writes the sub-line as textContent, so the SSID goes in unescaped.
+    if (d.ssid) netParts.push(d.ssid);
     if (d.wifi && d.wifi.level) netParts.push(d.wifi.level + ' dBm');
     if (tx > 0) netParts.push(t('metrics.net.up', '{rate} kB/s up', { rate: tx.toFixed(0) }));
     if (nt) netParts.push('↓ ' + bytes(nt.rx) + ' ↑ ' + bytes(nt.tx));
@@ -438,7 +456,7 @@ async function tick() {
         netParts.join('  ·  ') || t('metrics.net.connected', 'Connected'), 101);
 
     q('row-addr').hidden = !d.address;
-    q('sub-addr').innerHTML = [d.address, d.hostname].filter(Boolean).map(esc).join('<br>');
+    q('sub-addr').innerHTML = [d.hostname, d.address, d.address6].filter(Boolean).map(esc).join('<br>');
 
     // Hardware & System Specifications
     let hasHw = false;
@@ -711,6 +729,11 @@ async function tick() {
     }
 
     setVersion(d.tvwebVersion);
+    // The TV's name where the network's DNS has one, or else the address
+    // easier to read.
+    const tvName = d.hostname || d.address || d.address6;
+    q('tv-name').textContent = tvName || '';
+    q('tv-name').hidden = !tvName;
     // Several groups stay hidden until the first payload says the TV has them,
     // so the columns are only worth filling once that has happened.
     if (firstData) relayout(true);

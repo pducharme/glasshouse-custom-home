@@ -1,11 +1,11 @@
 # Glasshouse — accueil C6 reproductible
 
-> **Vérifier la source téléchargée.** L’interface a été préparée dans la
-> [PR nº1](https://github.com/pducharme/glasshouse-wallpapers/pull/1). Avant sa fusion,
-> `main` ne contenait que les cinq fonds et leur README. Les commandes ci-dessous
-> utilisent `main` et vérifient la présence du code; si vous consultez la PR avant
-> sa fusion, choisissez sa branche `codex/reproducible-glasshouse-interface`.
-> [Audit initial, compatibilité et différences](docs/REPRODUCIBILITY.md).
+> **Version de cette branche : 0.130.0.** Au contrôle du 28 octobre 2026,
+> [main](https://github.com/pducharme/glasshouse-wallpapers/tree/1711bdb79d680ea87e74a68e33e3ee265ec81f14)
+> livre encore l’adaptation 0.118.0; la [PR nº1](https://github.com/pducharme/glasshouse-wallpapers/pull/1)
+> est fusionnée. L’évolution décrite ici appartient à
+> `codex/c6-home-0130-recommendations` tant que sa propre fusion n’est pas vérifiée.
+> [État public, compatibilité et différences](docs/REPRODUCIBILITY.md).
 
 Aucun agent n’est nécessaire : le [guide manuel autonome](docs/MANUAL_GUIDE.md)
 couvre la démo, les prérequis, la sauvegarde, l’installation et la restauration.
@@ -14,8 +14,10 @@ préférez être accompagné. Ils ne remplacent pas les vérifications propres �
 
 Ce dépôt contient les sources de l'accueil personnalisé Glasshouse, son serveur,
 les cinq fonds déjà publiés, les tests et la protection contre l'écrasement des
-personnalisations lors d'une mise à jour. Base : **Glasshouse 0.118.0**, commit
-`859f5e134e0d9d4b499afe48084b9cdb82db9164`.
+personnalisations lors d'une mise à jour compatible. Base : **Glasshouse 0.130.0**,
+commit `1543769cfeb28c3ce0936dc6d20b24cd58c70255`. Une mise à jour incompatible
+peut remplacer le menu et nécessiter une nouvelle adaptation; le gardien ne
+garantit pas une reprise automatique de toutes les futures versions.
 
 L'interface conserve le carrousel horizontal, les rangées Applications et Consoles,
 l'appui long sur OK pour réorganiser, les fonds quotidiens et le mode sombre de
@@ -30,12 +32,21 @@ fourni avec sa source, sa licence et sa notice; les marques restent celles de
 leurs propriétaires. La météo et tous les états de la démo sont synthétiques.
 La variante Lightkeeper d'une autre télévision n'est pas incluse.
 
+Un engrenage discret près de Toutes les apps ouvre **Paramètres**. Le toggle
+**Recommandations** commande la fonction native : les cartes de l’app sélectionnée
+se déplient à la demande et restent absentes si elle n’en fournit aucune. Il n’y
+a ni reprise universelle, ni progression ou personnalisation garantie. Le petit
+**G** ouvre l’app native Glasshouse lorsqu’elle est installée. Le profil public
+garde Recommended désactivé et Photos non configuré. Aucun verrou PIN personnalisé
+n’est fourni. Voir [Paramètres et recommandations](docs/HOME_SETTINGS.md).
+
 ## Démo locale sans télévision
 
 Prérequis : Node.js 22 ou plus récent. Aucun paquet npm n'est nécessaire à la démo.
 
 ```sh
-git clone --branch main --single-branch \
+SOURCE_REF=codex/c6-home-0130-recommendations
+git clone --branch "$SOURCE_REF" --single-branch \
   https://github.com/pducharme/glasshouse-wallpapers.git glasshouse-interface
 cd glasshouse-interface
 git rev-parse HEAD
@@ -49,6 +60,8 @@ lues. Les lancements sont simulés, et l'ordre revient à sa valeur initiale à 
 redémarrage. `Ctrl+C` arrête la démo. Notez le SHA affiché : une branche peut évoluer.
 Si `glasshouse/package.json` est absent, arrêtez et vérifiez la branche; un ancien
 checkout de fonds seuls ne contient pas la démo.
+Utilisez `main` à la place de `SOURCE_REF` seulement après avoir vérifié qu’il
+contient cette évolution et relevé son SHA.
 
 Navigation : flèches, Entrée pour OK, appui long sur Entrée pour déplacer une tuile,
 Retour/Echap pour annuler. `?hour=12` montre le jour et `?hour=19` le mode sombre.
@@ -68,6 +81,7 @@ n'accède à aucune photothèque. Voir [Photos et navigation](docs/PHOTOS.md).
 - `glasshouse/config.example.json` : configuration avec placeholders et météo désactivée.
 - [Provenance et licences](docs/PROVENANCE.md), [validation et limites](docs/VALIDATION.md).
 - [Lanceur Photos, clients Immich et navigation](docs/PHOTOS.md).
+- [Paramètres, Recommandations et raccourci G](docs/HOME_SETTINGS.md).
 
 L'installation sur une télé est manuelle et distincte de la démo. Elle exige une
 télé déjà rootée et compatible. Le Developer Mode seul ne fournit pas les droits

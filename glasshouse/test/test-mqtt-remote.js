@@ -21,6 +21,7 @@ vm.runInNewContext(source.slice(start, end), {
   mqttClient: { on: function (name, callback) { handler = callback; } },
   mqttTopics: { commands: 'test/command/' },
   piccap: { handleMqttCommand: function () { return false; } },
+  huesync: { handleMqttCommand: function () { return false; } },
   console: { log: function () {} },
   doControl: function (action, value, callback) { keys.push(action + ':' + value); callback({ ok: true }); },
   setTimeout: function (fn, delay) { timers.push(delay); },
@@ -31,6 +32,13 @@ for (var i = 0; i < 20; i++) handler('test/command/rcu', i % 2 ? 'right' : 'left
 assert.strictEqual(keys.length, 20, 'every key is sent');
 assert.strictEqual(timers.length, 0, 'no key schedules a telemetry read');
 console.log('  ✓ twenty remote keys schedule no telemetry read');
+
+keys = [];
+handler('test/command/keyboardText', ' two words ');
+handler('test/command/keyboardKey', 'enter');
+assert.deepEqual(keys, ['keyboardText: two words ', 'keyboardKey:enter'], 'typed text keeps its spaces');
+assert.strictEqual(timers.length, 0, 'typing schedules no telemetry read');
+console.log('  ✓ typed text keeps its spaces and schedules no telemetry read');
 
 handler('test/command/launch', 'example.app');
 assert.strictEqual(timers.length, 1, 'other commands keep their telemetry refresh');

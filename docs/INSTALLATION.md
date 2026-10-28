@@ -12,7 +12,8 @@ un accès SSH personnel, jamais une installation de root ou de firmware.
 
 ## Source complète
 
-La version incluse est Glasshouse 0.118.0 avec l'accueil C6 personnalisé. Le serveur
+La version de cette branche est Glasshouse **0.130.0**, base
+`1543769cfeb28c3ce0936dc6d20b24cd58c70255`, avec l'accueil C6 personnalisé. Le serveur
 reste ES5, mais le mécanisme de persistance requiert un Node système moderne; voir
 son guide. Cette version publique modifiée doit être validée sur chaque télévision.
 L'expérience historique C6 ne prouve pas la compatibilité de tous les modèles.
@@ -66,8 +67,9 @@ sont souhaitées. `allowPower` reste facultatif. Sur une installation existante,
 modifier le `/var/lib/tvweb/config.json` de la télévision via les réglages ou SSH :
 la copie locale d’amorçage ne remplace jamais ce fichier.
 
-Le code de cette version exige le port serveur **8080** et propose Home sur
-**webOS 9**, **webOS 10** (expérimental), puis **webOS 11** seulement avec
+Le guide utilise le port serveur **8080**, valeur de l’exemple. Home est accepté
+sur **webOS 9**, proposé sur **webOS 7 et 10** avec statut expérimental, puis sur
+**webOS 11** seulement avec
 `allowExperimentalHome: true`. Ce drapeau n’active pas Home sur webOS 5 ou sur
 toute autre version non reconnue. Le Developer Mode ne remplace pas le root
 requis. L’option reste désactivée dans l’exemple; vérifier la cible avant de
@@ -82,6 +84,9 @@ synthétiques de départ; il ne faut pas le copier sur un `home.json` existant.
 L'ordre de démonstration est YouTube, Netflix, Plex, Crave, Prime Video, ICI TOU.TV,
 Bell Fibe et Accueil LG. Les applications doivent être installées séparément. Leurs
 abonnements, sessions et données ne sont pas inclus. L'accueil LG reste accessible.
+Pour lancer Bell comme une app, choisissez son identifiant réellement installé
+(le profil accepte `com.bell.fibetv.production`), pas l’entrée HDMI de la boîte.
+L’existence de cet ID sur une autre TV ne prouve pas sa présence sur la vôtre.
 Le profil visuel C6 associe Switch 2 à HDMI 1, Xbox Series X à HDMI 3 et Bell Fibe à
 HDMI 4; HDMI 2 n'est pas affiché parmi les consoles. Ce sont des choix de ce profil,
 pas une détection universelle du matériel. Pour d'autres ports, adapter `items` et
@@ -105,6 +110,8 @@ masquées.
 
 Pour le lanceur photo optionnel, lire [Photos](PHOTOS.md). Il est non configuré par
 défaut et n'exige aucun serveur, compte ou jeton pour examiner la démo.
+Les [paramètres discrets](HOME_SETTINGS.md) donnent accès au toggle Recommandations
+et à l’app native Glasshouse. Ils ne fournissent aucun verrou PIN personnalisé.
 
 ## Météo privée optionnelle
 
@@ -137,3 +144,17 @@ compatibles, sans restaurer d'anciens réglages. Une mise à jour incompatible b
 l'application du patch et exige une adaptation. Vérifier le statut et le rendu après
 chaque mise à jour. Le dépôt ne change ni les protections de confidentialité ni les
 accès de la télévision.
+
+Si le menu personnalisé disparaît, sauvegarder d’abord l’état actuel et, lorsqu’il
+existe, `/var/lib/tvweb/.previous` : l’updater en place remplace cette copie à la
+mise à jour suivante. Une installation IPK ne garantit pas cette sauvegarde.
+Comparer version, configuration, assets et état du gardien avant de restaurer.
+Rebaser les seuls changements compatibles sur la version installée; ne pas
+rétrograder ni recopier aveuglément l’ancienne page ou l’ancien `home.json`.
+
+Les assets sont aussi mis en cache en mémoire par le serveur. Après un remplacement
+validé, un simple rafraîchissement peut encore servir l’ancienne page. Pendant une
+fenêtre d’interruption acceptée, redémarrer **uniquement le service Glasshouse**,
+puis vérifier l’empreinte de la réponse HTTP réellement servie et le rendu. Un
+redémarrage de la TV n’est pas une étape par défaut. La procédure de sauvegarde
+et de récupération est détaillée dans le [guide manuel](MANUAL_GUIDE.md).

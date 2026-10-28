@@ -1,4 +1,5 @@
-// LG's own settings as controls, used by the Privacy, Advanced and Game tabs.
+// LG's own settings as controls, used by the Privacy, Advanced, Game, Audio
+// and Picture tabs.
 
 /* LG's own settings from lgsettings.js, as switches. Only the rows the TV
    reports come back, so a section with none stays hidden. */
@@ -43,8 +44,13 @@ function lgsControl(r) {
       '</select>';
   }
   if (r.type === 'number') {
-    return '<label class="lgs-range"><input type="range"' + id + ' min="' + r.min + '" max="' + r.max + '" step="1" value="' + r.value + '"' +
-      ' aria-label="' + esc(r.title) + '"><span class="num">' + esc(lgsNumber(r.min, r.value)) + '</span></label>';
+    // A picture setting reads as LG's menu shows it; its track, where it has
+    // one, shows what the slider changes.
+    const fmt = r.section === 'picture' ? (r.track || 'signed') : '';
+    const cls = r.track ? ' class="lgs-track" data-track="' + esc(r.track) + '"' : '';
+    return '<label class="lgs-range"><input type="range"' + id + cls + (fmt ? ' data-fmt="' + fmt + '"' : '') +
+      ' min="' + r.min + '" max="' + r.max + '" step="1" value="' + r.value + '"' +
+      ' aria-label="' + esc(r.title) + '"><span class="num">' + esc(lgsNumber(r.min, r.value, fmt)) + '</span></label>';
   }
   return renderToggle({
     cls: r.on ? 'good' : 'idle',
@@ -53,9 +59,14 @@ function lgsControl(r) {
   });
 }
 
-// A range either side of 0, as balance's is, reads the way LG labels it.
-function lgsNumber(min, v) {
+// A range either side of 0 reads the way LG labels it: balance as Left and
+// Right, tint as R and G, colour temperature as Warm and Cool, and the rest of
+// the picture settings as signed numbers.
+function lgsNumber(min, v, fmt) {
   if (min >= 0 || v === 0) return String(v);
+  if (fmt === 'tint') return v < 0 ? t('lgs.tintRed', 'R{n}', { n: -v }) : t('lgs.tintGreen', 'G{n}', { n: v });
+  if (fmt === 'temperature') return v < 0 ? t('lgs.warm', 'Warm {n}', { n: -v }) : t('lgs.cool', 'Cool {n}', { n: v });
+  if (fmt) return v < 0 ? '\u2212' + (-v) : '+' + v;
   return v < 0 ? t('lgs.left', 'Left {n}', { n: -v }) : t('lgs.right', 'Right {n}', { n: v });
 }
 
@@ -78,7 +89,7 @@ document.addEventListener('change', e => {
 });
 document.addEventListener('input', e => {
   const range = e.target.closest('input[type=range][data-lgs]');
-  if (range) range.nextElementSibling.textContent = lgsNumber(Number(range.min), Number(range.value));
+  if (range) range.nextElementSibling.textContent = lgsNumber(Number(range.min), Number(range.value), range.dataset.fmt);
 });
 
 /*
@@ -113,22 +124,33 @@ function hdmiTable(rows, dims, inputs) {
     }).join('') + '</div>';
 }
 
-// The Advanced tab's Sound section, and the SIMPLINK rows in Devices.
+// One of lgsettings.js's rows, for a .prot-table.
+function lgsRow(r) {
+  return '<div class="prot-row"><div class="prot-main"><div class="prot-title">' + esc(r.title) + '</div>' +
+    '<div class="prot-desc">' + esc(r.desc) + (r.active === false ? ' ' + esc(lgsInactive(r)) : '') +
+    '</div></div><div class="prot-status">' + lgsControl(r) + '</div></div>';
+}
+
+// Why a setting is greyed out: colour management says which (lgsettings.js colourManagementState).
+function lgsInactive(r) {
+  if (r.inactive === 'game') return t('pic.cms.game', 'Not used in Game mode.');
+  if (r.inactive === 'colourAdjustment') return t('pic.cms.needsUser', 'Set Colour adjustment to User Selection to use these.');
+  return r.section === 'picture'
+    ? t('lgs.pictureInactive', 'Not available in the current picture mode, or for what is on screen.')
+    : t('lgs.inactive', 'Not available with the TV’s current input or sound output.');
+}
+
+// The Advanced tab's HDMI inputs and the SIMPLINK rows in Devices. Sound, and
+// each input's audio format, are on the Audio tab.
 var advLgsDevices = false;   // read by tick(), which can run before this line on the first load
 async function loadAdvSettings() {
   let d;
-  try { d = await (await fetch(api('/api/lgsettings?section=sound,hdmi,devices'), { cache: 'no-store' })).json(); } catch (e) { return; }
-  const row = r => '<div class="prot-row"><div class="prot-main"><div class="prot-title">' + esc(r.title) + '</div>' +
-    '<div class="prot-desc">' + esc(r.desc) + (r.active === false ? ' ' + esc(t('lgs.inactive', 'Not available with the TV’s current input or sound output.')) : '') +
-    '</div></div><div class="prot-status">' + lgsControl(r) + '</div></div>';
-  const sound = (d.rows || []).filter(r => r.section === 'sound');
+  try { d = await (await fetch(api('/api/lgsettings?section=hdmi,devices'), { cache: 'no-store' })).json(); } catch (e) { return; }
   const devices = (d.rows || []).filter(r => r.section === 'devices');
-  const hdmi = (d.rows || []).filter(r => r.section === 'hdmi');
+  const hdmi = (d.rows || []).filter(r => r.section === 'hdmi' && r.column !== 'audioFormat');
   q('adv-hdmi').hidden = !hdmi.length;
   q('adv-lgs-hdmi').innerHTML = hdmi.length ? hdmiTable(hdmi, d.dimensions || {}, d.inputs) : '';
-  q('adv-sound').hidden = !sound.length;
-  q('adv-lgs-sound').innerHTML = sound.map(row).join('');
   advLgsDevices = devices.length > 0;
   if (advLgsDevices) q('adv-devices').hidden = false;
-  q('adv-lgs-devices').innerHTML = devices.map(row).join('');
+  q('adv-lgs-devices').innerHTML = devices.map(lgsRow).join('');
 }

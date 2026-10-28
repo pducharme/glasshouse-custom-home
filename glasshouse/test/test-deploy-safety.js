@@ -24,7 +24,7 @@ function fixture(options) {
     'deploy_telnet() { echo telnet >> "$MOCK_RECORD"; exit 9; }\n# ---------------------------------------------------------------- go');
   write(path.join(local, 'deploy.sh'), script, 0o700);
   write(path.join(local, 'LICENSE'), fs.readFileSync(path.join(__dirname, '../LICENSE')));
-  write(path.join(local, 'tvweb.js'), "var TVWEB_VERSION = '0.118.0';\n");
+  write(path.join(local, 'tvweb.js'), "var TVWEB_VERSION = '0.130.0';\n");
   write(path.join(local, 'tvwebctl'), '#!/bin/sh\nexit 0\n', 0o700);
   write(path.join(local, '50-tvweb.sh'), '#!/bin/sh\nexit 0\n', 0o700);
   if (options.seed !== undefined) write(path.join(local, 'config.json'), options.seed);

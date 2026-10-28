@@ -7,16 +7,13 @@ configuration d'un autre propriétaire.
 
 ## Choisir les bonnes sources
 
-Lors de l'audit initial du **26 octobre 2026**, l'ancien
-[`main`](https://github.com/pducharme/glasshouse-wallpapers/tree/9366c6bb9a1dcdbf8421d3f9de4dc178076e7491)
-ne contenait que cinq fonds JPEG et leur README. Le code audité était le commit
-[`d2e3ebc843c827a7040aa08e69abc9b7c31a8abe`](https://github.com/pducharme/glasshouse-wallpapers/tree/d2e3ebc843c827a7040aa08e69abc9b7c31a8abe),
-sur `codex/reproducible-glasshouse-interface`, dans la
-[PR nº 1](https://github.com/pducharme/glasshouse-wallpapers/pull/1), alors non fusionnée.
-Ces nouveaux guides ont été ajoutés après ce SHA. Ce constat est historique :
-vérifiez l'état actuel de la PR, le SHA de `main` et les fichiers qu'il contient.
-Avant la fusion, utilisez explicitement la branche de la PR; après la fusion,
-`main` est la référence de départ du guide manuel.
+La [PR nº 1](https://github.com/pducharme/glasshouse-wallpapers/pull/1) est fusionnée.
+Au contrôle du **28 octobre 2026**, `main` livre l’adaptation 0.118.0 au SHA
+[`1711bdb79d680ea87e74a68e33e3ee265ec81f14`](https://github.com/pducharme/glasshouse-wallpapers/tree/1711bdb79d680ea87e74a68e33e3ee265ec81f14).
+Cette branche `codex/c6-home-0130-recommendations` prépare la version 0.130.0,
+base amont `1543769cfeb28c3ce0936dc6d20b24cd58c70255`. Utilisez explicitement
+sa référence publiée avant sa fusion; ne présentez pas son contenu comme déjà
+disponible dans le clone ordinaire de `main`.
 
 Faites revérifier cet état au début de votre session. Si la branche ou le SHA a
 changé, examinez ce changement au lieu de sélectionner silencieusement la dernière
@@ -33,9 +30,9 @@ Laissez les informations inconnues à « découvrir après autorisation ».
 
 ```text
 DÉPÔT = https://github.com/pducharme/glasshouse-wallpapers
-RÉFÉRENCE À EXAMINER = main (ou la branche de la PR avant sa fusion vérifiée)
+RÉFÉRENCE À EXAMINER = codex/c6-home-0130-recommendations (main seulement après fusion vérifiée)
 SHA À EXAMINER = <SHA distant à relever et vérifier avant toute préparation>
-BASE HISTORIQUE AUDITÉE = d2e3ebc843c827a7040aa08e69abc9b7c31a8abe
+BASE AMONT ATTENDUE = 0.130.0 / 1543769cfeb28c3ce0936dc6d20b24cd58c70255
 CIBLE UNIQUE = <alias privé de ma TV>
 MODÈLE / VERSION WEBOS / NODE SYSTÈME = <connus ou à découvrir>
 INSTALLATION ACTUELLE = <aucune / Glasshouse / Lightkeeper / inconnue>
@@ -47,6 +44,8 @@ PHOTOS = <désactivé / relier un client Immich déjà installé>
 MÉTÉO = <désactivée par défaut / activation à examiner séparément>
 MOUVEMENT RÉDUIT = <préférence à conserver ou à examiner>
 NEWS VERS PLEX = <inchangé par défaut / étudier la faisabilité>
+RECOMMANDATIONS = <conserver le choix existant / désactivées / étudier un essai>
+APP NATIVE GLASSHOUSE = <déjà installée / absente / à vérifier>
 OBJECTIF INITIAL = diagnostic local et démo uniquement, sans connexion TV
 ```
 
@@ -74,7 +73,7 @@ autorisations supplémentaires.
    préparés et contenu réellement publié. Un clone de wallpapers seul ne suffit
    pas. N'affirme pas qu'une instruction ou fonction est publique si elle existe
    seulement dans ton travail local.
-2. Lis README, docs/REPRODUCIBILITY.md, docs/MANUAL_GUIDE.md, docs/INSTALLATION.md, docs/PHOTOS.md,
+2. Lis README, docs/REPRODUCIBILITY.md, docs/MANUAL_GUIDE.md, docs/INSTALLATION.md, docs/PHOTOS.md, docs/HOME_SETTINGS.md,
    docs/PROVENANCE.md, docs/VALIDATION.md et personalisation/README.md, lorsqu'ils
    existent à cette référence. Signale les absences. Vérifie les commandes et
    options contre le code du même SHA, notamment le déploiement, l'activation de
@@ -83,7 +82,11 @@ autorisations supplémentaires.
 3. Vérifie les prérequis ordinateur et les dépendances verrouillées. Lance la
    démo synthétique et les contrôles locaux pertinents indiqués dans ces sources.
    Aucune commande de test ne doit toucher un appareil réel. Observe le rendu,
-   les flèches/OK/Retour, le focus, le tiroir, Photos et le mouvement réduit.
+   les flèches/OK/Retour, le focus, le tiroir, Photos, Paramètres et le mouvement réduit.
+   Vérifie le toggle Recommandations limité à son propre champ, les erreurs de
+   sauvegarde et les réponses tardives : aucune carte d'une autre app lorsque
+   l'app sélectionnée n'en fournit pas. Les cartes commencent repliées, sans
+   requête d'affiche. Le G ouvre l'app native vérifiée, jamais une URL arbitraire.
    Garde les résultats et limites; ne présente pas un test local comme un test TV.
 4. Évalue les prérequis TV sans supposer qu'ils sont présents. Le parcours système
    documenté exige une TV déjà rootée et compatible; Developer Mode seul ne
@@ -94,7 +97,7 @@ autorisations supplémentaires.
    réels, Photos, verre, noms accessibles, Toutes les apps, HOME et démarrage.
    Les logos propriétaires privés et réglages personnels ne sont pas fournis.
    Ne promets pas une reproduction pixel pour pixel avec des assets absents.
-   Conserve les licences et attributions du code, polices, logo Immich et météo;
+   Conserve les licences et attributions du code, polices, G Glasshouse, logo Immich et météo;
    n'ajoute pas de logo ou asset à redistribuer sans droits établis.
 6. Prépare un plan concret pour la phase suivante : cible unique, méthode d'accès
    existante, lectures minimales, prérequis manquants, fichiers potentiellement
@@ -143,6 +146,13 @@ lanceur de cette version. Ne lis pas son stockage, son serveur, ses clés API ni
 sa photothèque. Relier un lanceur, installer un client et l'authentifier sont trois
 opérations distinctes; seules les lectures d'inventaire sont autorisées ici.
 
+Pour Recommandations, conserve l'état existant. Si l'essai n'a pas été approuvé,
+n'active pas le flux et ne charge aucune image distante. Une lecture de
+disponibilité séparément autorisée doit exporter seulement les nombres par ID
+d'app, sans titre, profil ou URL personnelle. Ne promets pas Continuer à regarder,
+progression exacte ou personnalisation; l'app installée peut ne rien publier.
+Vérifie également l'app native Glasshouse avant de lier ou tester le G.
+
 Pour Toutes les apps, utilise uniquement le mécanisme déjà accessible au logiciel
 installé. Un refus du catalogue ne justifie pas d'ouvrir un endpoint, de changer
 un profil ou de contourner un PIN. Pour News, vérifie les capacités existantes;
@@ -156,6 +166,10 @@ l'accès de secours LG et les limites au réveil. Propose les sauvegardes privé
 exactes, leur vérification et la procédure de restauration compatible avec les
 mises à jour/personnalisations existantes. Ne remplace jamais une configuration
 existante par un exemple synthétique.
+Si le menu a disparu après update, préserve aussi .previous avant toute autre
+mise à jour. Rebase sur la version réellement installée sans downgrade, sans
+réinstaller à l'aveugle et sans ramener un PIN annulé. Prévois une fenêtre acceptée
+avant arrêt/restart du service, rafraîchissement visible ou lancement d'app.
 
 Demande ensuite mon accord sur ce plan précis avant de créer une sauvegarde sur
 la TV, installer, activer Home, changer un raccourci ou modifier la configuration.
@@ -195,9 +209,14 @@ installé accepté par le code; aucun serveur, token ou compte n'est à mettre d
 Glasshouse. News ne peut être modifié que si la touche et le mécanisme réel ont
 été identifiés et ce remappage est expressément approuvé. Conserve les autres
 raccourcis et documente leur restauration.
+Recommandations garde le choix déjà enregistré sauf modification expressément
+approuvée. Aucun contenu distant n'est à lire ou capturer pour démontrer la
+disponibilité. Le raccourci G doit lancer seulement l'app native installée vérifiée.
 
 Vérifie les empreintes effectivement installées, l'état du gardien, la préservation
-de la configuration et le rendu réellement chargé. Teste les flèches, OK, Retour,
+de la configuration et le rendu réellement chargé. Le cache mémoire des assets
+peut garder une ancienne page; compare son hash HTTP et ne redémarre que le
+service Glasshouse, dans la fenêtre approuvée, si nécessaire. Teste les flèches, OK, Retour,
 le focus, les favoris et les seules fonctions convenues. Pour Photos, activer la
 tuile puis lire seulement l'identifiant de l'app au premier plan suffit : ne
 capture ni n'inspecte sa photothèque. Un clic dont l'issue est incertaine n'est pas

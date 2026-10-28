@@ -1,6 +1,6 @@
 --- a/lib/routes.js
 +++ b/lib/routes.js
-@@ -19,6 +19,7 @@
+@@ -21,6 +21,7 @@
  var fetchLib = require('./fetch');
  var devtools = require('./devtools');
  var names = require('./names');
@@ -8,7 +8,7 @@
  
  var HA_CATEGORIES = ha.HA_CATEGORIES;
  var HA_ENTITIES = ha.HA_ENTITIES;
-@@ -28,7 +29,7 @@
+@@ -30,7 +31,7 @@
    '.otf': 'font/otf', '.ttf': 'font/ttf', '.woff2': 'font/woff2',
    '.css': 'text/css; charset=utf-8', '.js': 'application/javascript',
    '.json': 'application/json; charset=utf-8',
@@ -17,7 +17,7 @@
  };
  
  /**
-@@ -1083,6 +1084,7 @@
+@@ -1153,6 +1154,7 @@
      }
      if (pathname === '/api/home/guide') return homeModule.guide(function (g) { reply({ ok: true, guide: g }); });
      if (pathname === '/api/home/now') return homeModule.now(reply);

@@ -64,6 +64,7 @@ var installTimeoutMs = 120000;
 var elevateTimeoutMs = 60000;
 
 var job = null;
+var ownPackageInstalling = false;
 // An upload is streaming into the staging directory; a job's cleanup must not touch it.
 var uploadHeld = 0;
 var UPLOAD_HOLD_MS = 30 * 60 * 1000;
@@ -717,13 +718,13 @@ function snapshot() {
 
 // Another install may not start: a job is working or waiting for confirmation.
 function isBusy() {
-  return !!(job && UNFINISHED[job.state]);
+  return ownPackageInstalling || !!(job && UNFINISHED[job.state]);
 }
 
 // Something is being downloaded, verified or installed: settings saves,
 // restarts and updates wait; an unconfirmed preview does not hold them.
 function isWorking() {
-  return !!(job && WORKING[job.state]);
+  return ownPackageInstalling || !!(job && WORKING[job.state]);
 }
 
 /* -------------------------------------------------------------- start */
@@ -848,14 +849,13 @@ function isScreensaverPackage(id) {
 /*
  * What a one-click catalog install still stops for: a choice to make (root for
  * an unvetted package's services, replacing an LG store copy) or a warning to
- * read (a different processor, an older version, or a custom screensaver).
- * Vetted catalog packages with root services auto-elevate on single-click.
+ * read (a different processor, an older version). A screen saver app no longer
+ * replaces Glasshouse's: its screen saver is listed with them.
  */
 function needsReview(pv) {
   var unvettedRoot = !pv.vetted && pv.rootRequired && pv.services && pv.services.length && fs.existsSync(elevatePath);
   return !!(unvettedRoot ||
-            pv.storeInstalled || pv.cpuMismatch || pv.direction === 'down' ||
-            pv.isScreensaver);
+            pv.storeInstalled || pv.cpuMismatch || pv.direction === 'down');
 }
 
 /*
@@ -1247,11 +1247,29 @@ function recover() {
 
 /* --------------------------------------------------------------- init */
 
+/*
+ * Glasshouse's own package, for the updater, which has checked it against the
+ * release's checksum. Outside checkIds: Glasshouse has no services for
+ * dev/install to strip of root, and its server runs from /var/lib/tvweb, so
+ * the install leaves it running.
+ */
+function installOwnPackage(file, version, cb) {
+  if (isBusy()) return cb(new Error(msg('srv.install.busy', 'an install is already in progress')));
+  var id = SELF_UPDATING[1];
+  ownPackageInstalling = true;
+  runInstall({ file: file, info: { package: id, version: version, apps: [{ id: id, version: version }] } },
+    function (err) {
+      ownPackageInstalling = false;
+      cb(err ? new Error(err) : null);
+    });
+}
+
 function init(opts) {
   opts = opts || {};
   if (job && job.timer) clearTimeout(job.timer);
   killChild();
   job = null;
+  ownPackageInstalling = false;
   uploadHeld = 0;
   lunaFn = opts.luna || null;
   appsMod = opts.apps || require('./apps');
@@ -1287,6 +1305,7 @@ module.exports = {
   releaseUpload: releaseUpload,
   touchUpload: touchUpload,
   recover: recover,
+  installOwnPackage: installOwnPackage,
   SELF_UPDATING: SELF_UPDATING,
   NAME_RE: NAME_RE,
   cmpVer: cmpVer,

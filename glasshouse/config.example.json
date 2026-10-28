@@ -12,6 +12,9 @@
   "piccap": {
     "pollIntervalMs": 30000
   },
+  "huesync": {
+    "pollIntervalMs": 30000
+  },
   "mqtt": {
     "enabled": false,
     "host": "",

@@ -12,10 +12,11 @@ Every entity the TV publishes, by category. Which categories are published is se
 | `switch` | `switch.lg_tv_pixel_refresher_schedule` | Schedule Pixel Refresher | Schedule/cancel 1-hour calibration for next standby |
 | `switch` | `switch.lg_tv_ad_blocker` | Ad & Telemetry Blocker | On-TV `/etc/hosts` blackhole for LG ad/tracking domains. On is the Ads & telemetry tier; Everything is chosen on the dashboard, and shows as on |
 | `switch` | `switch.lg_tv_piccap` | PicCap Capture | PicCap's screen capture for an ambient light, where PicCap is installed and answering |
+| `switch` | `switch.lg_tv_huesync` | Hue Sync | Hue Sync's streaming to Philips Hue and Ambience lights, where the Hue Sync app is installed and answering |
 | `switch` | `switch.lg_tv_standby_light` | Standby LED | Toggle standby front indicator LED |
 | `switch` | `switch.lg_tv_logo_light` | Logo Light | Toggle front illuminated TV logo |
 | `number` | `number.lg_tv_volume` | Volume | Volume slider (0–100). Unavailable when the level is set on an external sound device |
-| `select` | `select.lg_tv_input_source` | Input Source | HDMI 1–4, Live TV |
+| `select` | `select.lg_tv_input_source` | Input Source | Live TV, and HDMI 1–4 under the names the TV's settings give them (`Apple TV (HDMI2)`, as the Active App sensor shows them). The options update when an input is renamed; the `input_ids` attribute maps each option to its input (`hdmi1`–`hdmi4`, `livetv`), which stays the same |
 | `select` | `select.lg_tv_app` | Launch App | Installed apps and LG Settings; `app_ids` attribute maps option labels to stable app IDs. `app_colors` gives each app's `iconColor` from its `appinfo.json` as `#rrggbb`, where it has one, and with **Share app icons** on in the MQTT tab, `app_icons` gives each app's icon as `http://<tv-ip>:8082/icons/<appId>.png` |
 | `select` | `select.lg_tv_picture_mode` | Picture Mode | Switch profiles (ISF Dark/Bright, Cinema, Game, Standard) |
 | `select` | `select.lg_tv_energy_saving` | Energy Saving Step | Auto, Off, Minimum, Medium, Maximum, Screen off |
@@ -32,7 +33,10 @@ Every entity the TV publishes, by category. Which categories are published is se
 | `button` | `button.lg_tv_remote_ok` | Remote OK | Presses OK on the remote |
 | `button` | `button.lg_tv_remote_back` | Remote Back | Presses Back on the remote |
 | `button` | `button.lg_tv_remote_home` | Remote Home | Presses Home on the remote |
-| `event` | `event.lg_tv_remote_button` | Remote Button | Fires when red, green, yellow, or blue buttons are pressed on the remote |
+| `text` | `text.lg_tv_keyboard_text` | Keyboard Text | Types up to 100 characters into the focused text field, as LG's phone app does. Its state is always empty, so what is typed stays out of Home Assistant's history |
+| `button` | `button.lg_tv_keyboard_enter` | Keyboard Enter | Presses Enter in the focused text field |
+| `button` | `button.lg_tv_keyboard_backspace` | Keyboard Backspace | Deletes one character in the focused text field |
+| `event` | `event.lg_tv_remote_button` | Remote Button | Fires when a colored button (red, green, yellow, blue) or a streaming button (Netflix, Prime Video, Disney+, LG Channels, Rakuten TV, Alexa) is pressed on the remote |
 | `button` | `button.lg_tv_play` | Play | Resume media playback |
 | `button` | `button.lg_tv_pause` | Pause | Pause media playback |
 | `button` | `button.lg_tv_play_pause` | Play / Pause | Toggle media playback |
@@ -82,7 +86,7 @@ Playback reaches an HDMI source over CEC, where the TV has only one key for both
 | `number` | `number.lg_tv_oled_light` | OLED Light | Sets the current picture mode's OLED Light (`0–100`); **Backlight** on an LCD. Follows the remote and mode changes as they happen |
 | `sensor` | `sensor.lg_tv_panel_dimming` | Panel Dimming | Dynamic backlight/panel dimming state |
 | `sensor` | `sensor.lg_tv_audio_output` | Audio Output | Output the audio service is driving (e.g. *HDMI ARC*, *Headphone / AUX*) |
-| `sensor` | `sensor.lg_tv_active_app` | Active App | Current foreground app or friendly CEC device; `app_id` attribute identifies the app. Where the TV reports its windows, `control_app_id` names the one the remote's keys reach, such as LG's Settings or Home over an HDMI input, or is empty with nothing focused or the TV off. Empty window transitions settle for 200 ms; standby clears it immediately |
+| `sensor` | `sensor.lg_tv_active_app` | Active App | Current foreground app or friendly CEC device; `app_id` attribute identifies the app. Where the TV reports its windows, `control_app_id` names the one the remote's keys reach, such as LG's Settings or Home over an HDMI input, or is empty with nothing focused or the TV off. Empty window transitions settle for 200 ms; standby clears it immediately. `keyboard_visible` is true while LG's on-screen keyboard is up over that window, and is left out where the TV has no window list; while it is up, the remote buttons are sent as presses of the remote's own keys, which the keyboard follows |
 | `sensor` | `sensor.lg_tv_sound_format` | Sound Format | Format of the sound the app or input on screen is sending, as the dashboard's Sound panel shows it (e.g. *Opus*, *PCM*, *Dolby Digital Plus · Dolby Atmos*), or *None* while nothing plays. Attributes `codec` and `immersive` give the TV's own names (`eac3`, `atmos`). Published once the TV has answered with a format, which webOS 4 does not |
 | `sensor` | `sensor.lg_tv_play_state` | Player State | State of the TV's own media pipeline (`playing`, `paused`, `stopped`), or `idle` with nothing playing. Published once the TV has reported playback, and kept from then on |
 

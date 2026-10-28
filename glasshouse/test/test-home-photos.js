@@ -12,6 +12,7 @@ function setup(id, apps) {
   calls = []; installed = apps || []; refused = false;
   fs.writeFileSync(path.join(dir, 'home.json'), JSON.stringify({ photosAppId: id }));
   home.init({ stateDir: dir, luna: function (uri, payload, cb) {
+    if (uri === 'com.webos.service.sdx/getHttpHeaderForServiceRequest') return cb({ returnValue: false });
     calls.push({ uri: uri, payload: copy(payload) });
     if (uri === 'com.webos.applicationManager/listLaunchPoints') return cb({ returnValue: true, launchPoints: installed });
     if (uri === 'com.webos.applicationManager/getAppInfo') return cb({ returnValue: false });
@@ -75,6 +76,17 @@ try {
   assert.strictEqual(call('catalogue').photos.installed, false, 'nonlaunchable platform entries are unavailable');
   assert.strictEqual(call('open', { kind: 'photos' }).ok, false);
   assert.strictEqual(launches().length, 0);
+  setup(clients[0], [{ id: clients[0], title: 'Immich' }, { id: 'netflix', title: 'Netflix' }]);
+  var modern = { folder: ['netflix'], searchHintSeen: true, search: false, fade: true,
+    hideUnused: true, showClock: false, rowsBottom: true, view: 'alternative',
+    showLastOn: false, showAppCount: false, showCec: false };
+  assert.strictEqual(call('setLayout', modern).ok, true);
+  var modernBefore = home.layout();
+  assert.strictEqual(call('setLayout', { photosAppId: clients[1] }).ok, true);
+  Object.keys(modern).forEach(function (key) {
+    assert.deepStrictEqual(home.layout()[key], modernBefore[key], 'Photos edit preserves new upstream option ' + key);
+    assert.deepStrictEqual(home.layout()[key], modern[key], 'upstream option accepted ' + key);
+  });
   console.log('Photos launcher configuration and isolation tests passed.');
 } finally {
   home.flush();

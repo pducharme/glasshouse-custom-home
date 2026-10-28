@@ -1,6 +1,6 @@
 --- a/lib/remotekeys.js
 +++ b/lib/remotekeys.js
-@@ -160,6 +160,9 @@
+@@ -166,6 +166,9 @@
    { key: 'amazon', symbol: 'WebOS.Key_webOS_Amazon', title: 'Prime Video' },
    { key: 'disneyplus', symbol: 'WebOS.Key_webOS_Disneyplus', title: 'Disney+' },
    { key: 'lgchannels', symbol: 'WebOS.Key_webOS_LGChannels', title: 'LG Channels' },
@@ -8,9 +8,9 @@
 +  // known; no JavaScript-compositor symbol is assumed on older webOS TVs.
 +  { key: 'haystack', title: 'News', nativeOnly: true, nativeMapping: true },
    { key: 'rakutentv', symbol: 'WebOS.Key_webOS_RakutenTV', title: 'Rakuten TV' },
-   { key: 'hulu', symbol: 'WebOS.Key_webOS_Hulu', title: 'Hulu', regions: ['us'] },
-   { key: 'iplayer', symbol: 'WebOS.Key_webOS_IPlayer', title: 'BBC iPlayer', regions: ['gb'] },
-@@ -670,7 +673,7 @@
+   // The Movies button on 2020 remotes (the MR20's white MOVIES key). LG's
+   // filters open whichever film store the region has from it, a hotkey id
+@@ -684,7 +687,7 @@
      if (NATIVE_SETTINGS[k.key]) return !!(tv.settings && tv.settings[NATIVE_SETTINGS[k.key]]);
      if (NATIVE_SERVICE_KEYS[k.key]) return !!(servicesModule && servicesModule.available(NATIVE_SERVICE_KEYS[k.key]));
      if (NATIVE_BLOCK_KEYS[k.key]) return !!((tv.apps && tv.apps[NATIVE_BLOCK_KEYS[k.key]]) || lg.blocks[NATIVE_BLOCK_KEYS[k.key]]);
@@ -19,7 +19,7 @@
      var entry = lg.mapping[k.key] || mappingEntry(tv.list, k.key);
      return !!(entry && typeof entry === 'object' && entry.isActive !== false);
    });
-@@ -760,7 +763,7 @@
+@@ -774,7 +777,7 @@
      (nextList || []).forEach(function (entry) {
        Object.keys(entry || {}).forEach(function (name) {
          var def = keyByName(name);

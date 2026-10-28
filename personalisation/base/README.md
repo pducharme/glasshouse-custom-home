@@ -1,6 +1,6 @@
 Ces quatre fichiers sont les sources Glasshouse **non modifiées**, extraites de
 `rorygallagher2024/glasshouse` au commit
-`859f5e134e0d9d4b499afe48084b9cdb82db9164` (version 0.118.0).
+`1543769cfeb28c3ce0936dc6d20b24cd58c70255` (version 0.130.0).
 
 Leur chemin upstream est `server/` suivi du chemin présent ici. Ils servent à
 générer les patches et à tester leur application sans dépendre d'un checkout Git

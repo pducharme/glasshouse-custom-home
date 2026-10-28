@@ -62,8 +62,8 @@ FILES="LICENSE tvweb.js tvwebctl assets/ui.html assets/dashboard.html assets/fav
 assets/ui/ui.css assets/ui/core.js assets/ui/theme.js assets/ui/format.js assets/ui/readouts.js \
 assets/ui/update.js assets/ui/controls.js assets/ui/privacy.js assets/ui/lgsettings.js assets/ui/game.js \
 assets/ui/system.js assets/ui/history.js assets/ui/ssh.js assets/ui/screentime.js assets/ui/apps.js assets/ui/install.js assets/ui/home.js assets/ui/tabs.js assets/ui/servicemenu.js \
-assets/ui/oled.js assets/ui/screensavers.js assets/ui/mqtt.js assets/ui/tools.js assets/ui/search-aliases.js assets/ui/search.js assets/ui/main.js \
-assets/qr.js assets/i18n.js assets/i18n/es.json assets/setup.html assets/setup-phone.html \
+assets/ui/oled.js assets/ui/screensavers.js assets/ui/mqtt.js assets/ui/tools.js assets/ui/search-aliases.js assets/ui/search.js assets/ui/main.js assets/ui/audio.js assets/ui/picture.js \
+assets/qr.js assets/i18n.js assets/i18n/es.json assets/i18n/de.json assets/i18n/ru.json assets/i18n/hu.json assets/i18n/it.json assets/setup.html assets/setup-phone.html \
 assets/dashboard-app/appinfo.json assets/dashboard-app/index.html \
 assets/dashboard-app/packageinfo.json assets/dashboard-app/install-app.sh \
 assets/dashboard-app/assets/icon80.png assets/dashboard-app/assets/icon130.png \
@@ -75,12 +75,26 @@ assets/fonts/Outfit.ttf assets/fonts/Manrope.ttf \
 assets/fonts/Outfit-Light.ttf assets/fonts/Outfit-Regular.ttf \
 assets/fonts/Manrope-Regular.ttf assets/fonts/Manrope-SemiBold.ttf \
 assets/fonts/OFL-Outfit.txt assets/fonts/OFL-Manrope.txt \
-assets/screensavers/clock.qml assets/screensavers/fireworks.qml \
-assets/screensavers/starfield.qml assets/screensavers/vitals.qml assets/screensavers/star.png \
-assets/screensavers/bokeh.qml assets/screensavers/bokeh.png \
-assets/screensavers/harmonograph.qml \
-lib/mqtt.js lib/ha.js lib/updater.js lib/fetch.js lib/repo.js lib/installer.js lib/privacy.js lib/devtools.js lib/oled.js lib/screensavers.js lib/telemetry.js \
-lib/apps.js lib/samrescan.js lib/children.js lib/luna.js lib/piccap.js lib/state.js lib/mqtt-state.js lib/notifications.js lib/screentime.js lib/services.js lib/preload.js lib/quickaccess.js lib/remotekeys.js lib/homescreen.js lib/homescreen-webos9.js lib/homescreen-webos10.js lib/say.js lib/controls.js lib/routes.js lib/lgsettings.js lib/game.js lib/topics.js lib/timers.js lib/util.js lib/names.js lib/prometheus.js lib/remotebuttons.js lib/remotebuttons.py lib/logs.js lib/syslog.js lib/ntp.js lib/power.js lib/history.js lib/sshkeys.js lib/remotebattery.js lib/backup.js lib/iconserver.js lib/home.js lib/home-weather.js lib/home-picture.js lib/home-takeover.js lib/home-wallpapers.js lib/home-recent.js lib/home-recent-apps.js"
+assets/screensavers/bokeh/bokeh.png assets/screensavers/bokeh/main.qml \
+assets/screensavers/bokeh/saver.json assets/screensavers/clock/main.qml \
+assets/screensavers/clock/saver.json assets/screensavers/currents/main.qml \
+assets/screensavers/currents/saver.json assets/screensavers/filament/main.qml \
+assets/screensavers/filament/saver.json assets/screensavers/fireworks/main.qml \
+assets/screensavers/fireworks/saver.json assets/screensavers/fireworks/star.png \
+assets/screensavers/harmonograph/main.qml assets/screensavers/harmonograph/saver.json \
+assets/screensavers/incense/main.qml assets/screensavers/incense/saver.json \
+assets/screensavers/murmuration/main.qml assets/screensavers/murmuration/saver.json \
+assets/screensavers/neo/main.qml assets/screensavers/neo/saver.json \
+assets/screensavers/starfield/main.qml assets/screensavers/starfield/saver.json \
+assets/screensavers/starfield/star.png assets/screensavers/tesseract/main.qml \
+assets/screensavers/tesseract/saver.json assets/screensavers/tesseract/tesseract.js \
+assets/screensavers/veils/main.qml \
+assets/screensavers/veils/saver.json assets/screensavers/vitals/main.qml \
+assets/screensavers/vitals/saver.json assets/screensavers/vortex/main.qml \
+assets/screensavers/vortex/saver.json \
+screensavers/pigs/main.qml screensavers/pigs/saver.json \
+lib/mqtt.js lib/ha.js lib/updater.js lib/fetch.js lib/repo.js lib/installer.js lib/privacy.js lib/devtools.js lib/oled.js lib/screensavers.js lib/qmlcheck.js lib/saverpoweroff.js lib/idlesaver.js lib/telemetry.js \
+lib/apps.js lib/samrescan.js lib/children.js lib/luna.js lib/piccap.js lib/huesync.js lib/state.js lib/mqtt-state.js lib/notifications.js lib/screentime.js lib/services.js lib/preload.js lib/quickaccess.js lib/remotekeys.js lib/homescreen.js lib/homescreen-webos9.js lib/homescreen-webos10.js lib/say.js lib/controls.js lib/routes.js lib/lgsettings.js lib/game.js lib/topics.js lib/timers.js lib/util.js lib/names.js lib/prometheus.js lib/remotebuttons.js lib/remotebuttons.py lib/logs.js lib/syslog.js lib/ntp.js lib/power.js lib/history.js lib/sshkeys.js lib/remotebattery.js lib/backup.js lib/iconserver.js lib/home.js lib/home-weather.js lib/home-picture.js lib/home-takeover.js lib/home-wallpapers.js lib/home-recent.js lib/clock.js lib/home-recent-apps.js lib/home-recommended.js lib/home-search.js lib/audio.js"
 
 for t in tar base64 fold; do
   command -v "$t" >/dev/null 2>&1 && continue
@@ -145,7 +159,13 @@ JS
 fi
 # ustar is the plainest format, and both the GNU tar on webOS 4 and the BusyBox
 # tar on webOS 9 read it. COPYFILE_DISABLE stops macOS adding its ._ files.
-( cd "$WORK/b" && COPYFILE_DISABLE=1 tar --format=ustar -cf "$WORK/bundle.tar" . )
+# ustar holds IDs up to 2097151, and a Mac account from a directory server can
+# have a larger group ID (1149420193 seen), so every entry is written as root,
+# which the TV ignores anyway. GNU tar and the tar on macOS 15.4 or later take
+# --owner; the one on macOS 10.15 to 15.3 (libarchive before 3.7.3) takes --uid
+# instead, and the one on macOS 10.14 or older neither, so there the IDs stay.
+make_bundle() { ( cd "$WORK/b" && COPYFILE_DISABLE=1 tar --format=ustar "$@" -cf "$WORK/bundle.tar" . ); }
+make_bundle --owner=0 --group=0 2>/dev/null || make_bundle --uid=0 --gid=0 2>/dev/null || make_bundle
 
 SUM=""
 if command -v md5sum >/dev/null 2>&1; then
@@ -205,7 +225,9 @@ sleep 4
 # How this TV's own config exposes the dashboard, so the check at the end asks
 # for it only where it can answer. The TV keeps its own config.json, which is
 # the one that counts, not the copy on this computer.
-if tr -d ' \t\r\n' < "\$D/config.json" 2>/dev/null | grep -q '"web":{[^}]*"enabled":false'; then
+if [ ! -f "\$D/config.json" ]; then
+  :
+elif tr -d ' \t\r\n' < "\$D/config.json" 2>/dev/null | grep -q '"web":{[^}]*"enabled":false'; then
   echo "TVWEB_WEB_OFF"
 elif tr -d ' \t\r\n' < "\$D/config.json" 2>/dev/null | grep -qE '"host":"(127\.[0-9.]*|localhost|::1)"'; then
   echo "TVWEB_WEB_LOCAL"
