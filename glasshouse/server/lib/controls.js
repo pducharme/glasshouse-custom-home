@@ -7,6 +7,8 @@ var listenDualStack = require('./util').listenDualStack;
 var execFile = require('child_process').execFile;
 var msg = require('./say').msg;
 var timers = require('./timers');
+var saverPowerOff = require('./saverpoweroff');
+var clock = require('./clock');
 var names = require('./names');
 
 /*
@@ -50,6 +52,9 @@ var RCU_KEYS = {
   settings: 139
 };
 
+// What one Keyboard Text entry may insert into the focused field.
+var KEYBOARD_TEXT_MAX = 100;
+
 // The remote's volume keys: evdev codes, IR_KEY_VOL_UP and IR_KEY_VOL_DOWN in
 // /usr/share/X11/xkb/keycodes/lg less the 8 that xkb adds.
 var KEY_VOLUMEUP = 115;
@@ -79,6 +84,8 @@ var oled = null;
 var privacy = null;
 /** @type {ReturnType<typeof import('./piccap').init>} */
 var piccap = null;
+/** @type {ReturnType<typeof import('./huesync').init>} */
+var huesync = null;
 /** @type {typeof import('./services')} */
 var servicesModule = null;
 /** @type {typeof import('./screensavers')} */
@@ -109,6 +116,8 @@ var browserAppId = null;
 var toastSourceId = null;
 var tileHidingOffMsg = null;
 var writeSettingsFn = null;
+// Whether LG's on-screen keyboard is up, from the live window list.
+var keyboardVisibleFn = function () { return false; };
 
 var rcuDevicePath = null;
 function getRcuDevicePath() {
@@ -228,6 +237,10 @@ function doTvApp(action, cb) { return tvAppFn(action, cb); }
  * for where the sound goes now is passed to telemetry, which stops offering
  * the volume there.
  */
+function imeAnswer(cb) {
+  return function (r) { cb({ ok: !!(r && r.returnValue), error: r && r.errorText }); };
+}
+
 function volumeAnswer(r) {
   if (r && /Current Scenario doesn't support/i.test(String(r.errorText || '')) && telemetry) {
     telemetry.noteVolumeRefused();
@@ -600,6 +613,22 @@ function doControl(action, value, cb) {
       return luna('com.webos.service.settings/setSystemSettings',
                   { category: 'option', settings: { quickStartMode: qbOn ? 'on' : 'off' } },
                   function (r) {
+                    if (homeModule) homeModule.syncAutoLaunch();
+                    telemetry.clearCache();
+                    cb({ ok: !!(r && r.returnValue) });
+                  });
+
+    case 'homeAutoLaunch':
+      var halOn = (value === true || value === 'on' || value === 'ON' || value === 'true');
+      if (homeModule) {
+        return homeModule.setAutoLaunch(halOn, function (r) {
+          telemetry.clearCache();
+          cb(r);
+        });
+      }
+      return luna('com.webos.service.settings/setSystemSettings',
+                  { category: 'general', settings: { homeAutoLaunch: halOn ? 'on' : 'off' } },
+                  function (r) {
                     telemetry.clearCache();
                     cb({ ok: !!(r && r.returnValue) });
                   });
@@ -695,6 +724,14 @@ function doControl(action, value, cb) {
         cb({ ok: !!(r && r.ok), error: r && !r.ok ? r.error : undefined });
       });
 
+    case 'huesync':
+      // Hue Sync's streaming to a Philips Ambience light.
+      if (!huesync) return cb({ ok: false, error: 'Hue Sync is not available' });
+      var streamOn = (value === true || value === 'on' || value === 'ON' || value === 'true');
+      return huesync.setPower(streamOn, function (r) {
+        cb({ ok: !!(r && r.ok), error: r && !r.ok ? r.error : undefined });
+      });
+
     case 'lgLogo':
       var logoOn = (value === true || value === 'on' || value === 'ON' || value === 'true');
       return luna('com.webos.service.settings/setSystemSettings',
@@ -703,6 +740,13 @@ function doControl(action, value, cb) {
                     telemetry.clearCache();
                     cb({ ok: !!(r && r.returnValue) });
                   });
+
+    /*
+     * systemservice's timeFormat preference (HH12 or HH24), which sets the hour
+     * cycle for every clock Glasshouse draws and persists in systemprefs.db.
+     */
+    case 'clockHour12':
+      return clock.set(value, cb, luna);
 
     case 'wakeOnLan':
       var wolOn = (value === true || value === 'on' || value === 'ON' || value === 'true');
@@ -757,6 +801,19 @@ function doControl(action, value, cb) {
       if (!RCU_KEYS.hasOwnProperty(rcuName)) {
         return cb({ ok: false, error: 'unknown key: ' + rcuName });
       }
+      /*
+       * Keys from the network input service did not move LG's on-screen
+       * keyboard on a C1 (webOS 6.4). They go to the remote's own device
+       * while it is up, as a real press: network input releases in the same
+       * instant, which LG's key handling already mishandles for Home.
+       */
+      if (keyboardVisibleFn()) {
+        return injectKey(RCU_KEYS[rcuName], function (ok) {
+          console.debug('rcu ' + rcuName + ': on-screen keyboard, remote device, ' + (ok ? 'ok' : 'failed'));
+          telemetry.clearCache();
+          cb({ ok: ok });
+        });
+      }
       return lunaUrgent('com.webos.service.networkinput/test/sendKeyCode',
                   { keyCode: RCU_KEYS[rcuName] },
                   function (r, raw, timing) {
@@ -764,6 +821,21 @@ function doControl(action, value, cb) {
                     telemetry.clearCache();
                     cb({ ok: !!(r && r.returnValue) });
                   });
+
+    /*
+     * Typing into the focused text field through LG's input method service,
+     * whatever the on-screen keyboard shows. Urgent, so text, Enter and
+     * Backspace keep their order with remote keys.
+     */
+    case 'keyboardText':
+      var kbText = String(value === null || value === undefined ? '' : value).slice(0, KEYBOARD_TEXT_MAX);
+      if (!kbText) return cb({ ok: false, error: 'no text' });
+      return lunaUrgent('com.webos.service.ime/insertText', { text: kbText }, imeAnswer(cb));
+
+    case 'keyboardKey':
+      if (value === 'enter') return lunaUrgent('com.webos.service.ime/sendEnterKey', {}, imeAnswer(cb));
+      if (value === 'backspace') return lunaUrgent('com.webos.service.ime/deleteCharacters', { count: 1 }, imeAnswer(cb));
+      return cb({ ok: false, error: 'unknown keyboard key: ' + value });
 
     case 'screensaverMode':
       /*
@@ -797,6 +869,9 @@ function doControl(action, value, cb) {
 
     case 'tileHiding':
       if (isFromHbc()) return cb({ ok: false, error: tileHidingOffMsg });
+      if (value && homeModule && homeModule.enabled()) {
+        return cb({ ok: false, error: msg('srv.apps.tilesGlasshouseHome', 'Glasshouse Home hides apps itself: arrange them there') });
+      }
       return appsModule.setTileHidingEnabled(!!value, function (r) {
         telemetry.clearCache();
         cb(r);
@@ -893,7 +968,8 @@ function doControl(action, value, cb) {
 
     case 'update':
       return updater.installUpdate(function (r) {
-        if (r && r.ok && r.updated) {
+        // A package update's own installer restarts the server once its files are in.
+        if (r && r.ok && r.updated && !r.restarting) {
           setTimeout(function () {
             if (!doRestartSelf()) console.error('update: no tvwebctl found - restart manually to apply');
           }, 600);
@@ -932,6 +1008,22 @@ function doControl(action, value, cb) {
         cb(getUpdateSummary());
       });
 
+    // Poweroff after: minutes of screen saver before standby, 0 or blank for off.
+    case 'screensaverPowerOff':
+      var offMin = saverPowerOff.parseMinutes(value);
+      if (offMin === null) return cb({ ok: false, error: msg('srv.saver.powerOff.bad', 'Poweroff after takes a number of minutes from 1 to {max}, or blank for off', { max: saverPowerOff.MAX_MINUTES }) });
+      if (!writeSettingsFn) return cb({ ok: false, error: 'no writeSettings handler configured' });
+      // Off leaves it out of the file.
+      return writeSettingsFn({ screensaverPowerOffMinutes: offMin || undefined }, function (err) {
+        if (err) return cb({ ok: false, error: 'could not save setting: ' + err.message });
+        if (config) {
+          if (offMin) config.screensaverPowerOffMinutes = offMin;
+          else delete config.screensaverPowerOffMinutes;
+        }
+        saverPowerOff.apply();
+        cb({ ok: true, minutes: offMin });
+      });
+
     case 'setWebos10ScreensaversAllowed':
       var allowSs = (value === true || value === 'on' || value === 'true');
       if (!writeSettingsFn) return cb({ ok: false, error: 'no writeSettings handler configured' });
@@ -956,9 +1048,6 @@ function doControl(action, value, cb) {
       var newPort = /^\d{1,5}$/.test(String(value).trim()) ? parseInt(value, 10) : NaN;
       if (!(newPort >= 1024 && newPort <= 65533) || (newPort >= 9996 && newPort <= 9998)) {
         return cb({ ok: false, error: msg('srv.port.invalid', 'The port must be a number from 1024 to 65533, other than 9996 to 9998') });
-      }
-      if (newPort !== 8080 && homeModule && homeModule.enabled()) {
-        return cb({ ok: false, error: msg('srv.port.homeOn', 'Glasshouse Home requires port 8080. Switch Glasshouse Home off before changing the port.') });
       }
       if (config && newPort === config.port) return cb(getUpdateSummary());
       return portIsFree(newPort, function (free) {
@@ -1086,6 +1175,7 @@ function init(opts) {
   if (opts.oled) oled = opts.oled;
   if (opts.privacy) privacy = opts.privacy;
   if (opts.piccap) piccap = opts.piccap;
+  if (opts.huesync) huesync = opts.huesync;
   if (opts.services) servicesModule = opts.services;
   if (opts.screensavers) screensavers = opts.screensavers;
   if (opts.apps) appsModule = opts.apps;
@@ -1095,7 +1185,7 @@ function init(opts) {
   if (opts.ntp) ntpModule = opts.ntp;
   if (opts.history) historyModule = opts.history;
   if (opts.backup) backupModule = opts.backup;
-  homeModule = opts.home || null;
+  if (opts.home) homeModule = opts.home;
   if (opts.republishDiscovery) republishDiscoveryFn = opts.republishDiscovery;
   if (opts.tvApp) tvAppFn = opts.tvApp;
   if (opts.restartSelf) restartSelfFn = opts.restartSelf;
@@ -1105,6 +1195,7 @@ function init(opts) {
   if (opts.browserApp) browserAppId = opts.browserApp;
   if (opts.toastSource) toastSourceId = opts.toastSource;
   if (opts.tileHidingOff) tileHidingOffMsg = opts.tileHidingOff;
+  if (opts.keyboardVisible) keyboardVisibleFn = opts.keyboardVisible;
 
   return {
     doControl: doControl,
@@ -1122,6 +1213,7 @@ module.exports = {
   sendPlayPause: sendPlayPause,
   RCU_KEY_CODES: RCU_KEY_CODES,
   RCU_KEYS: RCU_KEYS,
+  KEYBOARD_TEXT_MAX: KEYBOARD_TEXT_MAX,
   KEY_BACK: KEY_BACK,
   SLEEP_TIMER_VALUES: SLEEP_TIMER_VALUES,
   ENERGY_SAVING_VALUES: ENERGY_SAVING_VALUES,

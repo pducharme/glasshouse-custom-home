@@ -1,7 +1,7 @@
 # Personnalisation persistante de Glasshouse
 
 Ce bundle reproduit les changements publics de l'accueil C6 sur Glasshouse
-**0.118.0**, base `859f5e134e0d9d4b499afe48084b9cdb82db9164`. Il garde les
+**0.130.0**, base `1543769cfeb28c3ce0936dc6d20b24cd58c70255`. Il garde les
 personnalisations hors du répertoire remplacé par les mises à jour. La variante
 Lightkeeper utilise un mécanisme distinct et n'est pas couverte ici.
 
@@ -39,7 +39,7 @@ les relances du service. Ils ne valident pas une nouvelle version sur une télé
 
 ## Installation manuelle facultative
 
-Cette procédure modifie une télé **déjà rootée** disposant de Glasshouse 0.118.0,
+Cette procédure modifie une télé **déjà rootée** disposant de Glasshouse 0.130.0,
 de Homebrew Channel, de `patch`, de `start-stop-daemon` et d'un Node.js système
 compatible avec `fs.rmSync` (14.14 minimum). Elle ne convient pas aux anciens
 modèles limités à Node.js 8. Elle ne réalise ni root, ni installation de firmware,
@@ -94,6 +94,8 @@ Le hook applique le bundle au démarrage, avant le hook officiel `50-tvweb`, pui
 surveille les fichiers toutes les dix secondes. Il attend deux observations
 stables après une mise à jour et relance Glasshouse une seule fois s'il était
 déjà actif. Il ne démarre pas un service volontairement arrêté.
+L’installation du hook et une réapplication peuvent donc interrompre Home :
+prévoir une fenêtre acceptée avant de l’exécuter pendant un visionnement.
 
 ## Diagnostic et limites
 
@@ -115,6 +117,22 @@ d'une refonte de Glasshouse, d'une désinstallation, d'une remise à zéro ou d'
 mise à jour du firmware. Après une mise à jour, vérifiez l'état, le rendu et les
 actions de la télécommande. Le changement de version reste un test distinct de
 l'application locale des patches.
+
+En cas de menu revenu au rendu amont, préserver d’abord l’installation actuelle
+et `/var/lib/tvweb/.previous` s’il existe, avant une autre mise à jour. Cette copie
+appartient à l’updater en place, n’est pas créée par un premier `deploy.sh` et n’est
+pas garantie pour une installation IPK. Elle est remplacée à la prochaine mise
+à jour. Les préférences peuvent survivre alors que les fichiers d’interface sont
+remplacés; une sauvegarde de code n’autorise pas l’écrasement des réglages récents.
+
+Un bundle bloqué doit être adapté à la version réellement installée. Comparer les
+patches, les assets et les champs personnalisés normalisés par cette version,
+puis tester le résultat localement; ne pas installer les bases de référence ni
+rétrograder le serveur. Après application, contrôler les hashes sur disque **et**
+la page HTTP servie. Le cache mémoire des assets peut nécessiter une relance du
+seul service Glasshouse pendant une fenêtre approuvée, suivie d’un rafraîchissement
+de Home. Les mises à jour LG/HBC et les protections ne sont pas modifiées par ce
+bundle. Aucun gardien PIN n’est inclus.
 
 Pour arrêter l'automatisme sans restaurer d'anciens fichiers, sur la télé :
 

@@ -1190,6 +1190,25 @@ test('a preview waiting for confirmation is busy for installs but not working', 
   });
 });
 
+[false, true].forEach(function (fails) {
+  test('own-package installs hold restart guards until ' + (fails ? 'failure' : 'success'), function (done) {
+    var ctx = setup();
+    ctx.script([{ delay: 25, out: fails ? { returnValue: false, errorText: 'install refused' } : DONE }]);
+    var file = ctx.ipkFile(makeIpk({ pkg: installer.SELF_UPDATING[1], services: [] }));
+    var working, busy;
+    installer.installOwnPackage(file, '1.0.0', function (err) {
+      assert.strictEqual(!!err, fails);
+      assert.strictEqual(working, true, 'restart guards see the active install');
+      assert.strictEqual(busy, true, 'another install sees the active install');
+      assert.strictEqual(installer.isWorking(), false, 'restart guard released before the callback');
+      assert.strictEqual(installer.isBusy(), false, 'install guard released before the callback');
+      done();
+    });
+    working = installer.isWorking();
+    busy = installer.isBusy();
+  });
+});
+
 test('confirm waits for a running dashboard update', function (done) {
   var updating = false;
   var ctx = setup({ init: { updaterBusy: function () { return updating; } } });
@@ -1335,19 +1354,16 @@ test('a vetted catalog package with root services auto-elevates and installs wit
   });
 });
 
-test('a screensaver package marks isScreensaver in preview and requires review even with auto=true', function (done) {
+// Its screen saver is listed with Glasshouse's, so it no longer stops a one-click install.
+test('a screensaver package marks isScreensaver in preview and installs with auto=true', function (done) {
   var ctx = setup();
   ctx.script([{ out: DONE }]);
   var req = ctx.pkg(makeIpk({ pkg: 'org.example.custom-screensaver' }), 'org.example.custom-screensaver');
   req.auto = true;
   startOk(req, function () {
-    expectState('awaiting-confirm', function (s) {
+    expectState('installed', function (s) {
       assert.strictEqual(s.preview.isScreensaver, true);
-      installer.confirm({ jobId: s.jobId }, function () {
-        expectState('installed', function () {
-          done();
-        });
-      });
+      done();
     });
   });
 });

@@ -14,23 +14,30 @@ const WALLPAPERS = {
 const APPS = [
   ['youtube.leanback.v4', 'YouTube'], ['netflix', 'Netflix'], ['cdp-30', 'Plex'],
   ['ca.bellmedia.crave', 'Crave'], ['amazon', 'Prime Video'],
-  ['tv.tou.ici.webos', 'ICI TOU.TV'], ['com.webos.app.hdmi4', 'Bell Fibe'],
+  ['tv.tou.ici.webos', 'ICI TOU.TV'], ['com.bell.fibetv.production', 'Bell Fibe TV'],
   ['org.example.demo.music', 'Musique démo'], ['org.example.demo.browser', 'Navigateur démo'],
-  ['org.example.demo.games', 'Jeux démo']
+  ['org.example.demo.games', 'Jeux démo'], ['com.tvweb.dashboard', 'Glasshouse']
 ].map(([id, title]) => ({ id, title }));
 const DRAWER_APPS = APPS.slice(7).map(app => app.id);
 const DEVICES = [
   { id: 'hdmi1', port: 1, name: 'Nintendo Switch 2' },
   { id: 'hdmi3', port: 3, name: 'Xbox Series X' }
 ];
-const IDS = { app: APPS.map(app => app.id).concat('lg-home'), dev: DEVICES.map(device => device.id), ch: [] };
+const RECOMMENDATIONS = ['youtube.leanback.v4', 'netflix', 'amazon'].flatMap((app, source) =>
+  Array.from({ length: 7 }, (_, index) => ({ id: 'demo-card-' + source + '-' + index, app,
+    title: 'Exemple vidéo ' + (index + 1), category: 'Démonstration', image: '/demo/recommendations/' + source + '.svg' })));
+const POSTERS = ['#385774', '#685978', '#64785b'].map(colour =>
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 294 142"><path fill="' + colour + '" d="M0 0h294v142H0z"/>' +
+  '<path fill="#172536" d="M0 142L85 35l54 60 51-75 104 122z"/></svg>');
+const IDS = { rec: RECOMMENDATIONS.map(card => card.id), app: APPS.map(app => app.id).concat('lg-home'), dev: DEVICES.map(device => device.id), ch: [] };
 const WALL_STATE = { available: true, revision: 'synthetic-demo-1', slots: { morning: true, afternoon: true, evening: true, night: true } };
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.txt': 'text/plain; charset=utf-8',
   '.jpg': 'image/jpeg', '.png': 'image/png', '.svg': 'image/svg+xml', '.ttf': 'font/ttf', '.woff2': 'font/woff2' };
 function initialLayout() {
-  return { enabled: true, rows: ['app', 'dev'], order: JSON.parse(JSON.stringify(IDS)),
-    sort: { app: 'custom', dev: 'custom', ch: 'custom' }, hidden: { app: DRAWER_APPS.slice(), dev: [], ch: [] },
+  return { enabled: true, rows: ['app', 'rec', 'dev'], order: JSON.parse(JSON.stringify(IDS)),
+    sort: { app: 'custom', dev: 'custom', ch: 'custom', rec: 'custom' }, hidden: { app: DRAWER_APPS.slice(), dev: [], ch: [], rec: [] },
+    folder: [], recommended: false, search: false, searchHintSeen: true,
     channels: [], hintSeen: true, picture: false, colours: null, photosAppId: '' };
 }
 function uniqueKnown(value, known) {
@@ -42,10 +49,10 @@ function updateLayout(layout, input) {
   if (input.reset === true) return initialLayout();
   const next = JSON.parse(JSON.stringify(layout));
   if (input.rows !== undefined) {
-    if (!uniqueKnown(input.rows, ['app', 'dev', 'ch']) || !input.rows.includes('app')) throw new Error('Invalid rows');
+    if (!uniqueKnown(input.rows, ['app', 'dev', 'ch', 'rec']) || !input.rows.includes('app')) throw new Error('Invalid rows');
     next.rows = input.rows;
   }
-  for (const kind of ['app', 'dev', 'ch']) {
+  for (const kind of ['app', 'dev', 'ch', 'rec']) {
     if (input.order && input.order[kind] !== undefined) {
       if (!uniqueKnown(input.order[kind], IDS[kind])) throw new Error('Invalid order');
       next.order[kind] = input.order[kind].concat(IDS[kind].filter(id => !input.order[kind].includes(id)));
@@ -58,6 +65,14 @@ function updateLayout(layout, input) {
       if (!['custom', 'recent'].includes(input.sort[kind])) throw new Error('Invalid sort');
       next.sort[kind] = input.sort[kind];
     }
+  }
+  if (input.recommended !== undefined) {
+    if (typeof input.recommended !== 'boolean') throw new Error('Invalid recommendations preference');
+    next.recommended = input.recommended;
+  }
+  if (input.folder !== undefined) {
+    if (!uniqueKnown(input.folder, IDS.app)) throw new Error('Invalid folder');
+    next.folder = input.folder;
   }
   if (input.hintSeen !== undefined) next.hintSeen = input.hintSeen === true;
   return next;
@@ -83,6 +98,8 @@ function createDemoServer() {
       });
     }
     if (req.method === 'GET') {
+      const poster = /^\/demo\/recommendations\/([0-2])\.svg$/.exec(route);
+      if (poster) { res.writeHead(200, { 'Content-Type': TYPES['.svg'] }); return res.end(POSTERS[Number(poster[1])]); }
       if (route === '/') return file(path.join(ASSETS, 'home.html'), TYPES['.html']);
       if (route.startsWith('/assets/')) {
         let target;
@@ -98,7 +115,8 @@ function createDemoServer() {
         return image ? file(path.join(ROOT, '..', image), TYPES['.jpg']) : json(404, { ok: false });
       }
       if (route === '/api/home/catalogue') return json(200, { ok: true, apps: APPS, devices: DEVICES,
-        channels: [], order: layout.order, layout, layoutVersion: String(revision), sources: { channels: 0 }, wallpapers: WALL_STATE,
+        channels: [], recommended: layout.recommended ? RECOMMENDATIONS : [],
+        order: Object.assign({}, layout.order, { rec: layout.recommended ? layout.order.rec : [] }), layout, layoutVersion: String(revision), sources: { channels: 0, recommended: layout.recommended ? RECOMMENDATIONS.length : false }, wallpapers: WALL_STATE,
         photos: { appId: '', installed: false, icon: null } });
       if (route === '/api/home/weather') return json(200, { ok: true, temperature: 18, code: 2, isDay: true,
         observedAt: Date.now(), stale: false, label: 'Ville de démonstration', demo: true });
@@ -123,6 +141,13 @@ function createDemoServer() {
       }
       if (route === '/api/home/beat') return json(200, { ok: true, build: 'offline-demo', layoutVersion: String(revision), wallpapers: WALL_STATE });
       if (route === '/api/home/open') {
+        if (input.kind === 'rec') {
+          const card = layout.recommended && RECOMMENDATIONS.find(card => card.id === input.id);
+          if (!card) return json(400, { ok: false });
+          const app = APPS.find(app => app.id === card.app);
+          last = { kind: 'app', appId: app.id, title: app.title };
+          return json(200, { ok: true, demo: true });
+        }
         if (input.kind === 'photos') return json(200, { ok: false, demo: true, error: 'Photos non configuré dans la démo hors ligne' });
         const item = input.kind === 'app' ? APPS.find(app => app.id === input.id) : input.kind === 'dev' ? DEVICES.find(device => device.id === input.id) : null;
         if (item) {

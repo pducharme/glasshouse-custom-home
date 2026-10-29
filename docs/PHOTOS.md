@@ -24,6 +24,11 @@ applicables. Les consoles et l'accès de secours à l'accueil LG restent disponi
 
 ## Navigation
 
+L’engrenage près de Toutes les apps ouvre les paramètres, avec le toggle natif
+**Recommandations** et le raccourci G vers l’app Glasshouse. Voir le
+[guide de ces contrôles](HOME_SETTINGS.md). Aucun écran PIN ni verrou d’app
+personnalisé n’est installé par ce paquet.
+
 - Depuis la dernière console, Droite rejoint Photos; Gauche revient aux consoles.
 - Bas rejoint le chevron; OK ouvre le tiroir. Les flèches parcourent ses applications.
 - OK lance l'application sélectionnée; l'appui long dans le tiroir ou sur Photos

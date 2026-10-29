@@ -8,8 +8,10 @@ var zlib = require('zlib');
 var crypto = require('crypto');
 var http = require('http');
 var say = require('./say');
-var lanAddress = require('./util').lanAddress;
+var localAddress4 = require('./util').localAddress4;
+var localAddress6 = require('./util').localAddress6;
 var listenDualStack = require('./util').listenDualStack;
+var hostPort = require('./util').hostPort;
 var sendIconFile = require('./iconserver').sendIconFile;
 var writeJsonAtomic = require('./util').writeJsonAtomic;
 var unlinkQuiet = require('./util').unlinkQuiet;
@@ -60,6 +62,8 @@ var oledModule = null;
 var privacyModule = null;
 /** @type {typeof import('./lgsettings')} */
 var lgSettingsModule = null;
+/** @type {typeof import('./audio')} */
+var audioModule = null;
 /** @type {typeof import('./game')} */
 var gameModule = null;
 /** @type {typeof import('./apps')} */
@@ -76,6 +80,8 @@ var remoteKeysModule = null;
 var homeScreenModule = null;
 /** @type {typeof import('./home')} */
 var homeModule = null;
+/** @type {typeof import('./clock')} */
+var clockModule = null;
 /** @type {typeof import('./home-picture')} */
 var homePictureModule = null;
 /** @type {typeof import('./screensavers')} */
@@ -111,6 +117,7 @@ var assetDirsList = [];
 var lunaFn = null;
 var getMqttStatusFn = null;
 var piccapStatusFn = function (cb) { cb(null); };
+var huesyncStatusFn = function (cb) { cb(null); };
 var appsChangedFn = function () {};
 var versionStr = '';
 // With the commit of a git build: what a person reads, and what tells one
@@ -331,12 +338,17 @@ function lanOrigin() {
   // Bound to loopback, the server answers nothing on the network, so any LAN
   // address handed to a phone would be a dead link.
   if (!networkOpen()) return null;
-  var ip = lanAddress();
-  return ip ? 'http://' + ip + ':' + config.port : null;
+  var ip4 = localAddress4();
+  return ip4 ? 'http://' + hostPort(ip4, config.port) : null;
 }
 
 function prometheusEnabled() {
   return !!(config.prometheus && config.prometheus.enabled === true);
+}
+
+// Whether the clocks draw 12-hour time, as the TV's own setting has it (lib/clock).
+function clockHour12() {
+  return !!(clockModule && clockModule.hour12());
 }
 
 function handoffPort() { return (config.port || 8080) + 1; }
@@ -348,8 +360,8 @@ function stopHandoff() {
 }
 
 function handoffUrl() {
-  var ip = lanAddress();
-  return ip && HANDOFF.code ? 'http://' + ip + ':' + handoffPort() + '/?c=' + HANDOFF.code : null;
+  var ip4 = localAddress4();
+  return ip4 && HANDOFF.code ? 'http://' + hostPort(ip4, handoffPort()) + '/?c=' + HANDOFF.code : null;
 }
 
 /*
@@ -369,9 +381,9 @@ function ownIdentity() {
   if (!model || model === 'webostv') model = 'tv';
   var mac = '', ifaces = {};
   try { ifaces = os.networkInterfaces() || {}; } catch (e) {}
-  var ip = lanAddress();
+  var ip4 = localAddress4();
   for (var name in ifaces) {
-    (ifaces[name] || []).forEach(function (a) { if (a.address === ip && a.mac) mac = a.mac; });
+    (ifaces[name] || []).forEach(function (a) { if (a.address === ip4 && a.mac) mac = a.mac; });
   }
   var tail = mac.replace(/[^0-9a-f]/gi, '').slice(-4).toLowerCase();
   var key = (model + (tail ? '_' + tail : '')).slice(0, 40);
@@ -398,16 +410,21 @@ function setupState(isDemo) {
   if (isDemo && simulatedSetupState.network !== null && simulatedSetupState.network !== undefined) {
     open = simulatedSetupState.network;
   }
+  var ip4 = localAddress4(), ip6 = localAddress6();
+  var name = telemetryModule ? telemetryModule.localName(ip4, ip6) : null;
+  // The TV app shows the address and the name each with the port, as a
+  // browser on a phone would open them.
   var st = {
     ok: true,
     needed: setupPending(),
     writable: config.allowControl,
     network: open,
     token: !!config.token,
-    address: lanAddress() ? lanAddress() + ':' + config.port : (isDemo ? '192.168.1.131:' + (config.port || 8080) : null),
-    hostname: telemetryModule ? telemetryModule.lanHostname(lanAddress()) : null,
+    address: ip4 ? hostPort(ip4, config.port) : (isDemo ? hostPort('192.168.1.131', config.port || 8080) : null),
+    address6: ip6 ? hostPort(ip6, config.port) : null,
+    hostname: name ? hostPort(name, config.port) : null,
     homeAssistant: (isDemo && simulatedSetupState.homeAssistant) ? simulatedSetupState.homeAssistant : { configured: !!(m.enabled && m.host), state: mqttStat.state },
-    handoff: HANDOFF.server ? handoffUrl() : (isDemo ? 'http://' + (lanAddress() || '192.168.1.131') + ':' + (config.port || 8080) + '/?c=demo' : null)
+    handoff: HANDOFF.server ? handoffUrl() : (isDemo ? 'http://' + hostPort(ip4 || '192.168.1.131', config.port || 8080) + '/?c=demo' : null)
   };
   if (isDemo) {
     st.demo = true;
@@ -420,7 +437,7 @@ function setupState(isDemo) {
 
 function startHandoff(cb) {
   if (HANDOFF.server) return cb(null, handoffUrl());
-  if (!lanAddress()) return cb(new Error('this TV has no network address'));
+  if (!localAddress4()) return cb(new Error('this TV has no network address'));
   var code = crypto.randomBytes(8).toString('hex');
   var srv = http.createServer(function (req, res) {
     var u = parseUrl(req.url);
@@ -610,6 +627,7 @@ function updateSummary() {
   s.isWebos10 = !!(screensaversModule && screensaversModule.experimental && screensaversModule.experimental());
   s.homeLayout = homeScreenModule ? homeScreenModule.experimental() : null;
   s.prometheusEnabled = prometheusEnabled();
+  s.clockHour12 = clockHour12();
   s.watchHistory = historyModule ? historyModule.status() : null;
   s.backupDaily = backupModule ? backupModule.dailyStatus() : null;
   s.ntp = ntpModule ? ntpModule.getStatus() : null;
@@ -837,6 +855,8 @@ function handleUpload(req, res) {
       // A stream destroyed before its file has opened creates the file
       // afterwards, so it is removed again once the stream has closed.
       ws.once('close', function () { fs.unlink(file, function () {}); });
+      // Node 0.12's destroy() leaves a pending open's descriptor alive.
+      ws.once('open', function () { ws.close(); });
       try { ws.destroy(); } catch (e) {}
       installerModule.releaseUpload(file);
       return true;
@@ -1042,6 +1062,39 @@ function getSettingsPayload() {
   };
 }
 
+function tileHidingAvailable() {
+  return !!(appsModule && appsModule.tileHidingAllowed && appsModule.tileHidingAllowed()) && !fromHomebrewChannel();
+}
+
+function lgHomeLayoutAvailable() { return !!(homeScreenModule && homeScreenModule.supported()); }
+
+/*
+ * LG's Home's options on the Home tab: its layout (lib/homescreen.js) and the
+ * system apps hidden from it (lib/apps.js), in the fields the Apps tab used.
+ */
+function lgHomeOptions(glasshouseHome, cb) {
+  var lg = { writable: !!config.allowControl, glasshouseHome: !!glasshouseHome, homeScreen: null,
+    tileHidingAvailable: tileHidingAvailable(), tileHidingHeld: false, tileHidingOverridden: false,
+    systemTiles: [], tileHidingEnabled: false, hiddenCount: 0 };
+  function withLayout() {
+    if (!lgHomeLayoutAvailable()) return cb(lg);
+    homeScreenModule.getHomeScreen(function (hs) {
+      lg.homeScreen = hs;
+      cb(lg);
+    });
+  }
+  // Glasshouse Home hides apps itself, and takes over what tile hiding hid.
+  if (glasshouseHome) lg.tileHidingAvailable = false;
+  if (!lg.tileHidingAvailable) return withLayout();
+  appsModule.getApps(function (d) {
+    lg.systemTiles = d.systemTiles || [];
+    lg.hiddenCount = d.hiddenCount || 0;
+    lg.tileHidingEnabled = !!d.tileHidingEnabled;
+    lg.tileHidingNudge = d.tileHidingNudge;
+    withLayout();
+  });
+}
+
 /*
  * Glasshouse Home (lib/home.js). Its view runs on the TV and changes nothing
  * but the layout and what is open, so it needs no allowControl; anything from
@@ -1050,20 +1103,37 @@ function getSettingsPayload() {
 function handleHomeRoute(req, res, u, pathname) {
   function reply(r) { send(res, r && r.ok === false ? 400 : 200, JSON.stringify(r)); }
   if (req.method === 'GET') {
-    // ?with=catalogue,channels adds what the TV app's Home section lists, in one answer.
+    // ?with=catalogue,channels adds what the TV app's Home section lists, and
+    // lghome LG's Home's own options, in one answer.
     if (pathname === '/api/home') {
       var wants = String((u.query && u.query['with']) || '').split(',');
       return homeModule.status(function (st) {
         st.writable = !!config.allowControl || fromTV(req);
-        if (wants.indexOf('catalogue') === -1) return reply(st);
-        homeModule.catalogue(function (c) {
-          st.catalogue = c;
-          if (wants.indexOf('channels') === -1) return reply(st);
-          homeModule.channelList(function (list) {
-            st.channels = list;
-            reply(st);
+        // What the Home pane draws its colour previews' clock as.
+        st.clockHour12 = clockHour12();
+        // The Home tab also holds LG's Home's layout and hidden system apps, so
+        // it is there wherever either is, Glasshouse Home or not (a B8).
+        st.lgHomeAvailable = lgHomeLayoutAvailable() || tileHidingAvailable();
+        // Open Home at power-on is on the Home tab too, wherever LG has it.
+        if (st.lgHomeAvailable || st.homeAutoLaunch !== undefined) st.available = true;
+        withLgHome(function () {
+          if (wants.indexOf('catalogue') === -1) return reply(st);
+          homeModule.catalogue(function (c) {
+            st.catalogue = c;
+            if (wants.indexOf('channels') === -1) return reply(st);
+            homeModule.channelList(function (list) {
+              st.channels = list;
+              reply(st);
+            });
           });
         });
+        function withLgHome(next) {
+          if (wants.indexOf('lghome') === -1 || !st.lgHomeAvailable) return next();
+          lgHomeOptions(st.enabled, function (lg) {
+            st.lgHome = lg;
+            next();
+          });
+        }
       });
     }
     if (pathname === '/api/home/catalogue') {
@@ -1125,7 +1195,10 @@ function handleHomeRoute(req, res, u, pathname) {
     if (pathname === '/api/home/beat') {
       if (!postGuard(req, res, 'application/json', false)) return;
       req.resume();
-      return reply(homeModule.beat());
+      // The hour cycle the view's clock draws, which follows the TV's setting.
+      var beatBody = homeModule.beat();
+      beatBody.clockHour12 = clockHour12();
+      return reply(beatBody);
     }
     return readJsonBody(req, res, function (body) {
       if (pathname === '/api/home/layout') return homeModule.setLayout(body, reply);
@@ -1134,6 +1207,8 @@ function handleHomeRoute(req, res, u, pathname) {
       if (pathname === '/api/home/enable') return homeModule.enable(reply);
       if (pathname === '/api/home/disable') return homeModule.disable(reply);
       if (pathname === '/api/home/open') return homeModule.open(body, reply);
+      if (pathname === '/api/home/search') return homeModule.search.find(body && body.query, reply);
+      if (pathname === '/api/home/search/open') return homeModule.search.open(body, reply);
       if (pathname === '/api/home/recents') {
         var recentApps = homeModule.recentApps, recentId = body && typeof body.id === 'string' ? body.id : '';
         if (body && body.action === 'open') return recentApps.open(recentId, reply);
@@ -1219,17 +1294,37 @@ function handleRequest(req, res) {
   }
 
   if (pathname === '/api/caps') {
+    // Glasshouse Home's page waiting for the server (lib/home.js watchStart).
+    if (u.query && u.query.from === 'home' && fromTV(req) && homeModule) homeModule.pageAlive();
     var caps = {
       ok: true, allowControl: config.allowControl, allowPower: config.allowPower,
       // Bare: the Homebrew Channel app's launch page compares it with its own.
       origin: lanOrigin(), version: versionStr,
-      fromHomebrewChannel: fromHomebrewChannel(), setupNeeded: setupPending()
+      fromHomebrewChannel: fromHomebrewChannel(), setupNeeded: setupPending(),
+      // The hour cycle the dashboard's own clock draws.
+      clockHour12: clockHour12()
     };
     // The token goes into the TV's QR codes, so a phone that scans one can use
     // what it opens. Only to the TV itself: whoever sees the screen holds the
     // remote, and the remote needs no token.
     if (config.token && fromTV(req)) caps.key = config.token;
     return send(res, 200, JSON.stringify(caps));
+  }
+
+  if (pathname === '/api/audio' && audioModule) {
+    if (req.method === 'GET') {
+      return audioModule.status(function (r) {
+        r.writable = !!config.allowControl;
+        if (u.query.with !== 'settings') return send(res, 200, JSON.stringify(r));
+        // The Audio tabs show LG's sound settings beside the readings.
+        lgSettingsModule.collect(['sound', 'hdmi'], function (ls) {
+          r.lgSettings = ls.rows;
+          r.inputs = telemetryModule.inputNameMap;
+          send(res, 200, JSON.stringify(r));
+        });
+      });
+    }
+    return send(res, 405, JSON.stringify({ ok: false, error: 'method not allowed' }));
   }
 
   if (pathname === '/api/screensaver') {
@@ -1312,7 +1407,7 @@ function handleRequest(req, res) {
           return send(res, 200, JSON.stringify({ ok: true, demo: true }));
         }
         if (a.action === 'handoff') {
-          var dummyUrl = (lanOrigin() || 'http://' + (lanAddress() || '192.168.1.131') + ':' + (config.port || 8080)) + '/?c=demo';
+          var dummyUrl = (lanOrigin() || 'http://' + hostPort(localAddress4() || '192.168.1.131', config.port || 8080)) + '/?c=demo';
           return send(res, 200, JSON.stringify({ ok: true, url: dummyUrl, demo: true }));
         }
         if (a.action === 'handoffStop') {
@@ -1501,6 +1596,19 @@ function handleRequest(req, res) {
     });
   }
 
+  /*
+   * The Picture tabs: LG's picture settings for the picture on screen, and the
+   * input, picture mode and dynamic range they belong to. Read fresh enough to
+   * follow a change made with the remote while the tab is open.
+   */
+  if (pathname === '/api/picture') {
+    return lgSettingsModule.collect('picture', function (r) {
+      // available false where the TV offers none: both dashboards then leave the tab out.
+      send(res, 200, JSON.stringify({ ok: true, available: r.rows.length > 0, writable: !!config.allowControl, rows: r.rows,
+        dimension: r.dimensions.picture || null, inputs: telemetryModule.inputNameMap }));
+    }, 4000);
+  }
+
   // Rows of lgsettings.js for the dashboards: ?section=sound,devices.
   if (pathname === '/api/lgsettings') {
     var secs = String(u.query.section || '').split(',').filter(Boolean);
@@ -1561,12 +1669,10 @@ function handleRequest(req, res) {
 
   if (pathname === '/api/apps' && req.method === 'GET') {
     return appsModule.getApps(function (d) {
-      d.tileHidingAvailable = !!(appsModule && appsModule.tileHidingAllowed && appsModule.tileHidingAllowed()) && !fromHomebrewChannel();
+      d.tileHidingAvailable = tileHidingAvailable();
       if (!d.tileHidingAvailable) { d.systemTiles = []; d.tileHidingEnabled = false; d.hiddenCount = 0; }
       d.tileHidingHeld = false;
       d.tileHidingOverridden = false;
-      // The TV app notes that LG's Home layout and hidden apps reach Glasshouse Home differently.
-      d.glasshouseHome = !!(homeModule && homeModule.enabled());
       servicesModule.getServices(function (sRes) {
         if (sRes && sRes.services) d.services = sRes.services;
         if (!preloadModule) return send(res, 200, JSON.stringify(d));
@@ -1575,19 +1681,12 @@ function handleRequest(req, res) {
           if (!quickAccessModule) return send(res, 200, JSON.stringify(d));
           quickAccessModule.getQuickAccess(function (qa) {
             d.quickAccess = qa && qa.supported ? qa : null;
-            if (!remoteKeysModule) return withHome();
+            if (!remoteKeysModule) return send(res, 200, JSON.stringify(d));
             remoteKeysModule.getRemoteKeys(function (rk) {
               d.remoteKeys = rk && rk.supported ? rk : null;
-              withHome();
-            });
-          });
-          function withHome() {
-            if (!homeScreenModule) return send(res, 200, JSON.stringify(d));
-            homeScreenModule.getHomeScreen(function (hs) {
-              d.homeScreen = hs;
               send(res, 200, JSON.stringify(d));
             });
-          }
+          });
         });
       });
     });
@@ -1666,6 +1765,9 @@ function handleRequest(req, res) {
 
   if (pathname === '/api/apps/tile-hiding' && req.method === 'POST') {
     return readJsonBody(req, res, function (body) {
+      if (body && body.enabled && homeModule && homeModule.enabled()) {
+        return send(res, 400, JSON.stringify({ ok: false, error: msg('srv.apps.tilesGlasshouseHome', 'Glasshouse Home hides apps itself: arrange them there') }));
+      }
       appsModule.setTileHidingEnabled(body && body.enabled, function (r) {
         send(res, r && r.ok ? 200 : 400, JSON.stringify(r));
       });
@@ -1759,19 +1861,24 @@ function handleRequest(req, res) {
 
   if (pathname === '/api/stats') {
     return telemetryModule.collectStats(function (s) {
-      // PicCap's capture, where it is installed, for the Advanced tab.
+      // PicCap's capture and Hue Sync's streaming, where installed, for the
+      // Advanced tab.
       piccapStatusFn(function (pc) {
-        if (!pc && u.query.with !== 'settings') return send(res, 200, JSON.stringify(s));
-        // Copied, since s is telemetry's cache.
-        var copy = {};
-        for (var k in s) copy[k] = s[k];
-        if (pc) copy.piccapCapture = pc;
-        if (u.query.with !== 'settings') return send(res, 200, JSON.stringify(copy));
-        // The TV dashboard's System page, which reads one endpoint, also lists
-        // the sound and SIMPLINK settings.
-        lgSettingsModule.collect(['sound', 'hdmi', 'devices'], function (ls) {
-          copy.lgSettings = ls.rows;
-          send(res, 200, JSON.stringify(copy));
+        huesyncStatusFn(function (hs) {
+          if (!pc && !hs && !clockModule && u.query.with !== 'settings') return send(res, 200, JSON.stringify(s));
+          // Copied, since s is telemetry's cache.
+          var copy = {};
+          for (var k in s) copy[k] = s[k];
+          if (clockModule) copy.clockHour12 = clockHour12();
+          if (pc) copy.piccapCapture = pc;
+          if (hs) copy.huesyncStreaming = hs;
+          if (u.query.with !== 'settings') return send(res, 200, JSON.stringify(copy));
+          // The TV dashboard's System page, which reads one endpoint, also
+          // lists the sound and SIMPLINK settings.
+          lgSettingsModule.collect(['sound', 'hdmi', 'devices'], function (ls) {
+            copy.lgSettings = ls.rows;
+            send(res, 200, JSON.stringify(copy));
+          });
         });
       });
     });
@@ -1931,6 +2038,7 @@ function init(opts) {
   if (opts.oled) oledModule = opts.oled;
   if (opts.privacy) privacyModule = opts.privacy;
   if (opts.lgSettings) lgSettingsModule = opts.lgSettings;
+  if (opts.audio) audioModule = opts.audio;
   if (opts.game) gameModule = opts.game;
   if (opts.apps) appsModule = opts.apps;
   if (opts.services) servicesModule = opts.services;
@@ -1939,6 +2047,7 @@ function init(opts) {
   if (opts.remoteKeys) remoteKeysModule = opts.remoteKeys;
   if (opts.homeScreen) homeScreenModule = opts.homeScreen;
   if (opts.home) homeModule = opts.home;
+  if (opts.clock) clockModule = opts.clock;
   if (opts.homePicture) homePictureModule = opts.homePicture;
   if (opts.screensavers) screensaversModule = opts.screensavers;
   if (opts.updater) updaterModule = opts.updater;
@@ -1946,6 +2055,7 @@ function init(opts) {
   if (opts.tvApp) tvAppFn = opts.tvApp;
   if (opts.restartSelf) restartSelfFn = opts.restartSelf;
   if (opts.piccapStatus) piccapStatusFn = opts.piccapStatus;
+  if (opts.huesyncStatus) huesyncStatusFn = opts.huesyncStatus;
   if (opts.repo) repoModule = opts.repo;
   if (opts.installer) installerModule = opts.installer;
   if (opts.prometheus) prometheusModule = opts.prometheus;
@@ -1974,7 +2084,7 @@ function init(opts) {
     validateSettings: validateSettings,
     writeSettings: writeSettings,
     readConfigFile: readConfigFile,
-    lanAddress: lanAddress,
+    localAddress4: localAddress4,
     networkOpen: networkOpen,
     lanOrigin: lanOrigin,
     setupPending: setupPending,
@@ -1997,7 +2107,7 @@ module.exports = {
   writeSettings: writeSettings,
   readConfigFile: readConfigFile,
   setNetworkAccess: setNetworkAccess,
-  lanAddress: lanAddress,
+  localAddress4: localAddress4,
   networkOpen: networkOpen,
   lanOrigin: lanOrigin,
   setupPending: setupPending,

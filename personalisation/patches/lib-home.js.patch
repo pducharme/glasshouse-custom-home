@@ -1,6 +1,6 @@
 --- a/lib/home.js
 +++ b/lib/home.js
-@@ -54,6 +54,8 @@
+@@ -59,6 +59,8 @@
    'com.webos.app.lifeonscreen', 'amazon.alexa.view', 'com.webos.app.camera'];
  // The view's own way back to LG's Home: last in the Apps row, and never hidden.
  var LG_HOME_TILE = 'lg-home';
@@ -9,23 +9,23 @@
  /*
   * LG's notifications and search, reached from its Home's sidebar and from no
   * other screen. Neither has a launch point, so the Apps row lists them from
-@@ -207,6 +209,7 @@
-     picture: false,
+@@ -285,6 +287,7 @@
+     hideUnused: false,
      // { text, accent } as #rrggbb, or null for the view's own colours.
      colours: null,
 +    photosAppId: '',
      // null until chosen: the first start keeps an empty layout an earlier build left.
      hideLgHomeAtStart: null,
      // LG's Home auto launch as it was before Glasshouse Home switched it off,
-@@ -250,6 +253,7 @@
-   d.hintSeen = raw.hintSeen === true;
-   d.picture = raw.picture === true;
+@@ -347,6 +350,7 @@
+   d.fade = raw.fade === true;
+   d.hideUnused = raw.hideUnused === true;
    d.colours = validColours(raw.colours);
 +  d.photosAppId = PHOTOS_APPS.indexOf(raw.photosAppId) !== -1 ? raw.photosAppId : '';
    if (typeof raw.hideLgHomeAtStart === 'boolean') d.hideLgHomeAtStart = raw.hideLgHomeAtStart;
    if (typeof raw.lgAutoLaunch === 'string' && raw.lgAutoLaunch) d.lgAutoLaunch = raw.lgAutoLaunch;
    if (typeof raw.lgAutoLaunchCheck === 'string' && raw.lgAutoLaunchCheck) d.lgAutoLaunchCheck = raw.lgAutoLaunchCheck;
-@@ -337,6 +341,9 @@
+@@ -445,6 +449,9 @@
  function setLayout(body, cb) {
    var c = readConfig();
    if (!body || typeof body !== 'object') return cb({ ok: false, error: 'layout expected' });
@@ -35,9 +35,9 @@
    var next = normalise({
      enabled: c.enabled,
      restorePending: c.restorePending,
-@@ -354,7 +361,8 @@
-     hintSeen: body.hintSeen !== undefined ? body.hintSeen : c.hintSeen,
-     picture: typeof body.picture === 'boolean' ? body.picture : c.picture,
+@@ -474,7 +481,8 @@
+     fade: typeof body.fade === 'boolean' ? body.fade : c.fade,
+     hideUnused: typeof body.hideUnused === 'boolean' ? body.hideUnused : c.hideUnused,
      // null puts the view's own colours back.
 -    colours: body.colours !== undefined ? body.colours : c.colours
 +    colours: body.colours !== undefined ? body.colours : c.colours,
@@ -45,16 +45,16 @@
    });
    if (body.reset === true) {
      var d = defaults();
-@@ -376,7 +384,7 @@
- 
- function layoutOf(c) {
-   return { rows: c.rows, order: c.order, sort: c.sort, hidden: c.hidden, channels: c.channels, hintSeen: c.hintSeen, picture: c.picture,
--    colours: c.colours };
-+    colours: c.colours, photosAppId: c.photosAppId };
+@@ -499,7 +507,7 @@
+   return { rows: c.rows, order: c.order, sort: c.sort, hidden: c.hidden, folder: c.folder, channels: c.channels, hintSeen: c.hintSeen,
+     searchHintSeen: c.searchHintSeen, picture: c.picture, search: c.search, recommended: c.recommended,
+     fade: c.fade, hideUnused: c.hideUnused, showClock: c.showClock, rowsBottom: c.rowsBottom, view: c.view,
+-    showLastOn: c.showLastOn, showAppCount: c.showAppCount, showCec: c.showCec, colours: c.colours,
++    showLastOn: c.showLastOn, showAppCount: c.showAppCount, showCec: c.showCec, colours: c.colours, photosAppId: c.photosAppId,
+     // Not saved: { host, by } while the ad blocker blocks LG's search (lib/home-search).
+     searchBlocked: search.blocked() };
  }
- 
- // ---------------------------------------------------------------- what it shows
-@@ -410,7 +418,13 @@
+@@ -535,7 +543,13 @@
        });
        sidebarApps(LG_SIDEBAR_APPS.slice(), out, done);
      });
@@ -69,29 +69,29 @@
  }
  
  // Each of LG_SIDEBAR_APPS that this TV has, on the end of the list.
-@@ -539,7 +553,14 @@
-           ch: picked.map(function (p) { return p.id; })
-         };
-         ROWS.forEach(function (r) { if (c.sort[r] === 'recent') order[r] = lastOpenedFirst(r, order[r]); });
-+        var photos = { appId: c.photosAppId, installed: false, icon: null };
-+        appList.forEach(function (a) {
-+          if (a.id !== c.photosAppId) return;
-+          photos.installed = true;
-+          photos.icon = a.icon ? '/api/home/icon?id=' + encodeURIComponent(a.id) : null;
-+        });
-         cb({
-+          photos: photos,
-           apps: appList.map(function (a) {
-             return { id: a.id, title: a.title, icon: a.icon ? '/api/home/icon?id=' + encodeURIComponent(a.id) : null };
-           }),
-@@ -720,13 +741,24 @@
+@@ -684,7 +698,14 @@
+     return order.app.indexOf(a.app) - order.app.indexOf(b.app) || all.indexOf(a) - all.indexOf(b);
+   });
+   order.rec = cards.map(function (r) { return r.id; });
++  var photos = { appId: c.photosAppId, installed: false, icon: null };
++  appList.forEach(function (a) {
++    if (a.id !== c.photosAppId) return;
++    photos.installed = true;
++    photos.icon = a.icon ? '/api/home/icon?id=' + encodeURIComponent(a.id) : null;
++  });
+   return {
++    photos: photos,
+     apps: appList.map(function (a) {
+       var app = { id: a.id, title: a.title, icon: a.icon ? '/api/home/icon?id=' + encodeURIComponent(a.id) : null };
+       if (a.overlay) app.overlay = true;
+@@ -873,13 +894,24 @@
  }
  
  /*
 - * Opens a tile: { kind: 'app'|'dev'|'ch'|'lg', id }. Only what the catalogue
-+ * Opens a tile: { kind: 'app'|'dev'|'ch'|'lg'|'photos', id }. Only what the catalogue
++ * Opens a tile: { kind: 'app'|'dev'|'ch'|'rec'|'lg'|'photos', id }. Only what the catalogue
   * lists can be opened, so this is not a way to launch anything at all. A
-  * device opens its HDMI input; nothing is sent to the device or a receiver.
+  * device opens its HDMI input with LG's CEC selection parameters where known.
   */
  function open(body, cb) {
    var kind = body && body.kind;
@@ -108,14 +108,14 @@
 +    });
 +  }
    console.log('home: open ' + kind + ' ' + id);
-   if (kind === 'lg' || (kind === 'app' && id === LG_HOME_TILE)) {
-     if (body.recovery && !viewInFront()) return cb({ ok: true, done: false });
-@@ -767,7 +799,7 @@
-       });
+   // Only the view opens tiles: asked to, it is up, whether or not it beat first.
+   beats++;
+@@ -935,7 +967,7 @@
+       cb({ ok: r.ok, error: r.error });
      });
    }
--  cb({ ok: false, error: 'kind must be app, dev, ch or lg' });
-+  cb({ ok: false, error: 'kind must be app, dev, ch, lg or photos' });
+-  cb({ ok: false, error: 'kind must be app, dev, ch, rec or lg' });
++  cb({ ok: false, error: 'kind must be app, dev, ch, rec, lg or photos' });
  }
  
  // A tile's callback that first records it as opened, if it opened.

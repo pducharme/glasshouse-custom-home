@@ -14,17 +14,17 @@ if (process.argv.length > 2 && !check) {
   process.exit(2);
 }
 // Public upstream source checksum, not a credential for remote access.
-var remoteSourceSha256 = '68c58dfd63747ff1b4b4b537f70c13d3228f16e019fdf650a4a5a103c9f9c5f1';
+var remoteSourceSha256 = '0406460e157a9de8ae2c23f5e2597427d273cbb82f3f8d0917121af3baa8113b';
 var files = {
-  'assets/home.html': '292735c255dc1f296713b5c5bff95c3edafa69df56dd93b73de72145a644045f',
-  'lib/home.js': 'a4c2a497044712d9556f4f35b538ea93da071330a741bfba448740b81fa71680',
-  'lib/routes.js': '1590eb5471882b5f73cb8b0576abfd10cb385deba936212304c3254f377efaf6',
+  'assets/home.html': 'd06a2782462f6565cda0311c9e8bd667aa0fd7444b4f9f20eba793365b7a8573',
+  'lib/home.js': '1c629931aed49bba02aa13efd60a0d7b832f5e1bf4674138790df7da58503890',
+  'lib/routes.js': 'ba857a4bb6f19fac070967beb7eafdbca867c5a0d946338a56a0fa728ee79170',
   'lib/remotekeys.js': remoteSourceSha256
 };
 var manifest = {
   version: 1,
-  baseVersion: '0.118.0',
-  baseCommit: '859f5e134e0d9d4b499afe48084b9cdb82db9164',
+  baseVersion: '0.130.0',
+  baseCommit: '1543769cfeb28c3ce0936dc6d20b24cd58c70255',
   patches: [],
   assets: []
 };

@@ -14,7 +14,7 @@ var elements = { wall: { querySelectorAll: function () { return layers; } } };
 var context = {
   Date: Clock, location: { search: '' }, window: { PalmSystem: {} },
   Image: function () { images.push(this); },
-  document: { getElementById: function (id) { return elements[id] || (elements[id] = { textContent: '' }); } },
+  document: { documentElement: { lang: 'fr-CA' }, getElementById: function (id) { return elements[id] || (elements[id] = { textContent: '' }); } },
   t: function (key, text, vars) {
     return text.replace(/\{(\w+)\}/g, function (whole, name) { return vars && vars[name] !== undefined ? vars[name] : whole; });
   }
@@ -109,7 +109,7 @@ assert.ok(layers.some(function (layer) { return layer.style.backgroundImage === 
 assert.ok(!/\bnight\b/.test(elements.stage.className));
 
 clock = new Date(2026, 9, 22, 12);
-assert.strictEqual(view.dateText(clock), 'jeudi 22 octobre');
+assert.strictEqual(view.dateText(clock), 'Jeudi 22 octobre');
 view.renderNow();
 assert.strictEqual(elements.greeting.textContent, 'Bonjour');
 clock = new Date(2026, 9, 22, 19);

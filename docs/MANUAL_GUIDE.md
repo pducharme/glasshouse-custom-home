@@ -6,16 +6,16 @@ universel pour toutes les LG. Commencez par la démo; le parcours TV est faculta
 
 ## 1. Choisir la bonne source
 
-Lors de l’audit initial du **26 octobre 2026**, `main` ne contenait que les fonds;
-le code était dans la [PR nº1](https://github.com/pducharme/glasshouse-wallpapers/pull/1),
-branche `codex/reproducible-glasshouse-interface`. Consultez l’état actuel de la PR.
-Les commandes suivantes prennent `main`; si la fusion n’a pas encore eu lieu,
-remplacez `main` par le nom de cette branche dans la commande de clone.
+Ce checkout livre l’adaptation **0.130.0**, base amont
+`1543769cfeb28c3ce0936dc6d20b24cd58c70255`. Clonez `main`, relevez son SHA et
+vérifiez sa CI ainsi que la présence des fichiers ci-dessous. Les anciens commits
+de fonds seuls ou d’adaptation 0.118.0 ne décrivent pas cette livraison.
 
 Sur l’ordinateur, avec Git et Node.js 22 ou plus récent :
 
 ```sh
-git clone --branch main --single-branch \
+SOURCE_REF=main
+git clone --branch "$SOURCE_REF" --single-branch \
   https://github.com/pducharme/glasshouse-wallpapers.git
 cd glasshouse-wallpapers
 git rev-parse HEAD
@@ -25,10 +25,9 @@ test -f docs/AI_PROMPTS.md
 npm --prefix glasshouse run demo -- --port 8766
 ```
 
-Notez le SHA affiché et arrêtez si un des fichiers vérifiés est absent. La base de
-code testée pendant l’audit était `d2e3ebc843c827a7040aa08e69abc9b7c31a8abe`;
-ce commit historique n’inclut pas les nouveaux guides ajoutés ensuite. Vérifiez
-la CI de la référence effectivement téléchargée, qui peut avoir évolué.
+Notez le SHA affiché et arrêtez si un des fichiers vérifiés est absent. La base
+amont de cette branche est `1543769cfeb28c3ce0936dc6d20b24cd58c70255`, version
+0.130.0; le SHA du fork personnalisé est distinct.
 Ouvrez `http://127.0.0.1:8766/`. Les lancements et la météo sont simulés; aucune TV
 n’est contactée. Les flèches, Entrée, appui long sur Entrée et Echap permettent
 d’essayer l’accueil. `?hour=19` montre le mode sombre. Arrêtez avec `Ctrl+C`.
@@ -54,12 +53,14 @@ préparé ou absent, et les [instructions pour assistants](AI_PROMPTS.md).
 | LG en Developer Mode seulement | Installation d’apps webOS selon LG; **pas** ce remplacement de HOME ni le serveur root de ce dépôt. |
 | TV déjà rootée, Homebrew Channel et SSH root déjà fonctionnels | Vérifications ci-dessous, puis installation manuelle si la version convient. |
 | Glasshouse Home sur webOS 9 ou 10 | Versions acceptées par cette source; validation sur votre matériel indispensable. |
+| Glasshouse Home sur webOS 7 | Accepté avec statut expérimental par la base 0.130; validation du modèle indispensable. |
 | Glasshouse Home sur webOS 11 | Option privée `allowExperimentalHome: true` nécessaire, après choix explicite du parcours expérimental. |
 | webOS 5 / ancien Node système | Le port Lightkeeper utilisé sur un autre appareil est **distinct et absent de cette branche**. Ne pas copier ce bundle à sa place. |
 
 Le serveur de tableau de bord peut avoir une compatibilité plus large que le
-**remplacement de HOME** : `home.supported()` limite ce dernier à webOS 9, 10 et
-11 avec l’option indiquée, et exige le **port 8080**. Le bundle facultatif de
+**remplacement de HOME** : `home.supported()` limite ce dernier à webOS 7, 9, 10 et
+11 avec l’option indiquée. Ce guide utilise le **port 8080** de l’exemple; adapter
+le tunnel si votre configuration en utilise un autre. Le bundle facultatif de
 persistance exige en plus Node système 14.14+ (`fs.rmSync`), `patch` et
 `start-stop-daemon`. Le succès d’une démo sur ordinateur ne lève pas ces limites.
 
@@ -114,6 +115,9 @@ L’export JSON du tableau de bord est utile pour certains réglages, mais il ne
 contient pas les secrets d’accès, tous les paramètres serveur, l’activation HOME,
 le code ou les images téléversées. Il ne constitue pas une sauvegarde complète.
 `deploy.sh` ne crée pas non plus le dossier `.previous` employé par l’updater.
+Lorsqu’il existe déjà sous `/var/lib/tvweb`, préserver `.previous` avec l’état
+actuel **avant toute autre mise à jour** : l’updater en place remplace cette copie
+à l’update suivante. Une installation IPK ne garantit pas sa présence.
 
 Pour une **mise à jour de Glasshouse existant** :
 
@@ -123,7 +127,8 @@ Pour une **mise à jour de Glasshouse existant** :
    [sa procédure](../personalisation/README.md#diagnostic-et-limites), en notant
    son état et le mode du hook pour les rétablir ensuite. Une personnalisation
    privée différente exige une comparaison avant remplacement, pas une suppression.
-3. Sur la TV, arrêtez temporairement Glasshouse. Cette action rend la main à LG
+3. Convenez d’une fenêtre d’interruption avant d’arrêter le service ou de changer
+   l’app affichée. Sur la TV, arrêtez temporairement Glasshouse. Cette action rend la main à LG
    sans effacer `home.json`; le prochain démarrage peut reprendre l’accueil :
 
 ```sh
@@ -220,6 +225,13 @@ Elle copie le serveur dans `/var/lib/tvweb`, conserve sa configuration existante
 installe par défaut le hook de démarrage `50-tvweb`, puis redémarre le serveur.
 `--no-app` évite seulement d’ajouter la tuile du **tableau de bord** dans LG Home;
 il n’active pas Glasshouse Home et ne désactive pas la persistance.
+Le raccourci **G** des paramètres exige cette app native : vérifiez
+`com.tvweb.dashboard` dans le catalogue. S’il manque, `--no-app` ne l’installera
+pas et le G signalera l’échec. Choisir séparément son installation avec `--app`,
+puis vérifier l’app réellement installée avant de tester
+le raccourci. Ne substituez pas une URL ni une app trouvée par nom approximatif.
+Sans option, une première installation ajoute l’app, mais une mise à jour laisse
+son état inchangé : elle ne réinstalle pas une app que vous aviez retirée.
 `--no-persist` évite l’écriture du hook, mais ne retire pas un hook déjà présent.
 Les fichiers existants sont remplacés; ce script n’est pas une transaction de
 rollback intégral en cas de coupure. En cas de résultat incertain, contrôlez l’état
@@ -240,7 +252,7 @@ Dans **Home**, choisissez **Use Glasshouse Home**, puis la confirmation proposé
 Cette étape modifie le remplacement de l’accueil LG; elle est distincte du serveur.
 Le mécanisme courant superpose temporairement l’interface à l’accueil LG par
 montage, il ne s’agit pas d’installer une app HOME générique en Developer Mode.
-Le port 8080 doit rester disponible. Un contrôle de compatibilité refusé n’est
+Le port choisi doit rester disponible. Un contrôle de compatibilité refusé n’est
 pas à désactiver pour forcer une autre version.
 
 Vérifiez tout de suite les moyens de sortie : tuile **LG Home**, appui prolongé
@@ -266,6 +278,9 @@ région. « Toutes les apps » liste les points de lancement exposés par le ser
 pas chaque paquet système; il garde les apps retirées du carrousel accessibles.
 Conservez la tuile LG Home. L’appui long sur OK permet la réorganisation; testez
 sauvegarde et annulation avant de poursuivre.
+Bell dans Applications doit utiliser l’ID de l’app webOS réellement installée si
+c’est cette destination qui est souhaitée. La boîte Bell Fibe et son entrée HDMI
+restent un périphérique distinct; changer l’un ne doit pas supprimer l’autre.
 
 **HDMI.** Le profil source contient des choix fixes, pas une détection universelle :
 présentation de consoles sur HDMI 1/3 et une tuile TV sur HDMI 4. Ne recopiez pas
@@ -318,6 +333,16 @@ choix, utilisez **As LG has it** sur cette touche. `restore-keys` restaure toute
 les touches et n’est pas le retour ciblé. Au démarrage/à la sortie de veille, le
 raccourci LG peut agir avant Glasshouse, notamment si le bouton sert à allumer la TV.
 
+**Paramètres et Recommandations.** Depuis Toutes les apps, Droite puis OK ouvre
+l’engrenage. Le toggle Recommandations conserve les autres réglages et respecte
+la valeur déjà enregistrée; il est désactivé dans les exemples. L’activer autorise
+l’affichage des contenus proposés par les apps et le chargement de leurs images
+distantes. Ne promettez ni reprise ni personnalisation. L’accordéon s’ouvre par
+Bas/clic, ne mélange jamais les fournisseurs et ne présente aucune carte pour une
+app qui n’en donne pas. L’absence de carte n’est pas une erreur à contourner.
+Voir [le guide des paramètres](HOME_SETTINGS.md) pour le comportement complet.
+Le petit G à droite de Fermer ouvre uniquement l’app Glasshouse vérifiée.
+
 ## 8. Persistance, démarrage et validation
 
 Le hook serveur `50-tvweb` relance Glasshouse au démarrage. Le gardien facultatif
@@ -352,6 +377,39 @@ Ne promettez pas un délai fixe. Quick Start+, Home Auto Launch, le firmware et 
 services influencent le démarrage; l’activation peut ajuster Home Auto Launch,
 qui est restauré lors de la désactivation. Ne forcez pas ces réglages pour imiter
 une autre TV. Gardez un accès de secours à LG Home.
+
+## Récupérer le menu après une mise à jour amont
+
+Un retour au menu standard ne prouve pas la perte des réglages. Avant une autre
+update, préserver l’état actuel **et `.previous` s’il existe**, selon la sauvegarde
+ci-dessus. Relever la version réelle, les hashes, les assets, l’état du gardien et
+les seules erreurs utiles en privé. Un `blocked` peut signaler un patch incompatible;
+un retour à LG Home peut aussi être un secours. Ne pas réinstaller à l’aveugle.
+
+Comparer les personnalisations sauvegardées avec les sources officielles de la
+version maintenant installée. Reprendre les deltas compatibles, conserver les
+nouvelles fonctions amont et tester avant application. Vérifier séparément les
+champs personnalisés : une version stock peut supprimer un champ qu’elle ne connaît
+pas lorsqu’elle sauvegarde les réglages. Réparer seulement le champ nécessaire
+avec la cible installée vérifiée; préserver les autres préférences actuelles.
+
+Appliquer les fichiers préparés avec une sauvegarde ciblée et des contrôles de
+modification concurrente. Ne pas copier toute l’ancienne page, `home.json` ou
+`.previous` sur la nouvelle version. La procédure complète de retour à un ancien
+état ci-dessous est un choix séparé, pas le traitement normal d’un menu perdu.
+
+Le serveur conserve les assets en mémoire. Comparer le hash du fichier et celui
+du contenu **réellement servi**; un simple rafraîchissement peut garder l’ancienne
+page. Pendant une fenêtre d’interruption acceptée seulement :
+
+```sh
+/var/lib/tvweb/tvwebctl restart
+```
+
+Cela redémarre le service, pas la télévision. Vérifier ensuite la réponse HTTP,
+le gardien, le menu et les destinations approuvées avant d’annoncer la restauration.
+Une capture vide ne prouve pas que l’écran physique est éteint. Préserver les
+mises à jour LG/HBC et les protections; aucun PIN personnalisé n’est à réintroduire.
 
 ## 9. Revenir à l’état précédent
 

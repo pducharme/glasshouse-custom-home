@@ -58,7 +58,7 @@ function harness(options) {
       requestAnimationFrame: function (fn) { var id = ++nextTimer; timers[id] = { fn: fn, due: now + 16 }; return id; },
       cancelAnimationFrame: function (id) { delete timers[id]; }
     },
-    document: { body: body, getElementById: element, querySelectorAll: function (selector) { return selector === '.row' ? rows : []; },
+    document: { body: body, querySelector: function () { return null; }, getElementById: element, querySelectorAll: function (selector) { return selector === '.row' ? rows : []; },
       createElement: function () { return { style: {}, setAttribute: function () {} }; }
     },
     t: function (key, fallback, vars) { return fallback.replace(/\{(\w+)\}/g, function (all, key) { return vars && vars[key] !== undefined ? vars[key] : all; }); },

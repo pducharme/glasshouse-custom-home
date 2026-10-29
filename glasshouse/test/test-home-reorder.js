@@ -25,7 +25,7 @@ function harness() {
   var body = {}, elements = {};
   var context = {
     Date: { now: function () { return now; } }, location: { search: '' }, window: { PalmSystem: {} },
-    document: { body: body, getElementById: function (id) {
+    document: { body: body, querySelector: function () { return null; }, getElementById: function (id) {
       return elements[id] || (elements[id] = { textContent: '' });
     } },
     t: function (key, text, vars) {

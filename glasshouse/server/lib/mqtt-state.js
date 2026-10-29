@@ -25,13 +25,15 @@ function init(opts) {
   function publishValue(group, key, value) {
     if (value === null || typeof value === 'undefined') return;
     client.publish(topic.state(group + '/' + key), scalar(value), true);
-    if (group === 'power' && key === 'screenOn') {
-      var screenOn = !!value;
-      if (manager) {
-        var snap = manager.snapshot();
-        var pwr = snap && snap.power;
-        if (pwr && pwr.systemOn === false) screenOn = false;
-      }
+    // tvpower's reply gives screenOn before systemOn, so on a switch-on
+    // screenOn arrives while systemOn still reads false. Worked out again on
+    // either, the screen follows whichever comes second.
+    if (group === 'power' && (key === 'screenOn' || key === 'systemOn')) {
+      var snap = manager ? manager.snapshot() : null;
+      var pwr = snap && snap.power;
+      var screenOn = key === 'screenOn' ? !!value : !!(pwr && pwr.screenOn);
+      if (key === 'systemOn' && !(pwr && typeof pwr.screenOn === 'boolean')) return;
+      if (pwr && pwr.systemOn === false) screenOn = false;
       client.publish(legacyScreenTopic, screenOn ? 'ON' : 'OFF', true);
     }
   }
@@ -54,8 +56,13 @@ function init(opts) {
         payload.control_app_id = windowGroups[i].control_app_id;
       }
     }
-    if (payload.control_app_id !== undefined && snap.power && snap.power.systemOn === false) {
-      payload.control_app_id = '';
+    // Omitted, like control_app_id, where the window list is not offered.
+    if (snap.keyboard && typeof snap.keyboard.keyboard_visible === 'boolean') {
+      payload.keyboard_visible = snap.keyboard.keyboard_visible;
+    }
+    if (snap.power && snap.power.systemOn === false) {
+      if (payload.control_app_id !== undefined) payload.control_app_id = '';
+      if (payload.keyboard_visible !== undefined) payload.keyboard_visible = false;
     }
     // Closing an LG window can report no focus for about 100 ms before HDMI
     // regains it. Standby still releases the remote immediately.
@@ -77,7 +84,7 @@ function init(opts) {
 
   function changesRemote(event) {
     return (event.group === 'application' && event.key === 'app_id') ||
-           event.group === 'surface' || event.group === 'focus' ||
+           event.group === 'surface' || event.group === 'focus' || event.group === 'keyboard' ||
            (event.group === 'power' && event.key === 'systemOn');
   }
 

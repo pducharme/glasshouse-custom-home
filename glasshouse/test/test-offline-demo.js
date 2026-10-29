@@ -48,8 +48,8 @@ function call(route, body, headers) {
     assert.strictEqual(weather.label, 'Ville de démonstration');
     const catalogue = (await call('/api/home/catalogue')).body;
     assert.deepStrictEqual(catalogue.order.app.filter(id => !catalogue.layout.hidden.app.includes(id)),
-      ['youtube.leanback.v4', 'netflix', 'cdp-30', 'ca.bellmedia.crave', 'amazon', 'tv.tou.ici.webos', 'com.webos.app.hdmi4', 'lg-home']);
-    assert.deepStrictEqual(catalogue.layout.hidden.app, ['org.example.demo.music', 'org.example.demo.browser', 'org.example.demo.games']);
+      ['youtube.leanback.v4', 'netflix', 'cdp-30', 'ca.bellmedia.crave', 'amazon', 'tv.tou.ici.webos', 'com.bell.fibetv.production', 'lg-home']);
+    assert.deepStrictEqual(catalogue.layout.hidden.app, ['org.example.demo.music', 'org.example.demo.browser', 'org.example.demo.games', 'com.tvweb.dashboard']);
     assert.ok(catalogue.layout.hidden.app.every(id => catalogue.apps.some(app => app.id === id)), 'drawer apps exist in the synthetic catalogue');
     assert.deepStrictEqual(catalogue.photos, { appId: '', installed: false, icon: null });
     assert.strictEqual(catalogue.layout.photosAppId, '');
@@ -82,6 +82,32 @@ function call(route, body, headers) {
     assert.deepStrictEqual((await call('/api/home/catalogue')).body.order.app, catalogue.order.app);
     assert.deepStrictEqual((await call('/api/home/catalogue')).body.layout.hidden.app, catalogue.layout.hidden.app);
     assert.strictEqual((await call('/api/home/open', { kind: 'app', id: 'org.example.demo.music' })).body.demo, true, 'drawer launches are simulated');
+
+    assert.strictEqual(catalogue.layout.recommended, false, 'recommendations are opt-in in the offline demo');
+    assert.deepStrictEqual(catalogue.recommended, []);
+    const beforeRecommended = JSON.stringify(Object.assign({}, catalogue.layout, { recommended: undefined }));
+    const enabled = (await call('/api/home/layout', { recommended: true })).body.layout;
+    assert.strictEqual(JSON.stringify(Object.assign({}, enabled, { recommended: undefined })), beforeRecommended, 'toggle preserves all other preferences');
+    const recommended = (await call('/api/home/catalogue')).body.recommended;
+    assert.strictEqual(recommended.length, 21);
+    assert.ok(recommended.every(card => card.id.startsWith('demo-card-') && card.title.startsWith('Exemple vidéo ') && card.category === 'Démonstration'));
+    assert.ok(recommended.every(card => catalogue.apps.some(app => app.id === card.app)));
+    assert.ok(!recommended.some(card => card.app === 'cdp-30'), 'an app with no fixture receives no foreign cards');
+    for (const card of recommended) {
+      assert.ok(card.image.startsWith('/demo/recommendations/'), 'poster remains same-origin');
+      assert.strictEqual((await call(card.image)).status, 200);
+    }
+    assert.strictEqual((await call('/api/home/open', { kind: 'rec', id: recommended[0].id })).body.demo, true);
+    assert.strictEqual((await call('/api/home/now')).body.appId, recommended[0].app);
+    assert.strictEqual((await call('/api/home/open', { kind: 'rec', id: 'not-listed' })).status, 400);
+    assert.strictEqual((await call('/api/home/layout', { recommended: 'true' })).status, 400);
+    await call('/api/home/layout', { recommended: false });
+    assert.deepStrictEqual((await call('/api/home/catalogue')).body.recommended, []);
+    assert.strictEqual((await call('/api/home/open', { kind: 'rec', id: recommended[0].id })).status, 400);
+    const beforeDashboard = (await call('/api/home/catalogue')).body.layout;
+    assert.strictEqual((await call('/api/home/open', { kind: 'app', id: 'com.tvweb.dashboard' })).body.demo, true);
+    assert.deepStrictEqual((await call('/api/home/catalogue')).body.layout, beforeDashboard, 'native-dashboard simulation does not change preferences');
+    assert.strictEqual((await call('/assets/favicon.svg')).status, 200);
     assert.strictEqual((await call('/api/home/layout', {}, { Origin: 'https://example.invalid' })).status, 403);
     assert.strictEqual((await call('/', undefined, { Host: 'example.invalid' })).status, 403);
     assert.strictEqual((await call('/', undefined, { 'Sec-Fetch-Site': 'cross-site' })).status, 403);

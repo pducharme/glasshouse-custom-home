@@ -1,31 +1,31 @@
 {
   "version": 1,
-  "baseVersion": "0.118.0",
-  "baseCommit": "859f5e134e0d9d4b499afe48084b9cdb82db9164",
+  "baseVersion": "0.130.0",
+  "baseCommit": "1543769cfeb28c3ce0936dc6d20b24cd58c70255",
   "patches": [
     {
       "file": "assets/home.html",
       "patch": "patches/assets-home.html.patch",
-      "baseSha256": "292735c255dc1f296713b5c5bff95c3edafa69df56dd93b73de72145a644045f",
-      "customSha256": "67f4921b3162c933eb49e57ab6ec3f4b938a890f94dafe0389acff674aa27fdb"
+      "baseSha256": "d06a2782462f6565cda0311c9e8bd667aa0fd7444b4f9f20eba793365b7a8573",
+      "customSha256": "81e9cb5ce87c1619951dd976015ace7e59604edee9df09882d02da4ae672b874"
     },
     {
       "file": "lib/home.js",
       "patch": "patches/lib-home.js.patch",
-      "baseSha256": "a4c2a497044712d9556f4f35b538ea93da071330a741bfba448740b81fa71680",
-      "customSha256": "d0ead70902080b7244d001324e69dae63fa53b6d1f83036683962d6cb24f3ef6"
+      "baseSha256": "1c629931aed49bba02aa13efd60a0d7b832f5e1bf4674138790df7da58503890",
+      "customSha256": "807cf7a785772e047c0b2b673b89c3f0b62b7d9fcfb62e9a89b1f4000aa27035"
     },
     {
       "file": "lib/routes.js",
       "patch": "patches/lib-routes.js.patch",
-      "baseSha256": "1590eb5471882b5f73cb8b0576abfd10cb385deba936212304c3254f377efaf6",
-      "customSha256": "2bef23e17870d19907e06b3f19a7280b6092ee187141e300fb92e3ef3241dcee"
+      "baseSha256": "ba857a4bb6f19fac070967beb7eafdbca867c5a0d946338a56a0fa728ee79170",
+      "customSha256": "fb62d2e9969b19e0110314ac9fc585c1343bb2f9293cd9e5bc3ec892cd19efb5"
     },
     {
       "file": "lib/remotekeys.js",
       "patch": "patches/lib-remotekeys.js.patch",
-      "baseSha256": "68c58dfd63747ff1b4b4b537f70c13d3228f16e019fdf650a4a5a103c9f9c5f1",
-      "customSha256": "7903024964225ee87725e059a008873110ecb1a3b0c0f0a6e9cf47a883a800bd"
+      "baseSha256": "0406460e157a9de8ae2c23f5e2597427d273cbb82f3f8d0917121af3baa8113b",
+      "customSha256": "0444b93a9c58f54d198569f98e2ace681f985c1e292cce72ed69f03f93338b20"
     }
   ],
   "assets": [

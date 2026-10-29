@@ -1,13 +1,17 @@
 --- a/assets/home.html
 +++ b/assets/home.html
-@@ -1,5 +1,5 @@
+@@ -1,5 +1,9 @@
  <!doctype html>
 -<html lang="en">
++<!-- Official Immich logo: unchanged original asset, AGPL-3.0.
++     Source: https://github.com/immich-app/immich/blob/256eb55dbe92ac77e02794442f9487e88ffed2b1/design/immich-logo.svg
++     License: https://github.com/immich-app/immich/blob/256eb55dbe92ac77e02794442f9487e88ffed2b1/LICENSE
++     Immich/FUTO trademarks; independent launcher, no affiliation or endorsement. -->
 +<html lang="fr-CA">
  <head>
  <meta charset="utf-8">
  <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-@@ -33,15 +33,27 @@
+@@ -33,19 +37,28 @@
  #scrim{position:absolute;left:0;top:0;right:0;bottom:0;
    background:radial-gradient(ellipse 34% 30% at 92% 14%,rgba(0,0,0,.55),rgba(0,0,0,0)),
      linear-gradient(90deg,rgba(0,0,0,.72) 0%,rgba(0,0,0,.35) 38%,rgba(0,0,0,0) 70%),
@@ -21,7 +25,8 @@
 +#now{display:-webkit-flex;display:flex;-webkit-align-items:flex-end;align-items:flex-end;padding:0 112px;height:270px}
  #when{width:520px;-webkit-flex:0 0 auto;flex:0 0 auto}
 -#clock{font-family:'Outfit',sans-serif;font-size:176px;line-height:.8;font-weight:300;letter-spacing:-4px}
--#date{margin-top:22px;font-size:28px;color:#a39d93}
+-/* The hour cycle, in 12-hour time only: small enough to stay inside #when,
+-   which is sized for the digits alone. */
 +#greeting{font-size:23px;letter-spacing:4px;margin-bottom:18px;color:#d0d5dd}
 +#clock{font-family:'Outfit',sans-serif;font-size:144px;line-height:.8;font-weight:300;letter-spacing:-4px}
 +#date{margin-top:18px;font-size:26px;color:#d0d5dd}
@@ -36,28 +41,25 @@
 +#weatherCredit{font-size:15px;color:#abb7c8;margin-top:8px}
 +#weather.unavailable #weatherMain{display:none}
 +.arranging #weather,.recents #weather{opacity:.25}
+ #mer{font-size:.28em;letter-spacing:0;margin-left:.1em;opacity:.75;font-weight:400}
+-#date{margin-top:22px;font-size:28px;color:#a39d93;white-space:nowrap}
+-/* Switched off, the clock keeps its space, so the rows and Last watched stay put. */
+ .no-clock #when{visibility:hidden}
  #source{-webkit-flex:1 1 auto;flex:1 1 auto;min-width:0;padding-left:24px;border-left:1px solid #2a2825;padding-bottom:2px}
  #source.none{visibility:hidden}
- #srcKind{font-size:23px;color:#e9ad55}
-@@ -64,13 +76,10 @@
- #plStrip{font-size:23px;height:36px;line-height:38px;color:#a39d93}
- #plStrip b{font-weight:400;color:#6b665e;margin-right:12px}
- 
--/* The rows sit centred between the clock and the arrange bar, so three rows
--   land a little below where they used to and fewer settle lower. The spacers shrink first, so rows taller than the space run on down
--   rather than under the clock. A row with nothing to show is left out, and
--   while arranging stands as a slot that can still be moved. */
--#rows{position:absolute;left:0;right:0;top:296px;bottom:40px;
--  display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column}
--#rows:before,#rows:after{content:"";-webkit-flex:1 1 0;flex:1 1 0}
+@@ -101,6 +114,11 @@
+ .alternative .dev{width:340px;height:108px}
+ .alternative .dev .nm{font-size:26px}
+ .alternative .dev .path,.alternative .dev .st{font-size:17px}
 +/* Bottom alignment leaves the landscape open and keeps HDMI labels above the move hint. */
 +#rows{position:absolute;left:0;right:0;top:316px;bottom:68px;
 +  display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;
 +  -webkit-justify-content:flex-end;justify-content:flex-end}
++#rows:before,#rows:after{display:none}
  .row{-webkit-flex:0 0 auto;flex:0 0 auto}
  .row.empty{display:none}
  .arranging .row.empty{display:block}
-@@ -78,9 +87,13 @@
+@@ -108,9 +126,13 @@
    border:2px dashed #2a2825;border-radius:6px}
  .arranging .row.active .slot{color:#ece7df;border-color:#e9ad55;border-style:solid}
  .arranging .row.held-row .slot{border-style:dashed;background:#231d12}
@@ -70,10 +72,10 @@
  .row h2 span{color:#6b665e;margin-left:14px}
 +.row h2 span,#rows .dev .st,#source{display:none}
 +.arranging .row h2 span{display:inline}
- .wrap{overflow:hidden;margin:0 90px;padding:6px 22px}
- .track{display:-webkit-flex;display:flex;white-space:nowrap;
-   -webkit-transition:-webkit-transform .28s cubic-bezier(.2,.7,.2,1);transition:transform .28s cubic-bezier(.2,.7,.2,1)}
-@@ -91,21 +104,70 @@
+ .wrap{position:relative;overflow:hidden;margin:0 90px;padding:6px 22px}
+ /* Moved by script, a frame at a time (scrollTrack). Relative, so a tile's
+    offsetLeft is always from the track, also before it has been moved; its own
+@@ -134,21 +156,69 @@
  .row:not(.active) .tile{opacity:.58}
  .tile.focus{background:rgba(20,19,16,.86);outline-color:#ece7df;opacity:1}
  
@@ -117,6 +119,7 @@
 +.face.immich{background:#0b0b0d}
 +.glass-glint{position:absolute;left:0;right:0;top:0;bottom:0;border-radius:inherit;pointer-events:none;opacity:0}
 +.face img{display:block;width:191px;height:94.5px;object-fit:contain}
++.brand-name{font-family:Arial,sans-serif;font-size:30px;font-weight:600;padding:18px;text-align:center}
 +.face .mono{font-family:'Outfit',sans-serif;font-size:42px;font-weight:400}
 +.face .native-icon{width:87.5px;height:87.5px;border-radius:17.5px}
 +.face.youtube{background:#202124}
@@ -126,7 +129,6 @@
 +.face.netflix{background:#0b0b0d}
 +.face.prime{background:#10283f}
 +.face.prime img{width:191px;height:87.5px}
-+.brand-name{font-family:Arial,sans-serif;font-size:30px;font-weight:600;padding:18px;text-align:center}
 +.face.bell{background:linear-gradient(145deg,#14273b,#0b1523)}
 +.face.bell img{width:121px;height:87.5px;-webkit-filter:brightness(1.9);filter:brightness(1.9)}
 +.face.crave img{width:180px;height:63px}
@@ -151,16 +153,15 @@
 +.night #rows .wrap:before{background:rgba(13,22,37,.5);border-color:rgba(190,210,240,.12)}
 +.night .face{-webkit-filter:brightness(.76);filter:brightness(.76)}
 +.night #rows .tile.focus .face,.night #photosTile.focus .face{-webkit-filter:brightness(.94);filter:brightness(.94)}
-+.night .brand-name{font-family:Arial,sans-serif;font-size:30px;font-weight:600;padding:18px;text-align:center}
-+.face.bell{background:#091726}
++.night .face.bell{background:#091726}
 +.night .face.bell img{-webkit-filter:brightness(1.65);filter:brightness(1.65)}
 +.night .face.toutv{background:linear-gradient(145deg,#073c45,#082b34)}
 +.night #greeting,.night #date,.night #weatherDetail{color:#c2cbd9}
  
  .ch{width:224px;height:176px}
  .ch .num{font-family:'Outfit',sans-serif;font-size:48px;line-height:.9;font-weight:300}
-@@ -117,6 +179,8 @@
- .ch .next{font-size:17px;color:#6b665e;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@@ -169,6 +239,8 @@
+ .alternative .rec .pic{border-radius:8px}
  
  /* Arranging */
 +.arranging #now{visibility:hidden}
@@ -168,7 +169,7 @@
  .arranging .row h2{color:#ece7df}
  .row h2 .sort{display:none;margin-left:22px;font-style:normal;font-size:20px;color:#a39d93;padding:4px 14px;border-radius:5px;background:#141310;
    outline:2px solid transparent;vertical-align:2px}
-@@ -138,12 +202,22 @@
+@@ -190,12 +262,22 @@
  #banner .btn{margin-left:12px;padding:8px 18px;border-radius:5px;color:#ece7df;background:#231d12;outline:2px solid transparent}
  #banner .btn.focus{outline-color:#e9ad55}
  
@@ -182,7 +183,7 @@
 +
 +#moveHint{display:none;position:absolute;left:112px;right:112px;bottom:22px;text-align:center;font-size:22px;
 +  color:#e7edf7;padding:13px 20px;border-radius:16px;background:rgba(18,25,36,.92);border:1px solid rgba(255,255,255,.15)}
-+#moveHint span{margin-left:48px}
++#moveHint span + span{margin-left:48px}
 +.quick-arranging #moveHint{display:block}
 +.quick-arranging #now{visibility:visible;opacity:.35}
 +.quick-arranging #rows{top:316px;bottom:68px}
@@ -192,9 +193,9 @@
  
  /* Recent apps: Back's panel, in place of the one in LG's Home. The
     snapshots are the panel: each a small copy of the screen as it was left,
-@@ -183,8 +257,56 @@
- #fault h1{font-family:'Outfit',sans-serif;font-weight:300;font-size:56px;margin-bottom:18px}
- #fault p{font-size:26px;color:#a39d93}
+@@ -335,8 +417,101 @@
+ html.fades.in #stage{-webkit-transition:opacity .3s ease-out;transition:opacity .3s ease-out}
+ html.faded #stage{opacity:0}
  
 +
 +/* Glass edges use gradients and highlights supported by older webOS engines.
@@ -242,23 +243,68 @@
 +#allApps .tile .hid{display:none}
 +
 +
++/* Recommendations stay folded until requested, and name their actual source. */
++#rows .recommendation-row{margin-top:6px}
++/* Reserve the folded row’s space without exposing an empty recommendation. */
++#stage:not(.arranging) #rows .recommendation-row.empty{display:block;visibility:hidden}
++#recommendedTrigger{display:inline-block;border:1px solid transparent;background:transparent;color:#c3ccda;padding:7px 12px;margin-left:-12px;border-radius:18px;font:inherit;font-size:20px;text-align:left;cursor:pointer;outline:none}
++#recommendedTrigger:hover,#recommendedTrigger:focus{border-color:rgba(255,255,255,.6);color:#fff}
++#recommendedTrigger .recommendation-chevron{display:inline-block;width:7px;height:7px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);vertical-align:4px;margin-left:14px}
++#recommendedTrigger[aria-expanded="true"] .recommendation-chevron{transform:rotate(225deg);vertical-align:0}
++#rows .recommendation-row .wrap{padding-top:12px;padding-bottom:12px}
++#rows .recommendation-row .wrap:before{display:none}
++#rows .recommendation-row .wrap[hidden]{display:none}
++#rows .rec{width:310px;margin-right:24px;padding:8px;border-radius:16px;opacity:.86}
++#rows .rec .pic{width:294px;height:142px;border-radius:10px}
++#rows .rec .nm{font-size:19px;line-height:23px;margin-top:8px;color:#ece7df}
++#rows .rec .cat{position:absolute;left:15px;top:15px;max-width:280px;padding:3px 7px;border-radius:7px;background:rgba(11,18,29,.84);font-size:14px;line-height:18px;margin:0;color:#dce3ef}
++#rows .rec.focus{opacity:1;background:rgba(140,166,200,.12);outline-color:#ece7df}
++
++/* One quiet entry point: same type and glass palette as the existing drawer. */
++#homeSettingsTrigger{position:absolute;left:50%;margin-left:146px;bottom:14px;width:48px;height:48px;padding:12px;
++  color:#dce3ef;background:none;border:1px solid transparent;border-radius:24px;opacity:.55;cursor:pointer;outline:none}
++#homeSettingsTrigger svg{display:block;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7}
++#homeSettingsTrigger.focus,#homeSettingsTrigger:hover,#homeSettingsTrigger:focus{opacity:1;color:#fff;border-color:rgba(255,255,255,.9);background:rgba(140,166,200,.2)}
++.arranging #homeSettingsTrigger,.all-apps #homeSettingsTrigger,.recents #homeSettingsTrigger,.finding #homeSettingsTrigger,.folder #homeSettingsTrigger{visibility:hidden}
++#homeSettings{display:none;position:absolute;z-index:5;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.35)}
++.settings-open #homeSettings{display:block}
++.settings-sheet{position:absolute;right:112px;bottom:92px;width:590px;padding:34px;border-radius:28px;border:1px solid rgba(239,245,255,.25);
++  background:rgba(16,23,34,.98);box-shadow:0 18px 60px rgba(0,0,0,.4),inset 0 1px 1px rgba(255,255,255,.2)}
++.settings-sheet h2{font-family:'Outfit',sans-serif;font-size:34px;font-weight:300;margin:0 0 26px}
++#recommendedToggle{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:space-between;justify-content:space-between;
++  width:100%;padding:16px 18px;border:1px solid rgba(255,255,255,.22);border-radius:15px;color:#ece7df;background:rgba(255,255,255,.04);font:inherit;font-size:24px;text-align:left;cursor:pointer;outline:none}
++#recommendedToggle .switch-track{display:block;width:44px;height:26px;margin-left:16px;border-radius:15px;background:#59626f;flex-shrink:0}
++#recommendedToggle .switch-track:after{content:"";display:block;width:20px;height:20px;margin:3px;border-radius:50%;background:#ece7df}
++#recommendedToggle[aria-checked="true"] .switch-track{background:#7197bb}
++#recommendedToggle[aria-checked="true"] .switch-track:after{margin-left:21px}
++#recommendedToggle[aria-disabled="true"]{opacity:.6;cursor:wait}
++#homeSettingsHelp,#homeSettingsStatus{font-size:20px;line-height:1.4;color:#c3ccda;margin:16px 0 0}
++#homeSettingsStatus:empty{display:none}
++#homeSettingsActions{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;margin-top:24px}
++#homeSettingsLaunch{width:50px;height:50px;margin-left:14px;padding:7px;border:1px solid rgba(255,255,255,.3);border-radius:16px;background:transparent;cursor:pointer;outline:none}
++#homeSettingsLaunch img{display:block;width:34px;height:34px;border-radius:8px}
++#homeSettingsLaunch[aria-disabled="true"]{opacity:.6;cursor:wait}
++#homeSettingsLaunch.focus,#homeSettingsLaunch:focus{border-color:#fff;box-shadow:0 0 0 3px rgba(222,237,255,.2)}
++#homeSettingsClose{margin-top:0;padding:10px 18px;border:1px solid rgba(255,255,255,.3);border-radius:24px;color:#ece7df;background:transparent;font:inherit;font-size:21px;cursor:pointer;outline:none}
++#recommendedToggle.focus,#recommendedToggle:focus,#homeSettingsClose.focus,#homeSettingsClose:focus{border-color:#fff;box-shadow:0 0 0 3px rgba(222,237,255,.2)}
++
  @media (prefers-reduced-motion:reduce){
--  .track,#toast,.tile{-webkit-transition:none;transition:none}
-+  .track,#toast,.tile,.face,.face:after,#allApps,#allAppsTrigger,.photos-face{-webkit-transition:none;transition:none}
+-  .track,#toast,.tile,#folder,#folderGrid,#hits,.hit,.chip,#finder,#rail,#rail svg,#ask,html.fades #stage{-webkit-transition:none;transition:none}
++  .track,#toast,.tile,.face,.face:after,#allApps,#allAppsTrigger,.photos-face,#folder,#folderGrid,#hits,.hit,.chip,#finder,#rail,#rail svg,#ask,html.fades #stage{-webkit-transition:none;transition:none}
 +  #rows .tile.focus .face,#photosTile.focus .photos-face,#allApps .tile.focus .face{-webkit-transform:none;transform:none}
 +  .glass-glint{display:none}
    #wall .layer{-webkit-animation:none;animation:none}
  }
  </style>
-@@ -196,6 +318,7 @@
+@@ -348,6 +523,7 @@
  
    <section id="now">
      <div id="when">
 +      <div id="greeting"></div>
-       <div id="clock">&mdash;</div>
+       <div id="clock"><span id="hm">&mdash;</span><span id="mer" hidden></span></div>
        <div id="date">&mdash;</div>
      </div>
-@@ -211,7 +334,22 @@
+@@ -363,12 +539,40 @@
      </div>
    </section>
  
@@ -269,29 +315,47 @@
 +    <div id="weatherCredit"><a href="https://open-meteo.com/" rel="noreferrer" data-t="home.weather.provider">Open-Meteo</a> · <a href="https://creativecommons.org/licenses/by/4.0/" rel="noreferrer" data-t="home.weather.license">CC BY 4.0</a></div>
 +  </aside>
    <main id="rows"></main>
+   <div id="rail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg><span class="word" data-t="home.search.rail">Search</span></div>
+   <section id="finder">
+     <div id="ask"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg><input id="query" type="text" autocomplete="off" spellcheck="false" maxlength="80" placeholder="Film or series" data-t-placeholder="home.search.placeholder"></div>
+     <div id="status">&mdash;</div>
+     <div id="results"><div id="hits"></div></div>
++  </section>
 +  <button type="button" id="allAppsTrigger" tabindex="-1" aria-controls="allApps" aria-expanded="false">
 +    <span class="down-chevron" aria-hidden="true"></span><span data-t="home.allApps.title">Toutes les apps</span>
 +  </button>
++  <button type="button" id="homeSettingsTrigger" tabindex="0" aria-label="Paramètres" data-t-aria-label="home.quickSettings.title" aria-haspopup="dialog" aria-controls="homeSettings" aria-expanded="false">
++    <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="18.93,9.13 19.34,10.44 21.85,10.26 21.85,13.74 19.34,13.56 18.93,14.87 18.29,16.08 20.19,17.74 17.74,20.19 16.08,18.29 14.87,18.93 13.56,19.34 13.74,21.85 10.26,21.85 10.44,19.34 9.13,18.93 7.92,18.29 6.26,20.19 3.81,17.74 5.71,16.08 5.07,14.87 4.66,13.56 2.15,13.74 2.15,10.26 4.66,10.44 5.07,9.13 5.71,7.92 3.81,6.26 6.26,3.81 7.92,5.71 9.13,5.07 10.44,4.66 10.26,2.15 13.74,2.15 13.56,4.66 14.87,5.07 16.08,5.71 17.74,3.81 20.19,6.26 18.29,7.92" stroke-linejoin="round"/><circle cx="12" cy="12" r="3"/></svg>
++  </button>
++  <section id="homeSettings" role="dialog" aria-modal="true" aria-labelledby="homeSettingsTitle" aria-hidden="true">
++    <div class="settings-sheet">
++      <h2 id="homeSettingsTitle" data-t="home.quickSettings.title">Paramètres</h2>
++      <button type="button" id="recommendedToggle" role="switch" aria-checked="false" aria-describedby="homeSettingsHelp" tabindex="-1"><span data-t="home.quickSettings.recommended">Recommandations</span><span class="switch-track" aria-hidden="true"></span></button>
++      <p id="homeSettingsHelp" data-t="home.quickSettings.help">Contenus proposés par vos apps. Les images viennent de leurs serveurs.</p>
++      <p id="homeSettingsStatus" role="status" aria-live="polite"></p>
++      <div id="homeSettingsActions"><button type="button" id="homeSettingsClose" tabindex="-1" data-t="home.quickSettings.close">Fermer</button>
++        <button type="button" id="homeSettingsLaunch" tabindex="-1" aria-label="Ouvrir Glasshouse" data-t-aria-label="home.quickSettings.openGlasshouse" title="Ouvrir Glasshouse" data-t-title="home.quickSettings.openGlasshouse"><img src="/assets/favicon.svg" alt=""></button></div>
++    </div>
++  </section>
 +  <section id="allApps" role="dialog" aria-modal="true" aria-labelledby="allAppsTitle" aria-hidden="true">
 +    <div class="drawer-head"><div><h2 id="allAppsTitle" data-t="home.allApps.title">Toutes les apps</h2>
 +      <p data-t="home.allApps.description">Les applications installées, y compris celles hors du carrousel.</p></div>
 +      <button type="button" id="allAppsClose" tabindex="-1" data-t="home.allApps.close">Retour au carrousel ↑</button></div>
 +    <div id="allAppsScroll"><div id="allAppsGrid"></div></div>
-+  </section>
+   </section>
  
    <div id="banner">
-     <span><b data-t="home.arrange.title">Arranging</b><span id="bannerState">&mdash;</span></span>
-@@ -220,7 +358,8 @@
+@@ -379,7 +583,8 @@
      <span class="btn" id="btnReset" data-t="home.arrange.reset">Reset</span>
      <span class="btn" id="btnDone" data-t="home.arrange.done">Done</span>
    </div>
 -  <div id="toast"></div>
-+  <div id="moveHint"><span data-t="home.quickArrange.move">← → Déplacer la tuile</span> <span data-t="home.quickArrange.save">OK Enregistrer</span><span data-t="home.quickArrange.finish">Retour Terminer</span></div>
++  <div id="moveHint"><span data-t="home.arrange.quickMove">← → Déplacer la tuile</span> <span data-t="home.arrange.quickSave">OK Enregistrer</span><span data-t="home.arrange.quickDone">Retour Terminer</span></div>
 +  <div id="toast" role="status" aria-live="polite"></div>
  
    <section id="recents">
      <div class="head">
-@@ -246,10 +385,11 @@
+@@ -410,11 +615,12 @@
   * browser shows.
   */
  (function () {
@@ -299,26 +363,32 @@
    var ROW_TITLES = {
 -    app: t('home.row.apps', 'Apps'),
 -    dev: t('home.row.inputs', 'Inputs'),
--    ch: t('home.row.channels', 'Channels')
+-    ch: t('home.row.channels', 'Channels'),
+-    rec: t('home.row.recommended', 'Recommended')
 +    app: 'Applications',
 +    dev: 'Consoles',
-+    ch: 'Chaînes'
++    ch: 'Chaînes',
++    rec: 'Recommandations'
    };
    var LG_HOME_TILE = 'lg-home';
    // The remote's keys as webOS reports them to a page.
-@@ -263,17 +403,17 @@
+@@ -431,12 +637,11 @@
+   var layout = null;     // rows, order, sort, hidden, channels, hintSeen, picture, show*
    var guideData = {};
    var lastOn = { kind: null };
-   // last: the tile focused last, which the bar's Hide or show acts on.
--  var state = { row: 0, col: {}, arranging: false, held: false, bar: -1, last: null };
-+  var state = { row: 0, col: {}, zone: 'rows', arranging: false, quickArrange: false, held: false, bar: -1, last: null };
-   var BAR = ['btnHide', 'btnReset', 'btnDone'];
+-  // last: the tile focused last, which the bar's Hide or show acts on. rail:
+-  // the search mark in the left gutter has the focus.
+-  var state = { row: 0, col: {}, arranging: false, held: false, bar: -1, last: null, rail: false };
++  // last: the tile focused last, which the bar's Hide or show acts on.
++  var state = { row: 0, col: {}, zone: 'rows', arranging: false, quickArrange: false, held: false, bar: -1, last: null, rail: false };
+   var BAR = ['btnHide', 'btnFolder', 'btnReset', 'btnDone'];
    var build = null;
--  var okDownAt = 0, okTimer = null, okLong = false, okInRecents = false, backDown = false;
-+  var okDownAt = 0, okTimer = null, okLong = false, okInRecents = false, okSurface = 'rows', backDown = false;
+-  var okDownAt = 0, okTimer = null, okLong = false, okInRecents = false, okInFolder = false, backDown = false;
++  var okDownAt = 0, okTimer = null, okLong = false, okInRecents = false, okInFolder = false, okSurface = 'rows', backDown = false;
    var beatFails = 0;
-   var layoutRevision = 0, layoutBusy = false;
-   // home.json's version as last loaded: a heartbeat bringing another means it
+   // The TV's own 12 or 24 hour setting, which the server repeats with each heartbeat.
+   var hour12 = false;
+@@ -445,7 +650,7 @@
    // was changed elsewhere, such as from a dashboard, and the layout is reloaded.
    var layoutVersion = null;
    var loadRetry = null, wallAvailable = false, initialEscape = false;
@@ -327,31 +397,25 @@
  
    function $(id) { return document.getElementById(id); }
    function pad(n) { return (n < 10 ? '0' : '') + n; }
-@@ -283,14 +423,8 @@
-       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-     });
-   }
--  // The words from the browser's locale, the order from the translation.
+@@ -475,6 +680,9 @@
+   // form that follows a number: "24 октября", not "октябрь".
    function dateText(d) {
--    function part(opts) {
--      try { return d.toLocaleDateString(undefined, opts); } catch (e) { return ''; }
--    }
--    return t('home.date', '{weekday} {day} {month}', {
--      weekday: part({ weekday: 'long' }), day: d.getDate(), month: part({ month: 'long' })
--    });
-+    try { return d.toLocaleDateString('fr-CA', { weekday: 'long', day: 'numeric', month: 'long' }); } catch (e) { return ''; }
-   }
- 
-   function request(method, url, body, cb) {
-@@ -312,6 +446,7 @@
+     var lang = (window.I18N && I18N.lang) ? I18N.lang() : 'en';
++    // French Home remains French when the untranslated dashboard falls back to English.
++    var pageLang = typeof document !== 'undefined' && document.documentElement ? document.documentElement.lang : '';
++    if (lang === 'en' && /^fr(?:-|$)/i.test(pageLang)) lang = pageLang;
+     function part(opts) {
+       try { return d.toLocaleDateString(lang === 'en' ? undefined : lang, opts); } catch (e) { return ''; }
+     }
+@@ -515,6 +723,7 @@
    // ---------------------------------------------------------------- stage
  
    function fit() {
 +    resetPointerGlass();
      var s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
      var st = $('stage');
-     var x = (window.innerWidth - 1920 * s) / 2, y = (window.innerHeight - 1080 * s) / 2;
-@@ -322,7 +457,7 @@
+     stageScale = s;
+@@ -526,7 +735,7 @@
  
    function byId(kind, id) {
      if (kind === 'app') {
@@ -359,18 +423,94 @@
 +      if (id === LG_HOME_TILE) return { id: LG_HOME_TILE, title: 'Accueil LG', lg: true };
        return find(data.apps, id);
      }
-     return find(kind === 'dev' ? data.devices : data.channels, id);
-@@ -340,13 +475,15 @@
-     var out = [];
+     if (kind === 'rec') return find(data.recommended, id);
+@@ -552,7 +761,9 @@
+     if (kind === 'rec') return state.arranging ? out : recCards();
      (data.order[kind] || []).forEach(function (id) {
        var it = byId(kind, id);
--      if (it && (state.arranging || !hidden(kind, id))) out.push(it);
+-      if (it && (state.arranging || (!hidden(kind, id) && !inFolder(kind, id))) && !leftOut(kind, it)) out.push(it);
 +      if (kind === 'dev' && it && it.port !== 1 && it.port !== 3) return;
 +      if (kind === 'app' && data.photos && data.photos.appId === id && !(state.arranging && !state.quickArrange)) return;
-+      if (it && ((state.arranging && !state.quickArrange) || !hidden(kind, id))) out.push(it);
++      if (it && ((state.arranging && !state.quickArrange) || (!hidden(kind, id) && !inFolder(kind, id))) && !leftOut(kind, it)) out.push(it);
      });
-     return out;
+     if (kind === 'app' && !state.arranging) {
+       var inside = folderItems();
+@@ -571,14 +782,14 @@
    }
+   /*
+    * The Recommended row shows the cards of the app in focus on the Apps row,
+-   * or every app's while that app has none (an input, LG Home). Leaving the
++   * and stays absent if that app has none (including an input or LG Home). Leaving the
+    * Apps row keeps the app it was last on, so Down reaches its cards.
+    */
+-  var recApp = null;
++  var recApp = null, recExpanded = false;
+   function recCards() {
+     var all = [];
+     (data.order.rec || []).forEach(function (id) { var it = byId('rec', id); if (it) all.push(it); });
+-    if (!recApp) return all;
++    if (!recApp || !layout || layout.recommended !== true) return [];
+     return all.filter(function (it) { return it.app === recApp; });
+   }
+   function hasCards(app) {
+@@ -588,28 +799,42 @@
+   function followApps() {
+     if (state.arranging || state.bar >= 0 || state.rail || rowKey() !== 'app') return;
+     var it = items('app')[colOf('app')];
+-    var app = it && hasCards(it.id) ? it.id : null;
++    var app = it && !it.folder && !it.lg ? it.id : null;
+     if (app === recApp) return;
+-    recApp = app;
++    recApp = app; recExpanded = false;
+     renderRec();
+   }
+   // Only the Recommended row is redrawn, from its first card, leaving the Apps row moving under the pointer alone.
+   function renderRec() {
+-    var rowEl = rowElOf('rec'), track = rowEl && rowEl.querySelector('.track');
+-    if (!track) return;
+-    var list = items('rec'), tiles = '', note = esc(rowNote('rec', list));
+-    list.forEach(function (it, i) { tiles += TILE.rec(it, i); });
+-    rowEl.querySelector('h2').innerHTML = esc(ROW_TITLES.rec) + (note ? '<span>' + note + '</span>' : '') +
+-      '<em class="sort">' + esc(sortLabel('rec')) + '</em>';
+-    track.innerHTML = tiles;
+     state.col.rec = 0;
+     var tr = trackOf('rec');
+     tr.x = tr.target = tr.v = tr.gv = 0;
+-    measure('rec');
+-    paint('rec');
+-    edges();
+-    // The next full render builds the rows again with this app's cards.
++    var row = rowElOf('rec');
++    if (!row) return;
++    var holder = document.createElement('div');
++    holder.innerHTML = recommendationMarkup(layout.rows.indexOf('rec'), items('rec'));
++    row.parentNode.replaceChild(holder.firstChild, row);
+     renderedRows = '';
++    applyFocus(true, true); placeRows();
++  }
++  function openRecommendations() {
++    if (!recCards().length || state.arranging) return;
++    state.rail = false; state.zone = 'rows'; state.row = layout.rows.indexOf('rec');
++    recExpanded = true; render();
++  }
++  function closeRecommendations() {
++    recExpanded = false;
++    if (rowKey() === 'rec') state.row = layout.rows.indexOf('app');
++    render();
++  }
++  function recommendationMarkup(ri, list) {
++    var from = recApp && find(data.apps, recApp);
++    var title = ROW_TITLES.rec + (from ? ' · ' + from.title : '');
++    var tiles = recExpanded ? list.map(function (it, i) { return TILE.rec(it, i); }).join('') : '';
++    return '<section class="row recommendation-row" data-row="' + ri + '" data-key="rec"' + (list.length ? '' : ' data-empty="1"') + '>' +
++      '<h2><button type="button" id="recommendedTrigger" tabindex="-1" aria-expanded="' + (recExpanded ? 'true' : 'false') + '" aria-controls="recommendedCards">' +
++      esc(title) + '<span class="recommendation-chevron" aria-hidden="true"></span></button><em class="sort"></em></h2>' +
++      '<div class="wrap" id="recommendedCards"' + (recExpanded ? '' : ' hidden') + '><i class="edge l"></i><i class="edge r"></i><div class="track">' + tiles + '</div></div></section>';
+   }
+ 
+   // An input with nothing plugged in, where the layout leaves those out, as well
+@@ -617,7 +842,7 @@
+   function leftOut(kind, it) { return kind === 'dev' && it.unused && layout.hideUnused === true && !state.arranging; }
    function rowKey() { return layout.rows[state.row]; }
    // A row with nothing to show is left out of the view, but not while arranging.
 -  function shown(ri) { return state.arranging || items(layout.rows[ri]).length > 0; }
@@ -378,34 +518,55 @@
    // The first shown row from ri on in direction dir, or ri when there is none.
    function nextShown(ri, dir) {
      for (var i = ri; i >= 0 && i < layout.rows.length; i += dir) if (shown(i)) return i;
-@@ -378,6 +515,7 @@
+@@ -662,21 +887,23 @@
    }
  
    function render() {
 +    resetPointerGlass();
      stageClass();
      var html = '';
+     barWidths = [];
      if (!shown(state.row)) state.row = nextShown(0, 1);
-@@ -386,34 +524,49 @@
+     layout.rows.forEach(function (kind, ri) {
+       var list = items(kind);
++      if (kind === 'rec' && !state.arranging) { html += recommendationMarkup(ri, list); return; }
        var tiles = '';
        list.forEach(function (it, i) { tiles += TILE[kind](it, i); });
        var note = esc(rowNote(kind, list));
 -      html += '<section class="row"' + (list.length ? '' : ' data-empty="1"') + ' data-row="' + ri + '" data-key="' + kind + '">' +
 +      html += '<section class="row"' + (list.length || (!state.arranging && kind === 'dev') ? '' : ' data-empty="1"') + ' data-row="' + ri + '" data-key="' + kind + '">' +
-         '<h2>' + esc(ROW_TITLES[kind]) + (list.length ? '<span>' + note + '</span>' : '') +
+         '<h2>' + esc(ROW_TITLES[kind]) + (list.length && note ? '<span>' + note + '</span>' : '') +
          '<em class="sort">' + esc(sortLabel(kind)) + '</em></h2>' +
--        (list.length ? '<div class="wrap"><div class="track">' + tiles + '</div></div>' : '<div class="slot">' + note + '</div>') +
+         (list.length ? '<div class="wrap"><i class="edge l"></i><i class="edge r"></i><div class="track">' + tiles + '</div></div>'
+-          : '<div class="slot">' + note + '</div>') +
 -        '</section>';
-+        (list.length ? '<div class="wrap"><div class="track">' + tiles + '</div></div>' : kind === 'dev' && !state.arranging ? '' : '<div class="slot">' + note + '</div>') +
++          : kind === 'dev' && !state.arranging ? '' : '<div class="slot">' + note + '</div>') +
 +        (kind === 'dev' ? photosMarkup() : '') + '</section>';
      });
-     $('rows').innerHTML = html;
+     // Rebuilt only when something shown changed: the minute's refresh of
+     // what was last on leaves the rows, and where they are scrolled, alone.
+@@ -700,6 +927,8 @@
+       if (active) scrollTrack(active, active.querySelector('.tile.focus'), !animating);
+     }
+     if (folder.open) renderFolder();
 +    if (drawer.open) renderDrawer();
-     applyFocus(true);
++    if (homeSettings.open) paintHomeSettings();
+   }
+   var renderedRows = '', barWidths = [];
+ 
+@@ -716,7 +945,7 @@
+ 
+   function appIcon(a) {
+     return a.icon ? '<img src="' + esc(a.icon) + '" alt="">' :
+-      '<span class="mono">' + esc(a.lg ? 'LG' : String(a.title).charAt(0)) + '</span>';
++      '<span class="brand-name">' + esc(a.lg ? 'LG' : a.title) + '</span>';
+   }
+   // The first four of the folder's icons, as the tile that opens it.
+   function folderIcon(inside) {
+@@ -727,24 +956,40 @@
+     return '<span class="fold">' + html + '</span>';
    }
  
-   var hiddenLabel = '<span class="hid">' + esc(t('home.hidden', 'Hidden')) + '</span>';
-+
 +  var APP_ART = {
 +    'youtube.leanback.v4': { brand: 'youtube' },
 +    'cdp-30': { brand: 'plex' },
@@ -413,24 +574,28 @@
 +    netflix: { brand: 'netflix' },
 +    amazon: { brand: 'prime' },
 +    'tv.tou.ici.webos': { brand: 'toutv' },
++    'com.bell.fibetv.production': { brand: 'bell' },
 +    'com.webos.app.hdmi4': { brand: 'bell' }
 +  };
- 
++
    var TILE = {
      app: function (a, i) {
-       var cls = 'tile app' + (hidden('app', a.id) ? ' hidden' : '');
--      var icon = a.icon ? '<img src="' + esc(a.icon) + '" alt="">' :
--        '<span class="mono">' + esc(a.lg ? 'LG' : String(a.title).charAt(0)) + '</span>';
--      return '<div class="' + cls + '" data-c="' + i + '">' + icon + '<div class="nm">' + esc(a.title) + '</div>' + hiddenLabel + '</div>';
+       if (a.folder) {
+-        return '<div class="tile app" data-c="' + i + '">' + folderIcon(a.folder) + '<div class="nm">' + esc(a.title) + '</div></div>';
++        return '<div class="tile app" data-c="' + i + '" role="button" aria-label="' + esc(a.title) + '"><div class="face">' + folderIcon(a.folder) + '</div><div class="nm">' + esc(a.title) + '</div></div>';
+       }
+       var cls = 'tile app' + (hidden('app', a.id) ? ' hidden' : inFolder('app', a.id) ? ' folded' : '');
+-      return '<div class="' + cls + '" data-c="' + i + '">' + appIcon(a) + '<div class="nm">' + esc(a.title) + '</div>' +
+-        hiddenLabel + folderLabel + '</div>';
 +      var art = APP_ART[a.id];
 +      var icon = a.icon ?
 +        '<img class="native-icon" src="' + esc(a.icon) + '" alt="">' :
 +        '<span class="brand-name">' + esc(a.lg ? 'LG' : a.title) + '</span>';
 +      return '<div class="' + cls + '" data-c="' + i + '" role="button" aria-label="' + esc((a.title || a.id) + (hidden('app', a.id) ? ' ' + t('home.hidden', 'Hidden') : '')) + '"><div class="face ' + (art ? art.brand : a.lg ? 'lg' : '') + '">' +
-+        icon + '</div><div class="nm">' + esc(a.title) + '</div>' + hiddenLabel + '</div>';
++        icon + '</div><div class="nm">' + esc(a.title) + '</div>' + hiddenLabel + folderLabel + '</div>';
      },
      dev: function (d, i) {
-       var last = lastOn.kind === 'input' && lastOn.port === d.port;
+       var last = layout.showLastOn !== false && lastOn.kind === 'input' && lastOn.port === d.port;
        var cls = 'tile dev' + (last ? ' last' : '') + (d.unused ? ' unused' : '') + (hidden('dev', d.id) ? ' hidden' : '');
 -      var path = d.unused ? '' : d.via ? t('home.dev.through', 'HDMI {port}, through {via}', { port: d.port, via: d.via })
 +      var path = d.via ? t('home.dev.through', 'HDMI {port}, through {via}', { port: d.port, via: d.via })
@@ -438,7 +603,7 @@
 -      return '<div class="' + cls + '" data-c="' + i + '"><div><div class="nm">' + esc(d.name) + '</div>' +
 -        '<div class="path">' + esc(path) + '</div></div>' +
 -        '<div class="st"><em>' + esc(last ? t('home.dev.last', 'Last watched') : d.unused ? t('home.dev.unused', 'Nothing connected') : t('home.dev.connected', 'Connected')) + '</em>' +
--        '<span>' + (d.address ? esc(t('home.dev.cec', 'CEC {address}', { address: d.address })) : '') + '</span></div>' + hiddenLabel + '</div>';
+-        '<span>' + (d.address && layout.showCec !== false ? esc(t('home.dev.cec', 'CEC {address}', { address: d.address })) : '') + '</span></div>' + hiddenLabel + '</div>';
 +      var name = d.port === 1 ? 'Nintendo Switch 2' : d.port === 3 ? 'Xbox Series X' : d.name;
 +      var brand = d.port === 1 ? 'switch' : 'xbox';
 +      return '<div class="' + cls + '" data-c="' + i + '" role="button" aria-label="' + esc(name + ', ' + path + (hidden('dev', d.id) ? ' ' + t('home.hidden', 'Hidden') : '')) + '"><div class="face ' + brand + '">' +
@@ -447,34 +612,68 @@
      },
      ch: function (c, i) {
        var cls = 'tile ch' + (hidden('ch', c.id) ? ' hidden' : '');
-@@ -431,7 +584,7 @@
-   function applyFocus(instant) {
+@@ -761,18 +1006,19 @@
+     rec: function (r, i) {
+       var app = find(data.apps, r.app);
+       var pic = r.image ? ' style="background-image:url(\'' + esc(r.image.replace(/'/g, '%27')) + '\')"' : '';
+-      return '<div class="tile rec" data-c="' + i + '"><i class="pic"' + pic + '></i>' +
++      return '<div class="tile rec" data-c="' + i + '" role="button" aria-label="' + esc(r.title + (app ? ', ' + app.title : '')) + '"><i class="pic"' + pic + '></i>' +
+         '<div class="nm">' + esc(r.title) + '</div>' +
+-        '<div class="cat">' + esc(r.category || (app ? app.title : '')) + '</div></div>';
++        '<div class="cat">' + esc((app ? app.title : '') + (r.category ? ' · ' + r.category : '')) + '</div></div>';
+     }
+   };
+ 
+   // noScroll: focus only, as the pointer does, leaving each row where it is.
+   function applyFocus(instant, noScroll) {
++    if (state.zone !== 'settings' && document.activeElement === $('homeSettingsTrigger')) $('homeSettingsTrigger').blur();
      var rows = document.querySelectorAll('.row');
      for (var ri = 0; ri < rows.length; ri++) {
--      var rowEl = rows[ri], kind = rowEl.getAttribute('data-key'), active = ri === state.row && state.bar < 0;
-+      var rowEl = rows[ri], kind = rowEl.getAttribute('data-key'), active = ri === state.row && state.bar < 0 && state.zone === 'rows' && !drawer.open && !recents.open;
-       rowEl.className = 'row' + (rowEl.getAttribute('data-empty') ? ' empty' : '') + (active ? ' active' : '') + (active && state.held ? ' held-row' : '');
+-      var rowEl = rows[ri], kind = rowEl.getAttribute('data-key'), active = ri === state.row && state.bar < 0 && !state.rail;
+-      rowEl.className = 'row' + (rowEl.getAttribute('data-empty') ? ' empty' : '') + (active ? ' active' : '') + (active && state.held ? ' held-row' : '');
++      var rowEl = rows[ri], kind = rowEl.getAttribute('data-key'), active = ri === state.row && state.bar < 0 && state.zone === 'rows' && !state.rail && !finder.open && !folder.open && !drawer.open && !recents.open && !homeSettings.open;
++      rowEl.className = 'row' + (kind === 'rec' ? ' recommendation-row' : '') + (rowEl.getAttribute('data-empty') ? ' empty' : '') + (active ? ' active' : '') + (active && state.held ? ' held-row' : '');
        var tiles = rowEl.querySelectorAll('.tile'), c = colOf(kind);
        for (var ci = 0; ci < tiles.length; ci++) {
-@@ -441,6 +594,8 @@
-       rowEl.querySelector('.sort').className = 'sort' + (active && c === -1 ? ' focus' : '');
-       scrollTrack(rowEl, tiles[c], instant);
+         var on = active && ci === c;
+@@ -783,6 +1029,9 @@
+       // stays where it was left.
+       if (!noScroll && active) scrollTrack(rowEl, tiles[c], instant);
      }
-+    if ($('photosTile')) $('photosTile').className = state.zone === 'photos' && !drawer.open && !recents.open ? 'focus' : '';
-+    $('allAppsTrigger').className = state.zone === 'all' && !drawer.open && !recents.open ? 'focus' : '';
++    if ($('photosTile')) $('photosTile').className = state.zone === 'photos' && !drawer.open && !recents.open && !finder.open && !folder.open && !homeSettings.open ? 'focus' : '';
++    $('allAppsTrigger').className = state.zone === 'all' && !drawer.open && !recents.open && !finder.open && !folder.open && !homeSettings.open ? 'focus' : '';
++    $('homeSettingsTrigger').className = state.zone === 'settings' && !homeSettings.open && !drawer.open && !recents.open && !finder.open && !folder.open ? 'focus' : '';
      for (var b = 0; b < BAR.length; b++) $(BAR[b]).className = 'btn' + (state.bar === b ? ' focus' : '');
-     if (state.bar < 0) {
-       var focused = items(rowKey())[colOf(rowKey())];
-@@ -457,6 +612,7 @@
-         : state.held ? t('home.arrange.moving', 'Moving {name}', { name: it.title || it.name })
-         : (it.title || it.name) + (hidden(rowKey(), it.id) ? ' ' + t('home.arrange.isHidden', '(hidden)') : '');
+     $('rail').className = state.rail && !finder.open ? 'focus' : '';
+     followApps();
+@@ -803,6 +1052,7 @@
+         : inFolder(rowKey(), it.id) ? t('home.arrange.isInFolder', '{name} (in More apps)', { name: it.title })
+         : (it.title || it.name);
      }
 +    if (pointerGlass.tile && !/\bfocus\b/.test(pointerGlass.tile.className)) resetPointerGlass();
    }
  
-   // Keeps the focused tile in view by moving the track, not the page.
-@@ -476,10 +632,54 @@
-     if (instant) { void track.offsetWidth; track.style.webkitTransition = track.style.transition = ''; }
+   // ---------------------------------------------------------------- scrolling
+@@ -1031,7 +1281,7 @@
+   function aim() {
+     glide = null;
+     hoverKey = null;
+-    if (data && layout && !layoutBusy && !state.held && !finder.open && !folder.open) {
++    if (data && layout && !layoutBusy && !state.held && !finder.open && !folder.open && !drawer.open && !homeSettings.open) {
+       var list = recents.open ? [$('recents')] : document.querySelectorAll('.row');
+       for (var i = 0; i < list.length; i++) {
+         var wrap = list[i].querySelector('.wrap');
+@@ -1068,6 +1318,8 @@
+    * wheelDelta has the opposite sign to deltaY.
+    */
+   function onWheel(e) {
++    if (homeSettings.open) { e.preventDefault(); return; }
++    if (drawer.open || finder.open) return;
+     e.preventDefault();
+     if (!data || !layout || layoutBusy || state.held || folder.open) return;
+     var d = e.deltaY !== undefined ? e.deltaY : -e.wheelDelta;
+@@ -1086,10 +1338,54 @@
+     kick();
    }
  
 +  function weatherSymbol(code, isDay) {
@@ -525,15 +724,27 @@
    function renderNow() {
      var d = new Date();
 +    $('greeting').textContent = d.getHours() >= 18 || d.getHours() < 6 ? 'Bonsoir' : 'Bonjour';
-     $('clock').textContent = hm(d);
-     $('date').textContent = dateText(d);
-     var kind = '', title = '', via = '';
-@@ -585,10 +785,36 @@
+     var p = hmParts(d);
+     $('hm').textContent = p[0];
+     $('mer').textContent = p[1];
+@@ -1276,20 +1572,55 @@
    }
  
    function move(dr, dc) {
++    if (state.rail) {
++      if (dc > 0) { state.rail = false; applyFocus(); }
++      return;
++    }
 +    if (!state.arranging) {
++      if (state.zone === 'rows' && rowKey() === 'rec' && dr < 0) return closeRecommendations();
++      if (state.zone === 'rows' && rowKey() === 'rec' && dr > 0) { recExpanded = false; renderedRows = ''; }
++      if (state.zone === 'settings') {
++        if (dc < 0) state.zone = 'all';
++        else if (dr < 0) state.zone = 'rows';
++        return applyFocus();
++      }
 +      if (state.zone === 'all') {
++        if (dc > 0) { state.zone = 'settings'; return applyFocus(); }
 +        if (dr > 0) return openDrawer();
 +        if (dr < 0) { state.zone = 'rows'; applyFocus(); }
 +        return;
@@ -556,24 +767,135 @@
 +      }
 +    }
      var onSort = colOf(rowKey()) === -1;
+     // Left of any row's first tile is the search rail, outside arranging;
+     // right goes back to the tile it came from.
+-    if (state.rail) {
+-      if (dc > 0) { state.rail = false; applyFocus(); }
+-      return;
+-    }
+     if (dc < 0 && !state.arranging && searchOn() && colOf(rowKey()) === 0) {
+       state.rail = true;
+       return applyFocus();
+     }
      if (dr) {
        var to = nextShown(state.row + dr, dr);
 -      if (to >= 0 && to < layout.rows.length && shown(to)) state.row = to;
 +      if (to >= 0 && to < layout.rows.length && shown(to)) {
 +        state.row = to;
++        if (!state.arranging && rowKey() === 'rec') return openRecommendations();
 +        if (!state.arranging && rowKey() === 'dev' && !items('dev').length) state.zone = 'photos';
 +      }
      }
      // Up and down from a row's Order go to the next row's.
      if (dr && onSort) state.col[rowKey()] = -1;
-@@ -600,7 +826,126 @@
+@@ -1302,14 +1633,101 @@
+       if (outside) state.col[kind] = dc > 0 ? span[0] : span[1];
+       else state.col[kind] = Math.max(state.arranging ? -1 : 0, Math.min(items(kind).length - 1, c + dc));
+     }
+-    applyFocus();
++    if (!recExpanded && !renderedRows) render(); else applyFocus();
    }
  
    function stageClass() {
--    $('stage').className = (state.arranging ? 'arranging' : '') + (recents.open ? ' recents' : '');
-+    $('stage').className = (state.arranging ? 'arranging' : '') + (state.quickArrange ? ' quick-arranging' : '') + (recents.open ? ' recents' : '') + (nightMode ? ' night' : '') + (drawer.open ? ' all-apps' : '');
+-    $('stage').className = (state.arranging ? 'arranging' : '') + (recents.open ? ' recents' : '') +
++    $('stage').className = (state.arranging ? 'arranging' : '') + (state.quickArrange ? ' quick-arranging' : '') + (nightMode ? ' night' : '') + (drawer.open ? ' all-apps' : '') + (homeSettings.open ? ' settings-open' : '') + (recents.open ? ' recents' : '') +
+       (finder.open ? ' finding' : '') + (finder.typing ? ' typing' : '') + (searchOn() ? '' : ' no-search') + (folder.open ? ' folder' : '') +
+       (layout && layout.showClock === false ? ' no-clock' : '') + (layout && layout.rowsBottom === true ? ' rows-bottom' : '') +
+       (layout && layout.view === 'alternative' ? ' alternative' : '');
 +  }
 +
++  // ---------------------------------------------------------------- simple Home settings
++
++  var homeSettings = { open: false, index: 0, busy: false, launching: false, okDown: false };
++  var SETTINGS_CONTROLS = ['recommendedToggle', 'homeSettingsClose', 'homeSettingsLaunch'];
++  function paintHomeSettings() {
++    $('recommendedToggle').setAttribute('aria-checked', layout && layout.recommended === true ? 'true' : 'false');
++    $('recommendedToggle').setAttribute('aria-disabled', homeSettings.busy || homeSettings.launching ? 'true' : 'false');
++    $('recommendedToggle').className = homeSettings.open && homeSettings.index === 0 ? 'focus' : '';
++    $('homeSettingsClose').className = homeSettings.open && homeSettings.index === 1 ? 'focus' : '';
++    $('homeSettingsLaunch').className = homeSettings.open && homeSettings.index === 2 ? 'focus' : '';
++    $('homeSettingsLaunch').setAttribute('aria-disabled', homeSettings.launching || homeSettings.busy ? 'true' : 'false');
++  }
++  function focusHomeSettings(index) {
++    homeSettings.index = index;
++    paintHomeSettings();
++    $(SETTINGS_CONTROLS[index]).focus();
++  }
++  function openHomeSettings() {
++    if (state.arranging || drawer.open || recents.open || finder.open || folder.open || homeSettings.open) return;
++    stopPointing(); landAll(); resetPointerGlass();
++    clearTimeout(okTimer); okDownAt = 0;
++    state.rail = false; state.zone = 'settings';
++    homeSettings.open = true; homeSettings.okDown = false;
++    $('homeSettingsStatus').textContent = homeSettings.busy ? 'Enregistrement…' : '';
++    $('homeSettings').setAttribute('aria-hidden', 'false');
++    $('homeSettingsTrigger').setAttribute('aria-expanded', 'true');
++    stageClass(); applyFocus(); focusHomeSettings(0);
++  }
++  function closeHomeSettings() {
++    if (!homeSettings.open) return;
++    homeSettings.open = false;
++    $('homeSettings').setAttribute('aria-hidden', 'true');
++    $('homeSettingsTrigger').setAttribute('aria-expanded', 'false');
++    stageClass(); applyFocus();
++    $('homeSettingsTrigger').focus();
++  }
++  function toggleRecommended() {
++    if (!layout || homeSettings.busy || homeSettings.launching || layoutBusy) return;
++    homeSettings.busy = true; layoutBusy = true; layoutRevision++;
++    $('homeSettingsStatus').textContent = 'Enregistrement…'; paintHomeSettings();
++    // Send only this preference: preserve concurrent app order, Photos and all other settings.
++    postJson('/api/home/layout', { recommended: layout.recommended !== true }, function (r) {
++      homeSettings.busy = false; layoutBusy = false; layoutRevision++;
++      if (!r || !r.ok || !r.layout) {
++        $('homeSettingsStatus').textContent = 'Enregistrement non confirmé. Vérifiez le réglage avant de réessayer.';
++        paintHomeSettings();
++        return load(function () { paintHomeSettings(); });
++      }
++      layout = r.layout; data.layout = layout;
++      $('homeSettingsStatus').textContent = '';
++      paintHomeSettings();
++      load(function () { paintHomeSettings(); });
++    });
++  }
++  function launchGlasshouseSettings() {
++    if (homeSettings.launching || homeSettings.busy || layoutBusy) return;
++    homeSettings.launching = true;
++    $('homeSettingsStatus').textContent = 'Ouverture de Glasshouse…'; paintHomeSettings();
++    // Existing installed webOS app, validated by the server's launch-point list.
++    postJson('/api/home/open', { kind: 'app', id: 'com.tvweb.dashboard' }, function (r) {
++      homeSettings.launching = false; paintHomeSettings();
++      if (!r || !r.ok) {
++        $('homeSettingsStatus').textContent = 'Glasshouse n’a pas confirmé l’ouverture.';
++        return;
++      }
++      $('homeSettingsStatus').textContent = '';
++      closeHomeSettings();
++    });
++  }
++  function settingsKey(e) {
++    var k = e.keyCode;
++    e.preventDefault();
++    if (k === KEY.back || k === 27) {
++      if (!backDown) { backDown = true; closeHomeSettings(); }
++    } else if (k === KEY.up) focusHomeSettings(0);
++    else if (k === KEY.down) focusHomeSettings(homeSettings.index ? homeSettings.index : 1);
++    else if (k === KEY.left) focusHomeSettings(Math.max(0, homeSettings.index - 1));
++    else if (k === KEY.right) focusHomeSettings(Math.min(2, homeSettings.index + 1));
++    else if (k === 9) focusHomeSettings((homeSettings.index + (e.shiftKey ? 2 : 1)) % 3);
++    else if (k === KEY.ok || k === 32) {
++      if (homeSettings.okDown) return;
++      homeSettings.okDown = true;
++      if (homeSettings.index === 2) launchGlasshouseSettings();
++      else if (homeSettings.index === 1) closeHomeSettings(); else toggleRecommended();
++    }
+   }
+ 
+   // ---------------------------------------------------------------- more apps
+@@ -1378,6 +1796,126 @@
+     focusFolder();
+   }
+ 
 +  // ---------------------------------------------------------------- photos and installed apps
 +
 +  // These are launch shortcuts only: no photo service, URL or credentials enter Home.
@@ -613,7 +935,8 @@
 +    });
 +  }
 +  function openDrawer() {
-+    if (state.arranging || drawer.open) return;
++    if (state.arranging || drawer.open || finder.open || folder.open) return;
++    stopPointing(); landAll(); state.rail = false;
 +    resetPointerGlass();
 +    closeRecents();
 +    drawer.returnRow = state.row;
@@ -691,10 +1014,12 @@
 +      target = target.parentNode;
 +    }
 +    return false;
-   }
- 
++  }
++
    // ---------------------------------------------------------------- recent apps
-@@ -613,6 +958,7 @@
+ 
+   /*
+@@ -1388,6 +1926,7 @@
    var recents = { open: false, loading: false, revision: 0, apps: [], col: 0, onX: false, onAll: false, busy: false, stamp: 0 };
  
    function openRecents() {
@@ -702,16 +1027,16 @@
      if (recents.busy) return;
      recents.busy = true;
      recents.loading = true;
-@@ -637,6 +983,8 @@
-     recents.loading = false;
-     recents.open = false;
+@@ -1414,6 +1953,8 @@
+     if (glide && glide.key === 'recents') glide = null;
+     if (hoverKey === 'recents') hoverKey = null;
      stageClass();
 +    // A periodic render can clear the rows' focus while this panel is open.
 +    if (data && layout) applyFocus();
    }
  
    function showRecents(apps) {
-@@ -748,14 +1096,14 @@
+@@ -1863,14 +2404,14 @@
        layoutRevision++;
        if (!r || !r.ok || !r.layout) {
          layoutBusy = false;
@@ -728,7 +1053,7 @@
          return load();
        }
        // Keep edits blocked until the new order has arrived as well as the save.
-@@ -763,12 +1111,14 @@
+@@ -1878,12 +2419,14 @@
      });
    }
  
@@ -743,8 +1068,8 @@
 +    state.quickArrange = on && !!quick;
      state.held = false;
      state.bar = -1;
-     if (cur) {
-@@ -872,6 +1222,12 @@
+     state.rail = false;
+@@ -2012,6 +2555,12 @@
    }
  
    function arrangeKey(k) {
@@ -757,21 +1082,24 @@
      if (state.bar >= 0) {
        if (k === KEY.left) state.bar = Math.max(0, state.bar - 1);
        else if (k === KEY.right) state.bar = Math.min(BAR.length - 1, state.bar + 1);
-@@ -895,6 +1251,7 @@
-   // ---------------------------------------------------------------- input
- 
+@@ -2038,7 +2587,10 @@
    function onKeyDown(e) {
+     stopPointing();
+     landAll();
 +    resetPointerGlass();
      if (!data || !layout) return;
-     if (layoutBusy) { e.preventDefault(); return; }
-     var k = e.keyCode;
-@@ -905,23 +1262,31 @@
-       okDownAt = Date.now();
++    if (!homeSettings.open && homeSettings.okDown && (e.keyCode === KEY.ok || e.keyCode === 32)) { e.preventDefault(); return; }
++    if (homeSettings.open) return settingsKey(e);
+     if (finder.open) {
+       // OK held repeats: one press opens one app. The keyboard's Enter sends
+       // no key up (ime/sendEnterKey on a G3), so it is not counted.
+@@ -2057,24 +2609,33 @@
        okLong = false;
        okInRecents = recents.open;
--      if (okInRecents) return;
+       okInFolder = folder.open;
+-      if (okInRecents || okInFolder) return;
 +      okSurface = drawer.open ? 'drawer' : okInRecents ? 'recents' : state.zone;
-+      if (okInRecents || okSurface !== 'rows') return;
++      if (okInFolder || okInRecents || okSurface !== 'rows') return;
        okTimer = setTimeout(function () {
          okLong = true;
          if (state.held) return;
@@ -787,6 +1115,8 @@
        e.preventDefault();
        if (backDown) return;
        backDown = true;
+       if (folder.open) return closeFolder();
++      if (recExpanded && !drawer.open && !recents.open && state.zone === 'rows') return closeRecommendations();
 +      clearTimeout(okTimer); okDownAt = 0;
 +      if (drawer.open) return closeDrawer();
 +      if (state.zone !== 'rows') { state.zone = 'rows'; return applyFocus(); }
@@ -797,30 +1127,34 @@
        return openRecents();
      }
 +    if (drawer.open) { e.preventDefault(); return drawerKey(k); }
+     if (folder.open) { e.preventDefault(); return folderKey(k); }
      if (recents.open) { e.preventDefault(); return recentsKey(k); }
      if (state.arranging) { arrangeKey(k); e.preventDefault(); return; }
-     if (k === KEY.left) move(0, -1);
-@@ -933,16 +1298,79 @@
+@@ -2087,13 +2648,19 @@
    }
  
    function onKeyUp(e) {
 -    if (e.keyCode === KEY.back) { backDown = false; return; }
 +    if (e.keyCode === KEY.back || e.keyCode === 27) { backDown = false; return; }
++    if (e.keyCode === KEY.ok || e.keyCode === 32) homeSettings.okDown = false;
+     if (e.keyCode === KEY.ok) finder.okDown = false;
      if (e.keyCode !== KEY.ok || !okDownAt) return;
      e.preventDefault();
      clearTimeout(okTimer);
      okDownAt = 0;
      if (okLong || layoutBusy) return;
++    if (okSurface === 'settings') { if (!homeSettings.open && state.zone === 'settings') openHomeSettings(); return; }
 +    if (okSurface === 'drawer') { if (drawer.open) drawerKey(KEY.ok); return; }
 +    if (okSurface === 'photos') { if (!drawer.open && state.zone === 'photos') activatePhotos(); return; }
 +    if (okSurface === 'all') { if (!drawer.open && state.zone === 'all') openDrawer(); return; }
 +    if (drawer.open) return;
      if (okInRecents) { if (recents.open) recentsKey(KEY.ok); return; }
-     if (recents.open || recents.loading) return;
-     if (state.arranging) arrangeKey(KEY.ok);
+     if (okInFolder) { if (folder.open) folderKey(KEY.ok); return; }
+     if (recents.open || recents.loading || folder.open) return;
+@@ -2101,6 +2668,65 @@
      else activate();
-+  }
-+
+   }
+ 
 +  // One local reflection per pointer frame; no idle loop or full-screen blur.
 +  // Viewport rectangles already include the TV stage's scale.
 +  var motionPreference = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
@@ -878,16 +1212,24 @@
 +    var target = e.relatedTarget;
 +    while (target) { if (target === pointerGlass.tile) return; target = target.parentNode; }
 +    resetPointerGlass();
-   }
- 
++  }
++
    // The Magic Remote's pointer: hovering focuses a tile, clicking opens it.
-@@ -954,27 +1382,53 @@
+   function tileAt(target) {
+     while (target && target !== document.body) {
+@@ -2110,6 +2736,31 @@
      return null;
    }
    function onPointer(e) {
--    if (layoutBusy) return;
 +    if (!data || !layout || layoutBusy) return;
-     var tile = tileAt(e.target);
++    if (homeSettings.open) {
++      if (ancestorId(e.target, 'recommendedToggle')) focusHomeSettings(0);
++      else if (ancestorId(e.target, 'homeSettingsClose')) focusHomeSettings(1);
++      else if (ancestorId(e.target, 'homeSettingsLaunch')) focusHomeSettings(2);
++      return;
++    }
++    if (finder.open || folder.open) { resetPointerGlass(); hoverTile(e.target); return; }
++    var tile = tileAt(e.target);
 +    if (drawer.open) {
 +      if (tile && /\bdrawer-app\b/.test(tile.className)) {
 +        drawer.index = +tile.getAttribute('data-c'); focusDrawer();
@@ -896,16 +1238,40 @@
 +      return;
 +    }
 +    if (!state.arranging && !recents.open && ancestorId(e.target, 'photosTile')) {
-+      state.zone = 'photos'; applyFocus(); queuePointerGlass($('photosTile'), e); return;
++      state.zone = 'photos'; state.rail = false; stopPointing(); applyFocus(false, true); queuePointerGlass($('photosTile'), e); return;
++    }
++    if (!state.arranging && !recents.open && ancestorId(e.target, 'homeSettingsTrigger')) {
++      resetPointerGlass(); stopPointing(); state.zone = 'settings'; state.rail = false; applyFocus(false, true); return;
 +    }
 +    if (!state.arranging && !recents.open && ancestorId(e.target, 'allAppsTrigger')) {
-+      resetPointerGlass(); state.zone = 'all'; applyFocus(); return;
++      resetPointerGlass(); stopPointing(); state.zone = 'all'; state.rail = false; applyFocus(false, true); return;
 +    }
+     pointerX = e.clientX;
+     pointerY = e.clientY;
+     pointing = true;
+@@ -2118,7 +2769,7 @@
+   }
+   // Focuses the tile under the pointer, without moving its row.
+   function hoverTile(target) {
+-    if (layoutBusy || !data || !layout) return;
++    if (layoutBusy || !data || !layout || homeSettings.open) return;
+     if (finder.open) return finderPointer(target);
+     if (folder.open) {
+       var inFolder = tileAt(target);
+@@ -2129,29 +2780,46 @@
+       return;
+     }
+     if (!state.arranging && searchOn() && within(target, 'rail')) {
+-      if (!state.rail) { state.rail = true; state.bar = -1; applyFocus(false, true); }
++      if (!state.rail || state.zone !== 'rows') { state.zone = 'rows'; resetPointerGlass(); state.rail = true; state.bar = -1; applyFocus(false, true); }
+       return;
+     }
+     var tile = tileAt(target);
      if (recents.open) {
 +      resetPointerGlass();
        if (tile && /\brc\b/.test(tile.className) && (+tile.getAttribute('data-c') !== recents.col || recents.onAll)) {
          recents.col = +tile.getAttribute('data-c'); recents.onAll = false; recents.onX = false;
-         focusRecents();
+         focusRecents(false, true);
        }
        return;
      }
@@ -913,18 +1279,26 @@
 +    if (!tile || state.held) return resetPointerGlass();
      var rowEl = tile.parentNode;
      while (rowEl && !/\brow\b/.test(rowEl.className)) rowEl = rowEl.parentNode;
-+    if (!rowEl) return resetPointerGlass();
+     if (!rowEl) return;
      var r = +rowEl.getAttribute('data-row'), c = +tile.getAttribute('data-c'), kind = layout.rows[r];
--    if (state.row !== r || colOf(kind) !== c || state.bar >= 0) {
--      state.row = r; state.col[kind] = c; state.bar = -1;
-+    if (state.row !== r || colOf(kind) !== c || state.bar >= 0 || state.zone !== 'rows') {
-+      state.zone = 'rows'; state.row = r; state.col[kind] = c; state.bar = -1;
-       applyFocus();
+-    if (state.row !== r || colOf(kind) !== c || state.bar >= 0 || state.rail) {
+-      state.row = r; state.col[kind] = c; state.bar = -1; state.rail = false;
++    if (state.row !== r || colOf(kind) !== c || state.bar >= 0 || state.rail || state.zone !== 'rows') {
++      state.zone = 'rows'; state.row = r; state.col[kind] = c; state.bar = -1; state.rail = false;
+       applyFocus(false, true);
      }
-+    queuePointerGlass(tile, e);
++    queuePointerGlass(tile, {clientX: pointerX, clientY: pointerY});
    }
    function onClick(e) {
-     if (!data || !layout || layoutBusy) return;
+-    if (!data || !layout || layoutBusy) return;
++    if (!data || !layout) return;
++    if (homeSettings.open) {
++      if (ancestorId(e.target, 'homeSettingsClose') || e.target === $('homeSettings')) return closeHomeSettings();
++      if (ancestorId(e.target, 'recommendedToggle')) toggleRecommended();
++      else if (ancestorId(e.target, 'homeSettingsLaunch')) launchGlasshouseSettings();
++      return;
++    }
++    if (layoutBusy) return;
 +    if (drawer.open) {
 +      if (ancestorId(e.target, 'allAppsClose')) return closeDrawer();
 +      var card = tileAt(e.target);
@@ -933,24 +1307,31 @@
 +      }
 +      return;
 +    }
+     if (folder.open) {
+       var picked = tileAt(e.target);
+       if (!picked || !picked.hasAttribute('data-f')) return closeFolder();
+@@ -2161,6 +2829,10 @@
      if (recents.open) return recentsClick(e.target);
+     if (finder.open) return finderClick(e.target);
+     if (!state.arranging && searchOn() && within(e.target, 'rail')) return openSearch();
 +    if (!state.arranging && ancestorId(e.target, 'photosTile')) { state.zone = 'photos'; applyFocus(); return activatePhotos(); }
++    if (!state.arranging && ancestorId(e.target, 'recommendedTrigger')) return recExpanded ? closeRecommendations() : openRecommendations();
++    if (!state.arranging && ancestorId(e.target, 'homeSettingsTrigger')) return openHomeSettings();
 +    if (!state.arranging && ancestorId(e.target, 'allAppsTrigger')) return openDrawer();
      var btn = e.target && e.target.id;
      if (BAR.indexOf(btn) !== -1) return pressBar(BAR.indexOf(btn));
      if (state.arranging && /\bsort\b/.test(e.target.className || '')) {
-@@ -984,7 +1438,9 @@
-       return toggleSort(rowKey());
-     }
-     if (!tileAt(e.target)) return;
+@@ -2173,7 +2845,8 @@
+     // The tile clicked, which a glide may have moved under the pointer since
+     // the focus last followed it.
+     hoverTile(e.target);
 -    if (state.arranging) pickUp();
-+    onPointer(e);
 +    if (state.quickArrange) setArranging(false);
 +    else if (state.arranging) pickUp();
      else activate();
    }
  
-@@ -998,7 +1454,7 @@
+@@ -2187,7 +2860,7 @@
      { key: 'evening', from: 17, strength: 0.72 },
      { key: 'night', from: 21, strength: 0.65 }
    ];
@@ -959,7 +1340,7 @@
    /*
     * ?wall=morning or ?hour=19 shows another slot, to check each one, as does
     * launching the app with { wall } or { hour }: a running app gets them at
-@@ -1013,33 +1469,57 @@
+@@ -2202,33 +2875,57 @@
    }
    function wallSlot() {
      if (preview.wall) for (var i = 1; i < WALL_SLOTS.length; i++) if (WALL_SLOTS[i].key === preview.wall) return WALL_SLOTS[i];
@@ -1031,29 +1412,63 @@
    }
  
    // ---------------------------------------------------------------- colours
-@@ -1170,35 +1650,45 @@
-   }
- 
+@@ -2292,6 +2989,10 @@
+       var firstLoad = !data;
+       data = r;
+       layout = r.layout;
++      // A response can contain another app’s old cards; the selected app remains the only source.
++      var selected = items('app')[colOf('app')];
++      recApp = selected && !selected.folder && !selected.lg ? selected.id : null;
++      if (!recCards().length) recExpanded = false;
+       renderNow();
+       if (!searchOn()) { closeSearch(); state.rail = false; }
+       setFadeOn(layout.fade === true);
+@@ -2392,12 +3093,16 @@
    function returned() {
+     var dark = faded;
+     if (!dark) fadeIn();
 +    resetPointerGlass();
      initialEscape = false;
++    recExpanded = false; renderedRows = '';
      clearTimeout(okTimer);
-     okDownAt = 0; backDown = false;
+-    okDownAt = 0; backDown = false;
++    okDownAt = 0; backDown = false; homeSettings.okDown = false;
      closeRecents();
+     closeFolder();
+     keepSearch();
++    closeHomeSettings();
 +    closeDrawer(); state.zone = 'rows';
      readLaunchParams();
      updateWall();
-     state.row = 0; state.col = {}; state.bar = -1;
+     // Back from an app, Home is as it was left: the same tile in focus and
+@@ -2412,6 +3117,7 @@
+     }
      if (state.arranging) setArranging(false);
      beat();
-     load();
 +    refreshWeather();
+     if (!dark) return load();
+     // In once both the rows and what was last on have come back, or before long.
+     var waiting = 2, shown = false;
+@@ -2422,6 +3128,11 @@
    }
  
    window.addEventListener('resize', fit);
++  $('homeSettingsTrigger').addEventListener('focus', function () {
++    if (!data || !layout || homeSettings.open) return;
++    state.zone = 'settings'; state.rail = false; applyFocus(false, true);
++  });
++
    document.addEventListener('keydown', onKeyDown, true);
    document.addEventListener('keyup', onKeyUp, true);
    document.addEventListener('mousemove', onPointer);
+@@ -2438,25 +3149,32 @@
+   document.addEventListener('onwheel' in document ? 'wheel' : 'mousewheel', onWheel);
+   // webOS says when the pointer hides, after a few still seconds or a key.
+   document.addEventListener('cursorStateChange', function (e) {
+-    if (!(e.detail && e.detail.visibility)) stopPointing();
++    if (!(e.detail && e.detail.visibility)) { stopPointing(); resetPointerGlass(); }
+   });
+   document.addEventListener('mouseout', function (e) { if (!e.relatedTarget) stopPointing(); });
 +  document.addEventListener('mouseout', onPointerOut);
    document.addEventListener('click', onClick);
 +  window.addEventListener('blur', resetPointerGlass);
@@ -1063,9 +1478,12 @@
 +  }
    // Home pressed with the view already open reaches it as a relaunch.
    document.addEventListener('webOSRelaunch', returned);
--  document.addEventListener('visibilitychange', function () { if (!document.hidden) returned(); });
-+  document.addEventListener('visibilitychange', function () { resetPointerGlass(); if (!document.hidden) returned(); });
+-  document.addEventListener('visibilitychange', function () { if (document.hidden) darken(); else returned(); });
++  document.addEventListener('visibilitychange', function () { resetPointerGlass(); if (document.hidden) darken(); else returned(); });
  
+   // Started dark where fading is chosen; in at the first catalogue, or before
+   // long without one.
+   if (fadeOn) { faded = true; paintFade(false); setTimeout(fadeIn, 1500); }
    fit();
 +  refreshWeather();
    renderNow();

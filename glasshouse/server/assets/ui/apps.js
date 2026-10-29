@@ -178,84 +178,9 @@ function renderAppsPanel() {
 
   renderSavedPages(d);
 
-  // Render System Tiles
-  const tileHidingEnabled = !!d.tileHidingEnabled;
-  const tilesDisc = q('disc-system-tiles');
-  const tilesList = q('apps-tiles-list');
-  const hiddenCount = q('apps-hidden-count');
-  const tilesSummary = q('apps-tiles-summary');
-  const warningBox = q('tile-hiding-warning');
-  const btnOff = q('tile-hiding-off');
-  const btnOn = q('tile-hiding-on');
-  const tiles = d.systemTiles || [];
-  // A tile with a hide or unhide on its way counts as it will be.
-  const willHide = tile => tilePending.hasOwnProperty(tile.id) ? tilePending[tile.id] : !!tile.hidden;
-  const numHidden = tiles.filter(willHide).length;
-
-  if (tilesDisc) {
-    tilesDisc.hidden = d.tileHidingAvailable === false;
-  }
-
-  if (btnOff && btnOn) {
-    btnOff.classList.toggle('on', !tileHidingEnabled);
-    btnOn.classList.toggle('on', tileHidingEnabled);
-    btnOff.disabled = !d.writable;
-    btnOn.disabled = !d.writable || (!!d.tileHidingHeld && !tileHidingEnabled);
-  }
-  // Only where the TV has no nudge: there each cold boot restarts sam to hide
-  // the tiles again, which is what blanks the screen for a moment.
-  if (warningBox) {
-    warningBox.hidden = !tileHidingEnabled || !!d.tileHidingHeld || d.tileHidingNudge === true;
-  }
-  q('tile-hiding-held').hidden = !d.tileHidingHeld;
-  q('tile-hiding-overridden').hidden = !d.tileHidingOverridden;
-
-  if (hiddenCount) {
-    if (!tileHidingEnabled) {
-      hiddenCount.style.display = 'none';
-    } else {
-      hiddenCount.style.display = '';
-      hiddenCount.textContent = numHidden > 0
-        ? t('apps.tiles.hiddenOf', '{hidden} hidden of {n} apps', { hidden: numHidden, n: tiles.length })
-        : t('apps.tiles.allVisible', 'All {n} apps visible', { n: tiles.length });
-    }
-  }
-
-  if (tilesSummary) {
-    if (!tileHidingEnabled) {
-      tilesSummary.textContent = t('common.off', 'Off');
-    } else {
-      tilesSummary.textContent = numHidden > 0 ? t('apps.tiles.hidden', '{n} hidden', { n: numHidden }) : appCount(tiles.length);
-    }
-  }
-
-  if (tilesList) {
-    if (!tileHidingEnabled) {
-      tilesList.innerHTML = `<div class="sub" style="padding:16px 0">${esc(t('apps.tiles.stock', 'All built-in apps are visible (stock behavior). Select On (Custom) above to hide apps from the home launcher.'))}</div>`;
-    } else if (tiles.length === 0) {
-      tilesList.innerHTML = `<div class="sub" style="padding:16px 0">${esc(t('apps.tiles.none', 'No eligible system apps found.'))}</div>`;
-    } else {
-      // A tile per app, as Remote keys has: choosing one hides or shows it.
-      tilesList.innerHTML = `<div class="rk-grid">${tiles.map(tile => {
-        const pending = tilePending.hasOwnProperty(tile.id);
-        const isHidden = willHide(tile);
-        const state = pending ? (isHidden ? t('apps.tile.hiding', 'Hiding\u2026') : t('apps.tile.restoring', 'Restoring\u2026'))
-          : isHidden ? t('apps.tile.hidden', 'Hidden') : t('apps.tile.shown', 'Shown');
-        const name = tile.title || tile.id;
-        return `<button type="button" class="rk-key sys-tile${isHidden ? ' sys-hidden sys-changed' : ''}" aria-pressed="${isHidden}"
-            aria-label="${esc(name + ': ' + state)}" ${!d.writable || pending ? 'disabled' : ''}
-            onclick="toggleTileVisibility('${jsq(tile.id)}', ${!isHidden})">
-          <span class="rk-does">${rkIcon(tile.id)}<span translate="no">${esc(name)}</span></span>
-          <span class="rk-name">${esc(state)}</span>
-        </button>`;
-      }).join('')}</div>`;
-    }
-  }
-
   renderPreload(d);
   renderQuickAccess(d);
   renderRemoteKeys(d);
-  renderHomeScreen(d);
 
   // Render Background Services
   const svcsList = q('apps-services-list');
@@ -448,7 +373,7 @@ window.addEventListener('resize', () => {
 const RK_GROUPS = [
   { id: 'streaming', title: () => t('apps.remoteKeys.streaming', 'Streaming buttons'),
     keys: ['netflix', 'amazon', 'disneyplus', 'rakutentv', 'lgchannels', 'hulu', 'iplayer', 'freeviewplay', 'slingtv'] },
-  { id: 'assistant', title: () => t('apps.remoteKeys.assistant', 'Voice assistant buttons'), keys: ['alexa', 'googleassistant'] },
+  { id: 'assistant', title: () => t('apps.remoteKeys.assistant', 'Voice assistant buttons'), keys: ['voice', 'alexa', 'googleassistant'] },
   { id: 'colour', title: () => t('apps.remoteKeys.colour', 'Color keys'), keys: ['red', 'green', 'yellow', 'blue'] },
   // Anything else, including keys a later server offers.
   { id: 'other', title: () => t('apps.remoteKeys.other', 'Other keys'), keys: null }
@@ -570,6 +495,7 @@ function toggleRemoteKey(tile) {
   pick.innerHTML = `<div class="rk-pick-head"><span translate="no">${esc(t('apps.remoteKeys.keyLabel', '{key} key', { key: k.title }))}</span>
       <button type="button" class="rk-close" onclick="closeRemoteKeyPicker(true)">${esc(t('apps.remoteKeys.close', 'Close'))}</button></div>
     ${k.blocksApp ? `<div class="pv-note">${esc(t('apps.remoteKeys.blocksAlexa', 'Setting this key stops Alexa from opening until it is As LG has it again. Amazon still shows that Alexa is loading for a few seconds.'))}</div>` : ''}
+    ${k.replacesVoice ? `<div class="pv-note">${esc(t('apps.remoteKeys.replacesVoice', 'Set to anything else, this button no longer starts voice control. As LG has it brings it back.'))}</div>` : ''}
     ${k.turnsOffVoice ? `<div class="pv-note">${esc(t('apps.remoteKeys.turnsOffVoice', 'Setting this key switches off LG\'s voice assistant, so voice search, the AI assistant and the microphone stop working until it is As LG has it again.'))}</div>` : ''}
     <div class="rk-opts">${opt('lg', esc(t('apps.remoteKeys.lg', 'As LG has it')))}${k.noNothing ? '' : opt('nothing', `<span aria-hidden="true">⦸</span> ${esc(t('apps.remoteKeys.nothing', 'Nothing'))}`)}${switchers}${gone}</div>
     ${media.length ? `<div class="rk-sub">${esc(t('apps.remoteKeys.media', 'Media'))}</div>
@@ -647,6 +573,84 @@ window.addEventListener('resize', () => {
   closeRemoteKeyPicker(false);
   toggleRemoteKey(list.querySelector(`.rk-key[data-key="${CSS.escape(key)}"]`));
 });
+
+// System apps hidden from LG's Home screen, and from Glasshouse Home, on the
+// Home tab (lgHomeOptions in lib/routes.js).
+function renderSystemTiles(d) {
+  const appCount = n => n === 1 ? t('apps.count.one', '1 app') : t('apps.count', '{n} apps', { n });
+  const tileHidingEnabled = !!d.tileHidingEnabled;
+  const tilesDisc = q('disc-system-tiles');
+  const tilesList = q('apps-tiles-list');
+  const hiddenCount = q('apps-hidden-count');
+  const tilesSummary = q('apps-tiles-summary');
+  const warningBox = q('tile-hiding-warning');
+  const btnOff = q('tile-hiding-off');
+  const btnOn = q('tile-hiding-on');
+  const tiles = d.systemTiles || [];
+  // A tile with a hide or unhide on its way counts as it will be.
+  const willHide = tile => tilePending.hasOwnProperty(tile.id) ? tilePending[tile.id] : !!tile.hidden;
+  const numHidden = tiles.filter(willHide).length;
+
+  if (tilesDisc) {
+    tilesDisc.hidden = d.tileHidingAvailable === false;
+  }
+
+  if (btnOff && btnOn) {
+    btnOff.classList.toggle('on', !tileHidingEnabled);
+    btnOn.classList.toggle('on', tileHidingEnabled);
+    btnOff.disabled = !d.writable;
+    btnOn.disabled = !d.writable || (!!d.tileHidingHeld && !tileHidingEnabled);
+  }
+  // Only where the TV has no nudge: there each cold boot restarts sam to hide
+  // the tiles again, which is what blanks the screen for a moment.
+  if (warningBox) {
+    warningBox.hidden = !tileHidingEnabled || !!d.tileHidingHeld || d.tileHidingNudge === true;
+  }
+  q('tile-hiding-held').hidden = !d.tileHidingHeld;
+  q('tile-hiding-overridden').hidden = !d.tileHidingOverridden;
+
+  if (hiddenCount) {
+    if (!tileHidingEnabled) {
+      hiddenCount.style.display = 'none';
+    } else {
+      hiddenCount.style.display = '';
+      hiddenCount.textContent = numHidden > 0
+        ? t('apps.tiles.hiddenOf', '{hidden} hidden of {n} apps', { hidden: numHidden, n: tiles.length })
+        : t('apps.tiles.allVisible', 'All {n} apps visible', { n: tiles.length });
+    }
+  }
+
+  if (tilesSummary) {
+    if (!tileHidingEnabled) {
+      tilesSummary.textContent = t('common.off', 'Off');
+    } else {
+      tilesSummary.textContent = numHidden > 0 ? t('apps.tiles.hidden', '{n} hidden', { n: numHidden }) : appCount(tiles.length);
+    }
+  }
+
+  if (tilesList) {
+    if (!tileHidingEnabled) {
+      tilesList.innerHTML = `<div class="sub" style="padding:16px 0">${esc(t('apps.tiles.stock', 'All built-in apps are visible (stock behavior). Select On (Custom) above to hide apps from the home launcher.'))}</div>`;
+    } else if (tiles.length === 0) {
+      tilesList.innerHTML = `<div class="sub" style="padding:16px 0">${esc(t('apps.tiles.none', 'No eligible system apps found.'))}</div>`;
+    } else {
+      // A tile per app, as Remote keys has: choosing one hides or shows it.
+      tilesList.innerHTML = `<div class="rk-grid">${tiles.map(tile => {
+        const pending = tilePending.hasOwnProperty(tile.id);
+        const isHidden = willHide(tile);
+        const state = pending ? (isHidden ? t('apps.tile.hiding', 'Hiding\u2026') : t('apps.tile.restoring', 'Restoring\u2026'))
+          : isHidden ? t('apps.tile.hidden', 'Hidden') : t('apps.tile.shown', 'Shown');
+        const name = tile.title || tile.id;
+        return `<button type="button" class="rk-key sys-tile${isHidden ? ' sys-hidden sys-changed' : ''}" aria-pressed="${isHidden}"
+            aria-label="${esc(name + ': ' + state)}" ${!d.writable || pending ? 'disabled' : ''}
+            onclick="toggleTileVisibility('${jsq(tile.id)}', ${!isHidden})">
+          <span class="rk-does">${rkIcon(tile.id)}<span translate="no">${esc(name)}</span></span>
+          <span class="rk-name">${esc(state)}</span>
+        </button>`;
+      }).join('')}</div>`;
+    }
+  }
+}
 
 // Apps LG keeps loaded in the background (#624).
 // Parts of LG's Home screen, and inputs as tiles on it (lib/homescreen.js).
@@ -765,7 +769,7 @@ async function postHomeScreen(btnId, body) {
     if (btn) btn.classList.remove('busy');
   }
   if (error) alert(t('apps.home.failed', 'Could not change the Home screen: {error}', { error }));
-  loadApps();
+  loadHome();
 }
 
 function setHomePart(id, shown) { return postHomeScreen('btn-home-' + id, { part: id, shown }); }
@@ -921,7 +925,7 @@ async function confirmUninstall(appId, appTitle) {
 async function toggleTileVisibility(appId, makeHidden) {
   if (tilePending.hasOwnProperty(appId)) return;
   tilePending[appId] = makeHidden;
-  renderAppsPanel();
+  renderHome();
   const ep = makeHidden ? '/api/apps/hide' : '/api/apps/unhide';
   let error = null;
   try {
@@ -936,10 +940,11 @@ async function toggleTileVisibility(appId, makeHidden) {
     error = e.message;
   }
   delete tilePending[appId];
-  const tile = !error && appsData && (appsData.systemTiles || []).find(x => x.id === appId);
+  const lg = homeStatus && homeStatus.lgHome;
+  const tile = !error && lg && (lg.systemTiles || []).find(x => x.id === appId);
   if (tile) tile.hidden = makeHidden;
-  if (Object.keys(tilePending).length) renderAppsPanel();
-  else await loadApps();
+  if (Object.keys(tilePending).length) renderHome();
+  else await loadHome();
   if (error) alert(t('apps.tile.failed', 'Could not update tile: {error}', { error }));
 }
 
@@ -958,18 +963,18 @@ async function setTileHiding(enabled) {
     });
     const d = await res.json();
     if (d && d.ok) {
-      if (appsData) {
-        appsData.tileHidingEnabled = enabled;
-        renderAppsPanel();
+      if (homeStatus && homeStatus.lgHome) {
+        homeStatus.lgHome.tileHidingEnabled = enabled;
+        renderHome();
       }
-      await loadApps();
+      await loadHome();
     } else {
       alert(t('apps.tiles.failed', 'Could not update tile hiding: {error}', { error: (d && d.error) || t('common.unknownError', 'unknown error') }));
-      renderAppsPanel();
+      renderHome();
     }
   } catch (e) {
     alert(t('apps.tiles.failed', 'Could not update tile hiding: {error}', { error: e.message }));
-    renderAppsPanel();
+    renderHome();
   } finally {
     if (target) target.classList.remove('busy');
     if (btnOff) btnOff.disabled = false;
