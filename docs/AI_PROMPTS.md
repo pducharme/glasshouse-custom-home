@@ -26,7 +26,7 @@ cookie, adresse de serveur photo ou fichier de configuration rempli n'est requis
 Laissez les informations inconnues à « découvrir après autorisation ».
 
 ```text
-DÉPÔT = https://github.com/pducharme/glasshouse-wallpapers
+DÉPÔT = https://github.com/pducharme/glasshouse-custom-home
 RÉFÉRENCE À EXAMINER = main (relever et vérifier le SHA exact)
 SHA À EXAMINER = <SHA distant à relever et vérifier avant toute préparation>
 BASE AMONT ATTENDUE = 0.130.0 / 1543769cfeb28c3ce0936dc6d20b24cd58c70255

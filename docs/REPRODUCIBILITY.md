@@ -9,9 +9,9 @@ décrivent les contrôles antérieurs, pas l’état courant de la branche.
 
 | Source lors de l’audit | Révision vérifiée | Contenu à cette révision |
 | --- | --- | --- |
-| [Ancien `main`](https://github.com/pducharme/glasshouse-wallpapers/tree/9366c6bb9a1dcdbf8421d3f9de4dc178076e7491) | `9366c6bb9a1dcdbf8421d3f9de4dc178076e7491` | Cinq JPEG et un README de fonds. Aucun serveur, démo, installateur ou guide complet d’interface. |
-| [Code de l’interface audité](https://github.com/pducharme/glasshouse-wallpapers/tree/d2e3ebc843c827a7040aa08e69abc9b7c31a8abe) | `d2e3ebc843c827a7040aa08e69abc9b7c31a8abe` | Sources Glasshouse 0.118.0 adaptées, démo synthétique, configuration d’exemple, dépendances verrouillées, tests et bundle de personnalisation. |
-| [PR nº1](https://github.com/pducharme/glasshouse-wallpapers/pull/1) | Même commit de code | Ouverte, en brouillon, **non fusionnée lors de ce contrôle initial**. Son contenu était public mais différent du clone ordinaire de `main`. |
+| [Ancien `main`](https://github.com/pducharme/glasshouse-custom-home/tree/9366c6bb9a1dcdbf8421d3f9de4dc178076e7491) | `9366c6bb9a1dcdbf8421d3f9de4dc178076e7491` | Cinq JPEG et un README de fonds. Aucun serveur, démo, installateur ou guide complet d’interface. |
+| [Code de l’interface audité](https://github.com/pducharme/glasshouse-custom-home/tree/d2e3ebc843c827a7040aa08e69abc9b7c31a8abe) | `d2e3ebc843c827a7040aa08e69abc9b7c31a8abe` | Sources Glasshouse 0.118.0 adaptées, démo synthétique, configuration d’exemple, dépendances verrouillées, tests et bundle de personnalisation. |
+| [PR nº1](https://github.com/pducharme/glasshouse-custom-home/pull/1) | Même commit de code | Ouverte, en brouillon, **non fusionnée lors de ce contrôle initial**. Son contenu était public mais différent du clone ordinaire de `main`. |
 
 Les deux branches ont été clonées séparément pour ce contrôle. Le clone par défaut
 contenait six fichiers suivis; celui de la PR en contenait 384 au commit ci-dessus.
@@ -22,7 +22,7 @@ actuelle, vérifiez le SHA distant de `main`, la version incluse et la présence
 référence. Une publication ou une fusion doit être confirmée par GitHub, pas déduite
 de ce tableau historique.
 
-Le code de la PR a une [CI réussie sur cette révision](https://github.com/pducharme/glasshouse-wallpapers/actions/runs/40212645485).
+Le code de la PR a une [CI réussie sur cette révision](https://github.com/pducharme/glasshouse-custom-home/actions/runs/40212645485).
 Cela vérifie le code et ses fixtures, pas une nouvelle télévision. Consulter la
 branche, le SHA et la CI présents aujourd’hui avant de suivre un lien mobile `main`
 ou un nom de branche.

@@ -16,8 +16,8 @@ Sur l’ordinateur, avec Git et Node.js 22 ou plus récent :
 ```sh
 SOURCE_REF=main
 git clone --branch "$SOURCE_REF" --single-branch \
-  https://github.com/pducharme/glasshouse-wallpapers.git
-cd glasshouse-wallpapers
+  https://github.com/pducharme/glasshouse-custom-home.git
+cd glasshouse-custom-home
 git rev-parse HEAD
 test -f glasshouse/package.json
 test -f docs/MANUAL_GUIDE.md

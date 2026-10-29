@@ -71,7 +71,7 @@ Optional [Claude / Codex prompts](docs/AI_PROMPTS.md) can help with assessment a
 **Git + Node.js 22+**. Aucun paquet npm nécessaire à la démo. / No npm packages are needed for the demo.
 
 ```sh
-git clone https://github.com/pducharme/glasshouse-wallpapers.git glasshouse-custom-home
+git clone https://github.com/pducharme/glasshouse-custom-home.git glasshouse-custom-home
 cd glasshouse-custom-home
 git rev-parse HEAD
 test -f glasshouse/package.json
