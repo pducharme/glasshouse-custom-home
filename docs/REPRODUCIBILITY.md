@@ -1,13 +1,9 @@
 # Ce qui est réellement reproductible
 
-État revérifié le **28 octobre 2026** : la [PR nº1](https://github.com/pducharme/glasshouse-wallpapers/pull/1)
-a été fusionnée le 26 octobre. Le `main` distant est encore
-[`1711bdb79d680ea87e74a68e33e3ee265ec81f14`](https://github.com/pducharme/glasshouse-wallpapers/tree/1711bdb79d680ea87e74a68e33e3ee265ec81f14),
-avec Glasshouse 0.118.0, la démo et les guides autonomes. Cette branche
-`codex/c6-home-0130-recommendations` prépare l’évolution **0.130.0**, base officielle
-`1543769cfeb28c3ce0936dc6d20b24cd58c70255`. Sa présence dans une PR publique ne
-signifie pas qu’un clone de `main` l’inclut. Vérifier le SHA et la CI de la référence
-choisie; la fusion de cette évolution est une opération distincte.
+Cette livraison contient le Home personnalisé basé sur **Glasshouse 0.130.0**, commit
+amont `1543769cfeb28c3ce0936dc6d20b24cd58c70255`. Le README principal et les guides
+visent `main`; relevez toujours son SHA et sa CI. Les tableaux historiques ci-dessous
+décrivent les contrôles antérieurs, pas l’état courant de la branche.
 
 ## État public lors de l’audit initial
 
@@ -34,8 +30,7 @@ ou un nom de branche.
 ## Sans Codex : oui pour la démo, sous conditions pour une TV
 
 La démo ne dépend d’aucun agent : Git et Node.js 22+ suffisent. Les commandes du
-[README](../README.md#démo-locale-sans-télévision) choisissent explicitement la
-branche de cette évolution; utilisez `main` seulement après sa fusion vérifiée.
+[README](../README.md#démo-locale--local-demo) utilisent `main`.
 Elles n’accèdent à aucun appareil. Les développeurs peuvent
 reconstruire et tester le paquet avec npm, Python 3, `diff` et `patch`.
 

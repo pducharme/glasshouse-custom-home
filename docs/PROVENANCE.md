@@ -60,12 +60,16 @@ La démo utilise exclusivement des données synthétiques.
 Les captures de documentation upstream, ses workflows de publication et de mesure
 du trafic, et les scripts locaux hors source n'ont pas été importés. Les liens
 illustratifs concernés pointent vers les fichiers vérifiés du dépôt d'origine,
-épinglés au commit upstream indiqué plus haut; aucune capture supplémentaire
-n'est redistribuée ici. Le [README](../README.md) distingue l'état des branches;
-le [guide manuel](MANUAL_GUIDE.md) décrit le parcours autonome de cette variante.
+épinglés au commit upstream indiqué plus haut. Les trois captures supplémentaires
+autorisées dans `docs/images/` montrent la page réelle servie par une C6, rendue
+dans un navigateur, sans compte, URL interne ni photo personnelle visible.
+Les logos et miniatures sont des éléments de ces captures documentaires, pas des
+assets réutilisables. Le [README](../README.md) présente la livraison et le
+[guide manuel](MANUAL_GUIDE.md) décrit son parcours autonome.
 
 Les cartes de Recommandations utilisent les images distantes des fournisseurs
-uniquement lorsque l’utilisateur les affiche; aucune affiche, recommandation ou
-donnée d’abonnement personnelle n’est redistribuée. Le code public reprend les
+uniquement lorsque l’utilisateur les affiche; aucune donnée d’abonnement personnelle
+n’est redistribuée. Des miniatures publiques YouTube sont visibles dans les captures
+documentaires autorisées. Le code public reprend les
 comportements assainis, pas les réglages, sauvegardes, rapports de scans privés,
-captures TV, journaux ou logos propriétaires de l’installation personnelle.
+journaux ou fichiers de logos propriétaires de l’installation personnelle.

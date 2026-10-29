@@ -6,16 +6,15 @@ universel pour toutes les LG. Commencez par la démo; le parcours TV est faculta
 
 ## 1. Choisir la bonne source
 
-La [PR nº1](https://github.com/pducharme/glasshouse-wallpapers/pull/1) est fusionnée.
-Au contrôle du 28 octobre 2026, `main` livre encore l’adaptation 0.118.0 au SHA
-`1711bdb79d680ea87e74a68e33e3ee265ec81f14`. Ce guide accompagne la branche
-**0.130.0** `codex/c6-home-0130-recommendations`. Vérifiez sa publication, son SHA
-et sa CI; une branche ou PR publique n’est pas automatiquement dans `main`.
+Ce checkout livre l’adaptation **0.130.0**, base amont
+`1543769cfeb28c3ce0936dc6d20b24cd58c70255`. Clonez `main`, relevez son SHA et
+vérifiez sa CI ainsi que la présence des fichiers ci-dessous. Les anciens commits
+de fonds seuls ou d’adaptation 0.118.0 ne décrivent pas cette livraison.
 
 Sur l’ordinateur, avec Git et Node.js 22 ou plus récent :
 
 ```sh
-SOURCE_REF=codex/c6-home-0130-recommendations
+SOURCE_REF=main
 git clone --branch "$SOURCE_REF" --single-branch \
   https://github.com/pducharme/glasshouse-wallpapers.git
 cd glasshouse-wallpapers
@@ -28,8 +27,7 @@ npm --prefix glasshouse run demo -- --port 8766
 
 Notez le SHA affiché et arrêtez si un des fichiers vérifiés est absent. La base
 amont de cette branche est `1543769cfeb28c3ce0936dc6d20b24cd58c70255`, version
-0.130.0; le SHA du fork personnalisé est distinct. Utilisez `main` comme
-`SOURCE_REF` seulement après avoir vérifié qu’il contient cette évolution.
+0.130.0; le SHA du fork personnalisé est distinct.
 Ouvrez `http://127.0.0.1:8766/`. Les lancements et la météo sont simulés; aucune TV
 n’est contactée. Les flèches, Entrée, appui long sur Entrée et Echap permettent
 d’essayer l’accueil. `?hour=19` montre le mode sombre. Arrêtez avec `Ctrl+C`.

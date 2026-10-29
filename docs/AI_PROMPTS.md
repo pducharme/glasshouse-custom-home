@@ -7,13 +7,10 @@ configuration d'un autre propriétaire.
 
 ## Choisir les bonnes sources
 
-La [PR nº 1](https://github.com/pducharme/glasshouse-wallpapers/pull/1) est fusionnée.
-Au contrôle du **28 octobre 2026**, `main` livre l’adaptation 0.118.0 au SHA
-[`1711bdb79d680ea87e74a68e33e3ee265ec81f14`](https://github.com/pducharme/glasshouse-wallpapers/tree/1711bdb79d680ea87e74a68e33e3ee265ec81f14).
-Cette branche `codex/c6-home-0130-recommendations` prépare la version 0.130.0,
-base amont `1543769cfeb28c3ce0936dc6d20b24cd58c70255`. Utilisez explicitement
-sa référence publiée avant sa fusion; ne présentez pas son contenu comme déjà
-disponible dans le clone ordinaire de `main`.
+La référence publique de départ est `main`. Ce checkout contient la personnalisation
+**0.130.0**, base amont `1543769cfeb28c3ce0936dc6d20b24cd58c70255`.
+Relevez le SHA distant et la CI avant toute adaptation; une nouvelle version amont
+n’est pas automatiquement compatible avec le bundle.
 
 Faites revérifier cet état au début de votre session. Si la branche ou le SHA a
 changé, examinez ce changement au lieu de sélectionner silencieusement la dernière
@@ -30,7 +27,7 @@ Laissez les informations inconnues à « découvrir après autorisation ».
 
 ```text
 DÉPÔT = https://github.com/pducharme/glasshouse-wallpapers
-RÉFÉRENCE À EXAMINER = codex/c6-home-0130-recommendations (main seulement après fusion vérifiée)
+RÉFÉRENCE À EXAMINER = main (relever et vérifier le SHA exact)
 SHA À EXAMINER = <SHA distant à relever et vérifier avant toute préparation>
 BASE AMONT ATTENDUE = 0.130.0 / 1543769cfeb28c3ce0936dc6d20b24cd58c70255
 CIBLE UNIQUE = <alias privé de ma TV>
